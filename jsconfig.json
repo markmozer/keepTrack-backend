@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2022",
+    "strict": true
+  },
+  "include": [
+    "src/app/**/*.js",
+    "prisma.config.ts",
+    // "src/application/**/*.js",
+    // "src/domain/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    // "src/application/**/__tests__/**",
+    // "src/infrastructure/**",
+    "src/interface/**",
+  ]
+}

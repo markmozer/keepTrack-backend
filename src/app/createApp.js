@@ -1,0 +1,58 @@
+/**
+ * File: keepTrack-backend/src/app/createApp.js
+ */
+
+import express from "express";
+import cookieParser from "cookie-parser";
+import morgan from "morgan";
+import cors from "cors";
+
+// INTERFACE imports
+import { errorMiddleware } from "../interface/http/middleware/error.middleware.js";
+import { responseMiddleware } from "../interface/http/middleware/response.middleware.js";
+import { notFoundMiddleware } from "../interface/http/middleware/notFound.middleware.js";
+
+/**
+ * @param {string | undefined} value
+ * @param {string} name
+ * @returns {string}
+ */
+function requireEnv(value, name) {
+  if (!value) {
+    throw new Error(`Missing required env var: ${name}`);
+  }
+  return value;
+}
+
+export function createApp() {
+  const app = express();
+  app.disable("x-powered-by");
+  app.use(express.json());
+  app.use(cookieParser());
+  if (requireEnv(process.env.NODE_ENV, "NODE_ENV") !== "test") {
+    app.use(morgan("dev"));
+  }
+  app.use(responseMiddleware);
+  app.use(
+    cors({
+      origin: [requireEnv(process.env.APP_BASE_URL, "NODE_ENV")],
+    }),
+  );
+
+  // --- Routers (Interface) ---
+  const apiRouter = express.Router();
+
+  apiRouter.get("/", (req, res) => {
+    res.send("<h1>Hello World</h1>");
+  });
+
+  app.use("/api", apiRouter);
+
+  async function shutdown() {}
+
+  // 404 + error middleware
+  app.use(notFoundMiddleware);
+  app.use(errorMiddleware);
+
+  return { app, shutdown };
+}
