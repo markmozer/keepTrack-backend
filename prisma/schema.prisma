@@ -21,3 +21,29 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+// =====================================================
+// ENUMS
+// =====================================================
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+}
+
+
+// =====================================================
+// TENANT
+// =====================================================
+
+model Tenant {
+  id                                    String                                  @id @default(uuid())
+  name                                  String
+  slug                                  String                                  @unique
+  status                                TenantStatus                            @default(ACTIVE)
+
+  createdAt                             DateTime                                @default(now())
+  updatedAt                             DateTime                                @updatedAt
+
+  @@index([status])
+}

@@ -10,8 +10,8 @@
   "include": [
     "src/app/**/*.js",
     "prisma.config.ts",
-    // "src/application/**/*.js",
-    // "src/domain/**/*.js"
+    "src/application/**/*.js",
+    "src/domain/**/*.js"
   ],
   "exclude": [
     "node_modules",

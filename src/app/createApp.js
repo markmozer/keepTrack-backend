@@ -12,6 +12,10 @@ import { errorMiddleware } from "../interface/http/middleware/error.middleware.j
 import { responseMiddleware } from "../interface/http/middleware/response.middleware.js";
 import { notFoundMiddleware } from "../interface/http/middleware/notFound.middleware.js";
 
+import { buildContainer } from "./buildContainer.js";
+import { createTenantController } from "../interface/http/controllers/tenant.controller.js";
+import { createTenantsRouter } from "../interface/http/routers/tenants.router.js";
+
 /**
  * @param {string | undefined} value
  * @param {string} name
@@ -28,23 +32,29 @@ export function createApp() {
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json());
-  app.use(cookieParser());
+  //  app.use(cookieParser());
   if (requireEnv(process.env.NODE_ENV, "NODE_ENV") !== "test") {
     app.use(morgan("dev"));
   }
   app.use(responseMiddleware);
-  app.use(
-    cors({
-      origin: [requireEnv(process.env.APP_BASE_URL, "NODE_ENV")],
-    }),
-  );
+  // app.use(
+  //   cors({
+  //     origin: [requireEnv(process.env.APP_BASE_URL, "NODE_ENV")],
+  //   }),
+  // );
 
-  // --- Routers (Interface) ---
+  const container = buildContainer();
+
+  // --- Controllers (Interface/http) ---
+  const tenantController = createTenantController({
+    createTenantUseCase: container.useCases.createTenant,
+    getTenantByIdUseCase: container.useCases.getTenantById,
+  });
+
+  // --- Routers (Interface/http) ---
   const apiRouter = express.Router();
 
-  apiRouter.get("/", (req, res) => {
-    res.send("<h1>Hello World</h1>");
-  });
+  apiRouter.use("/tenants", createTenantsRouter({tenantController,}))
 
   app.use("/api", apiRouter);
 

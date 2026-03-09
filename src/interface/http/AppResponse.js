@@ -1,6 +1,7 @@
 /**
- * File: src/interface/http/AppResponse.js
+ * File: keepTrack-backend/src/interface/http/AppResponse.js
  */
+
 
 /**
  * @typedef {import("../../domain/shared/errors/AppError.js").AppError} AppError

@@ -10,6 +10,6 @@ export class ValidationError extends AppError {
    * @param {import("./AppError.js").ErrorDetails=} details
    */
   constructor(message = "Validation error", details) {
-    super({ statusCode: 400, code: "VALIDATION_ERROR", message, details });
+    super({ statusCode: 422, code: "VALIDATION_ERROR", message, details });
   }
 }

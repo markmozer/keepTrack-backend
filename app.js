@@ -7,9 +7,13 @@ import { createApp } from "./src/app/createApp.js";
 const PORT = process.env.PORT || 3000;
 const { app, shutdown } = createApp();
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+let server = null;
+
+if (process.env.NODE_ENV !== "test") {
+  server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}
 
 let isShuttingDown = false;
 
@@ -19,7 +23,18 @@ async function handleShutdown(signal) {
 
   console.log(`Received ${signal}, shutting down...`);
 
-  // Stop accepting new connections
+  if (!server) {
+    try {
+      await shutdown();
+      console.log("Shutdown complete.");
+    } catch (e) {
+      console.error("Error during shutdown:", e);
+    } finally {
+      process.exit(0);
+    }
+    return;
+  }
+
   server.close(async (err) => {
     if (err) console.error("Error closing server:", err);
 
