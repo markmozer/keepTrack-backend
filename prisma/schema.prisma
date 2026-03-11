@@ -31,6 +31,12 @@ enum TenantStatus {
   INACTIVE
 }
 
+enum UserStatus {
+  NEW
+  INVITED
+  ACTIVE
+  INACTIVE
+}
 
 // =====================================================
 // TENANT
@@ -45,5 +51,66 @@ model Tenant {
   createdAt                             DateTime                                @default(now())
   updatedAt                             DateTime                                @updatedAt
 
+  users                                 User[]
+  roles                                 Role[]
+  userRoles                             UserRole[]
+
   @@index([status])
+}
+
+// =====================================================
+// USER / AUTH
+// =====================================================
+
+model User {
+  id                                    String                                  @id @default(uuid())
+  tenantId                              String
+  email                                 String
+  passwordHash                          String?
+  status                                UserStatus                              @default(NEW)
+
+  createdAt                             DateTime                                @default(now())
+  updatedAt                             DateTime                                @updatedAt
+
+  tenant                                Tenant                                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles                             UserRole[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId, status])
+}
+
+model Role {
+  id                                    String                                  @id @default(uuid())
+  tenantId                              String
+  name                                  String
+
+  createdAt                             DateTime                                @default(now())
+  updatedAt                             DateTime                                @updatedAt
+
+  tenant                                Tenant                                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userRoles                             UserRole[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model UserRole {
+  id                                    String                                  @id @default(uuid())
+  tenantId                              String
+  userId                                String
+  roleId                                String
+
+  validFrom                             DateTime                                @default(now())
+  validTo                               DateTime?
+
+  createdAt                             DateTime                                @default(now())
+  updatedAt                             DateTime                                @updatedAt
+
+  tenant                                Tenant                                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                                  User                                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role                                  Role                                    @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId, roleId, validFrom])
+  @@index([tenantId, userId])
+  @@index([tenantId, roleId])
 }

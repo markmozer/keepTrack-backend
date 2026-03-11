@@ -32,6 +32,14 @@ export const AppResponse = {
   ok(payload) {
     return { success: true, payload, error: null };
   },
+    /**
+   * @template T
+   * @param {T} payload
+   * @returns {AppResponse<T>}
+   */
+  created(payload) {
+    return { success: true, payload, error: null };
+  },
 
   /**
    * @param {AppError} err

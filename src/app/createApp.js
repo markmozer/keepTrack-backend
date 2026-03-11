@@ -15,6 +15,8 @@ import { notFoundMiddleware } from "../interface/http/middleware/notFound.middle
 import { buildContainer } from "./buildContainer.js";
 import { createTenantController } from "../interface/http/controllers/tenant.controller.js";
 import { createTenantsRouter } from "../interface/http/routers/tenants.router.js";
+import { createRoleController } from "../interface/http/controllers/role.controller.js";
+import { createRolesRouter } from "../interface/http/routers/roles.router.js";
 
 /**
  * @param {string | undefined} value
@@ -51,10 +53,15 @@ export function createApp() {
     getTenantByIdUseCase: container.useCases.getTenantById,
   });
 
+  const roleController = createRoleController({
+    createRoleUseCase: container.useCases.createRole,
+  })
+
   // --- Routers (Interface/http) ---
   const apiRouter = express.Router();
 
-  apiRouter.use("/tenants", createTenantsRouter({tenantController,}))
+  apiRouter.use("/tenants", createTenantsRouter({tenantController,}));
+  apiRouter.use("/roles", createRolesRouter({roleController,}));
 
   app.use("/api", apiRouter);
 
