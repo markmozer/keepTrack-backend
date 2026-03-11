@@ -17,6 +17,8 @@ import { createTenantController } from "../interface/http/controllers/tenant.con
 import { createTenantsRouter } from "../interface/http/routers/tenants.router.js";
 import { createRoleController } from "../interface/http/controllers/role.controller.js";
 import { createRolesRouter } from "../interface/http/routers/roles.router.js";
+import { createUserController } from "../interface/http/controllers/user.controller.js";
+import { createUsersRouter } from "../interface/http/routers/users.router.js";
 
 /**
  * @param {string | undefined} value
@@ -55,13 +57,18 @@ export function createApp() {
 
   const roleController = createRoleController({
     createRoleUseCase: container.useCases.createRole,
-  })
+  });
+
+  const userController = createUserController({
+    createUserUseCase: container.useCases.createUser,
+  });
 
   // --- Routers (Interface/http) ---
   const apiRouter = express.Router();
 
   apiRouter.use("/tenants", createTenantsRouter({tenantController,}));
   apiRouter.use("/roles", createRolesRouter({roleController,}));
+  apiRouter.use("/users", createUsersRouter({userController}));
 
   app.use("/api", apiRouter);
 

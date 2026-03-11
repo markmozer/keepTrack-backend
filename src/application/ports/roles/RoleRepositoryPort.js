@@ -5,14 +5,14 @@
 /**
  * @typedef {import("./role.types.js").RoleRow} RoleRow
  * @typedef {import("./role.types.js").CreateRoleRepoInput} CreateRoleRepoInput
- * @typedef {import("./role.types.js").FindRoleByIdRepoInput} FindRoleByIdRepoInput
- * @typedef {import("./role.types.js").FindRoleByNameRepoInput} FindRoleByNameRepoInput
+ * @typedef {import("./role.types.js").FindRoleByIdInput} FindRoleByIdInput
+ * @typedef {import("./role.types.js").FindRoleByNameInput} FindRoleByNameInput
  */
 
 /**
  * @typedef {Object} RoleRepositoryPort
- * @property {(input: FindRoleByIdRepoInput) => Promise<RoleRow | null>} findById
- * @property {(input: FindRoleByNameRepoInput) => Promise<RoleRow | null>} findByName
+ * @property {(input: FindRoleByIdInput) => Promise<RoleRow | null>} findById
+ * @property {(input: FindRoleByNameInput) => Promise<RoleRow | null>} findByName
  * @property {(input: CreateRoleRepoInput) => Promise<RoleRow>} create
  */
 

@@ -33,12 +33,11 @@ export function createTenantController({
           throw new BadRequestError("Body must be a JSON object.");
         }
 
-        const { name, slug, status } = body;
+        const { name, slug } = body;
 
         const tenant = await createTenantUseCase.execute({
           name,
           slug,
-          status,
         });
 
         res.status(201).json(AppResponse.ok(tenant));

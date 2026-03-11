@@ -5,7 +5,7 @@
 
 
 /**
- * @typedef {"NEW" | "INVITED" | "ACTIVE" | "INACTIVE"} UserStatus
+ * @typedef {"NEW" | "INVITED" | "ACTIVE" | "INACTIVE"} UserStatusValue
  */
 
 export const UserStatus = Object.freeze({
@@ -19,7 +19,7 @@ export const UserStatus = Object.freeze({
  * Business rule:
  * A user can only be invited if status is NEW or INVITED.
  *
- * @param {UserStatus} status
+ * @param {UserStatusValue} status
  * @returns {boolean}
  */
 export function isInvitableStatus(status) {

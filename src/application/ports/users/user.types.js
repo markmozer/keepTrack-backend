@@ -3,43 +3,69 @@
  */
 
 /**
- * @typedef {import("../../../domain/users/UserStatus.js")} UserStatus
+ * @typedef {import("../../../domain/users/UserStatus.js").UserStatusValue} UserStatus
  */
 
 /**
- * @typedef {Object} UserDto
+ * Repository model returned by persistence layer.
+ * matches userRowPublicSelect
+ *
+ * @typedef {Object} UserRowPublic
  * @property {string} id
  * @property {string} tenantId
  * @property {string} email
- * @property {string | null} passwordHash
  * @property {UserStatus} status
- * @property {string | null} personBusinessPartnerId
- * @property {string | null} inviteToken
- * @property {string | null} inviteTokenExpiresAt
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ */
+
+/**
+ * DTO returned by application layer.
+ * mapped from UserRowPublic
+ *
+ * @typedef {Object} UserDtoPublic
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
  * @property {string} createdAt
  * @property {string} updatedAt
  */
 
 /**
+ * Input used for CreateUser.
+ * 
+ * UseCaseInput
+ * @typedef {Object} CreateUserUseCaseInput
+ * @property {string} tenantId
+ * @property {string} email
+ * 
+ * RepoInput
  * @typedef {Object} CreateUserRepoInput
  * @property {string} id
  * @property {string} tenantId
  * @property {string} email
- * @property {string | null} passwordHash
- * @property {UserStatus} status
- * @property {string | null} personBusinessPartnerId
- * @property {string | null} inviteToken
- * @property {Date | null} inviteTokenExpiresAt
+ * @property {UserStatus} [status]  // Defaults to NEW if omitted
  * @property {Date} [createdAt]
  * @property {Date} [updatedAt]
  */
 
 /**
- * @typedef {Object} UpdateUserInviteRepoInput
+ * Input used for findById
+ * 
+ * UseCaseInput === RepoInput 
+ * @typedef {Object} FindUserByIdInput
+ * @property {string} tenantId
  * @property {string} userId
- * @property {string} inviteToken
- * @property {Date} inviteTokenExpiresAt
- * @property {Date} [updatedAt]
+ */
+
+/**
+ * Input used for findByEmail
+ * 
+ * UseCaseInput === RepoInput
+ * @typedef {Object} FindUserByEmailInput
+ * @property {string} tenantId
+ * @property {string} email
  */
 
 export {};

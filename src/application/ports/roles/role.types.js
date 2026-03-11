@@ -5,6 +5,7 @@
 
 /**
  * Repository model returned by persistence layer.
+ * matches roleSelect
  *
  * @typedef {Object} RoleRow
  * @property {string} id
@@ -16,6 +17,7 @@
 
 /**
  * DTO returned by application layer.
+ * mapped from RoleRow
  *
  * @typedef {Object} RoleDto
  * @property {string} id
@@ -26,8 +28,14 @@
  */
 
 /**
- * Input used by repository when creating a role.
+ * Input for CreateRole.
  *
+ * UseCaseInput
+ * @typedef {Object} CreateRoleUseCaseInput
+ * @property {string} tenantId
+ * @property {string} name
+ * 
+ * RepoInput
  * @typedef {Object} CreateRoleRepoInput
  * @property {string} id
  * @property {string} tenantId
@@ -37,17 +45,19 @@
  */
 
 /**
- * Input used by repository when finding a role by id
+ * Input for findById
  * 
- * @typedef {Object} FindRoleByIdRepoInput
+ * UseCaseInput = RepoInput
+ * @typedef {Object} FindRoleByIdInput
  * @property {string} tenantId
  * @property {string} roleId
  */
 
 /**
- * Input used by repository when finding a role by name
+ * Input for findByName
  * 
- * @typedef {Object} FindRoleByNameRepoInput
+ * UseCaseInput = RepoInput
+ * @typedef {Object} FindRoleByNameInput
  * @property {string} tenantId
  * @property {string} name
  */

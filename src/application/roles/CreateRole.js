@@ -11,16 +11,12 @@ import { ResourceNotFoundError, ConflictError } from "../../domain/shared/errors
 import { toRoleDto } from "./role.mappers.js";
 
 /**
+ * @typedef {import("../ports/roles/role.types.js").CreateRoleUseCaseInput} CreateRoleUseCaseInput
  * @typedef {import("../ports/roles/role.types.js").RoleDto} RoleDto
  * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
  * @typedef {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
  */
 
-/**
- * @typedef {Object} CreateRoleInput
- * @property {unknown} tenantId
- * @property {unknown} name
- */
 
 export class CreateRole {
   /**
@@ -34,10 +30,11 @@ export class CreateRole {
   }
 
   /**
-   * @param {CreateRoleInput} input
+   * @param {CreateRoleUseCaseInput} input
    * @returns {Promise<RoleDto>}
    */
   async execute(input) {
+    const roleId = randomUUID();
     const validated = validateCreateRoleInput({
       tenantId: input?.tenantId,
       name: input?.name,
@@ -57,10 +54,14 @@ export class CreateRole {
       throw new ConflictError(`Role '${validated.name}' already exists.`);
     }
 
+    const date = new Date();
+
     const row = await this.roleRepository.create({
       id: randomUUID(),
       tenantId: validated.tenantId,
       name: validated.name,
+      createdAt: date,
+      updatedAt: date,
     });
 
     return toRoleDto(row);
