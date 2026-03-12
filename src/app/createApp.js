@@ -61,6 +61,7 @@ export function createApp() {
 
   const userController = createUserController({
     createUserUseCase: container.useCases.createUser,
+    assignRoleToUserUseCase: container.useCases.assignRoleToUser,
   });
 
   // --- Routers (Interface/http) ---

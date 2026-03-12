@@ -13,10 +13,14 @@ import { assertRoleRepositoryPort } from "../application/ports/roles/RoleReposit
 import { UserRepositoryPrisma } from "../infrastructure/persistence/prisma/repositories/UserRepositoryPrisma.js";
 import { assertUserRepositoryPort } from "../application/ports/users/UserRepositoryPort.js";
 
+import { UserRoleRepositoryPrisma } from "../infrastructure/persistence/prisma/repositories/UserRoleRepositoryPrisma.js";
+import { assertUserRoleRepositoryPort } from "../application/ports/userRoles/UserRoleRepositoryPort.js";
+
 import { CreateTenant } from "../application/tenants/CreateTenant.js";
 import { GetTenantById } from "../application/tenants/GetTenantById.js";
 import { CreateRole } from "../application/roles/CreateRole.js";
 import { CreateUser } from "../application/users/CreateUser.js";
+import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
 
 export function buildContainer() {
   const prisma = getPrisma();
@@ -30,17 +34,22 @@ export function buildContainer() {
   const userRepository = new UserRepositoryPrisma({ prisma });
   assertUserRepositoryPort(userRepository);
 
+  const userRoleRepository = new UserRoleRepositoryPrisma({ prisma });
+  assertUserRoleRepositoryPort(userRoleRepository);
+
   return {
     repositories: {
       tenantRepository,
       roleRepository,
       userRepository,
+      userRoleRepository,
     },
     useCases: {
       createTenant: new CreateTenant({ tenantRepository }),
       getTenantById: new GetTenantById({ tenantRepository }),
       createRole: new CreateRole({ tenantRepository, roleRepository }),
       createUser: new CreateUser({ tenantRepository, userRepository }),
+      assignRoleToUser: new AssignRoleToUser({ tenantRepository, userRepository, roleRepository, userRoleRepository})
     },
   };
 }
