@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/tenants/CreateTenant.js
+ * File: src/application/tenants/CreateTenant.js
  */
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { validateCreateTenantInput } from "./createTenant.validation.js";

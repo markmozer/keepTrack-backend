@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/app/createApp.js
+ * File: src/app/createApp.js
  */
 
 import express from "express";
@@ -19,6 +19,7 @@ import { createRoleController } from "../interface/http/controllers/role.control
 import { createRolesRouter } from "../interface/http/routers/roles.router.js";
 import { createUserController } from "../interface/http/controllers/user.controller.js";
 import { createUsersRouter } from "../interface/http/routers/users.router.js";
+
 
 /**
  * @param {string | undefined} value
@@ -62,6 +63,7 @@ export function createApp() {
   const userController = createUserController({
     createUserUseCase: container.useCases.createUser,
     assignRoleToUserUseCase: container.useCases.assignRoleToUser,
+    inviteUserUseCase: container.useCases.inviteUser,
   });
 
   // --- Routers (Interface/http) ---

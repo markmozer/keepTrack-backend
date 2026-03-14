@@ -15,6 +15,7 @@
  * @property {Date | null} validTo
  * @property {Date} createdAt
  * @property {Date} updatedAt
+ * @property {string} roleName
  */
 
 /**
@@ -30,6 +31,7 @@
  * @property {string | null} validTo
  * @property {string} createdAt
  * @property {string} updatedAt
+ * @property {string} roleName
  */
 
 /**
@@ -49,8 +51,8 @@
  * @property {string} tenantId
  * @property {string} userId
  * @property {string} roleId
- * @property {string} [validFrom]
- * @property {string} [validTo]
+ * @property {string} validFrom
+ * @property {string} validTo
  * 
  * 
  * RepoInput
@@ -74,5 +76,27 @@
  * @property {string} userId
  * @property {string} roleId
  */
+
+
+/**
+ * Input used for findUserRolesByUser
+ * 
+ * UseCaseInput === RepoInput 
+ * @typedef {Object}  FindUserRolesByUserInput
+ * @property {string} tenantId
+ * @property {string} userId
+ */
+
+
+/**
+ * Input used for findValidUserRolesByUser
+ * 
+ * UseCaseInput === RepoInput 
+ * @typedef {Object}  FindValidUserRolesByUserInput
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {Date} atDate
+ */
+
 
 export {};

@@ -17,6 +17,11 @@ const userRoleSelect = {
   validTo: true,
   createdAt: true,
   updatedAt: true,
+  role: {
+    select: {
+      name: true,
+    },
+  },
 };
 
 /**
@@ -36,14 +41,46 @@ export class UserRoleRepositoryPrisma {
    */
   async findByUserAndRole({ tenantId, userId, roleId }) {
     const row = await this.prisma.userRole.findUnique({
-      where: { 
-        tenantId_userId_roleId: {tenantId, userId, roleId},
-       },
+      where: {
+        tenantId_userId_roleId: { tenantId, userId, roleId },
+      },
       select: userRoleSelect,
     });
 
     return row ? row : null;
   }
+
+  /**
+   * @param {{ tenantId: string, userId: string, atDate: Date }} params
+   * @returns {Promise<UserRoleRowPublic[] | null>}
+   */
+  async findValidByUser({ tenantId, userId, atDate }) {
+    return this.prisma.userRole.findMany({
+      where: {
+        tenantId,
+        userId,
+        validFrom: { lte: atDate },
+        OR: [{ validTo: null }, { validTo: { gte: atDate } }],
+      },
+      select: userRoleSelect,
+    });
+  }
+
+    /**
+   * @param {{ tenantId: string, userId: string }} params
+   * @returns {Promise<UserRoleRowPublic[] | null>}
+   */
+  async findByUser({ tenantId, userId }) {
+    return this.prisma.userRole.findMany({
+      where: {
+        tenantId,
+        userId,
+      },
+      select: userRoleSelect,
+    });
+  }
+
+
 
   /**
    * @param {AssignRoleToUserRepoInput} input

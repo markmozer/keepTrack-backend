@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/domain/users/UserStatus.js
+ * File: src/domain/users/UserStatus.js
  */
 
 

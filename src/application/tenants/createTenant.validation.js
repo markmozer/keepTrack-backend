@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/tenants/createTenant.validation.js
+ * File: src/application/tenants/createTenant.validation.js
  */
 
 import { v } from "../../domain/shared/validation/validators.js";

@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/ports/tenants/tenant.types.js
+ * File: src/application/ports/tenants/tenant.types.js
  */
 
 

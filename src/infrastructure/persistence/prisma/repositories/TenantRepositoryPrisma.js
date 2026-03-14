@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/infrastructure/persistance/prisma/repositories/TenantRepositoryPrisma.js
+ * File: src/infrastructure/persistance/prisma/repositories/TenantRepositoryPrisma.js
  */
 
 /**

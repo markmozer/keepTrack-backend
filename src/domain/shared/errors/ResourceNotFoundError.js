@@ -1,5 +1,5 @@
 /**
- * File: keepTrack/src/domain/errors/ResourceNotFoundError.js
+ * File: src/domain/errors/ResourceNotFoundError.js
  */
 import { AppError } from "./AppError.js";
 

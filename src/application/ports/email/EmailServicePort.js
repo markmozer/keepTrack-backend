@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/ports/email/EmailServicePort.js
+ * File: src/application/ports/email/EmailServicePort.js
  */
 /**
  * @typedef {Object} SendInviteUserEmailInput
@@ -14,17 +14,21 @@
  */
 
 /**
+ * Runtime guard for correct dependency injection.
+ *
  * @param {unknown} svc
  * @returns {asserts svc is EmailServicePort}
  */
 export function assertEmailServicePort(svc) {
+  const anySvc = /** @type {any} */ (svc);
+
   if (
     !svc ||
     typeof svc !== "object" ||
-    typeof /** @type {any} */ (svc).sendInviteUserEmail !== "function"
+    typeof anySvc.sendInviteUserEmail !== "function"
   ) {
     throw new Error(
-      "EmailServicePort not implemented: expected { sendInviteUserEmail() }"
+      "EmailServicePort not implemented: expected { sendInviteUserEmail() }",
     );
   }
 }

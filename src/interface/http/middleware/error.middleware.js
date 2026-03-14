@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/interface/http/middleware/error.middleware.js
+ * File: src/interface/http/middleware/error.middleware.js
  */
 
 import { AppError } from "../../../domain/shared/errors/index.js";

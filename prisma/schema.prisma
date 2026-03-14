@@ -67,6 +67,8 @@ model User {
   tenantId                              String
   email                                 String
   passwordHash                          String?
+  inviteTokenHash                       String?
+  inviteTokenExpiresAt                  DateTime?
   status                                UserStatus                              @default(NEW)
 
   createdAt                             DateTime                                @default(now())

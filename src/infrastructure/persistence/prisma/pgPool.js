@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/infrastructure/persistance/prisma/pgPool.js
+ * File: src/infrastructure/persistance/prisma/pgPool.js
  */
 
 import pg from "pg";

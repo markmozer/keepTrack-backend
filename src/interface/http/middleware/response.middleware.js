@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/interface/http/middleware/response.middleware.js
+ * File: src/interface/http/middleware/response.middleware.js
  */
 
 import { AppResponse } from "../AppResponse.js";

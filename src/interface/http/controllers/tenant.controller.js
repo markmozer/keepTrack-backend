@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/interface/http/controllers/tenants.controller.js
+ * File: src/interface/http/controllers/tenants.controller.js
  */
 
 import { BadRequestError } from "../../../domain/shared/errors/index.js";

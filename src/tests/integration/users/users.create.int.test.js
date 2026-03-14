@@ -44,6 +44,7 @@ describe("POST /api/users", () => {
         tenantId: tenant.id,
         email: "mark.mozer@example.com",
         status: "NEW",
+        inviteTokenExpiresAt: null,
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
       },

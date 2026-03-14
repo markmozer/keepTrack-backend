@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/interface/http/routers/tenants.router.js
+ * File: src/interface/http/routers/tenants.router.js
  */
 
 

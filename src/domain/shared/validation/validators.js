@@ -1,5 +1,5 @@
 /**
- * File: keepTrack/src/domain/validation/validators.js
+ * File: src/domain/validation/validators.js
  */
 
 // @ts-check

@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/domain/shared/tenants/TenantStatus.js
+ * File: src/domain/shared/tenants/TenantStatus.js
  */
 
 /**

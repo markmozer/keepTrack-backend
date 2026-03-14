@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/tenants/tenant.mappers.js
+ * File: src/application/tenants/tenant.mappers.js
  */
 
 /**

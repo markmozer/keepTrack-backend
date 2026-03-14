@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/infrastructure/persistance/prisma/prismaClient.js
+ * File: src/infrastructure/persistance/prisma/prismaClient.js
  */
 
 import { PrismaClient } from "@prisma/client";

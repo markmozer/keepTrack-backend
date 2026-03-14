@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/ports/businessPartners/businessPartner.types.js
+ * File: src/application/ports/businessPartners/businessPartner.types.js
  */
 
 /**

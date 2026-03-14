@@ -23,5 +23,6 @@ export function toUserRoleDtoPublic(row) {
     validTo: row.validTo ? row.validTo.toISOString(): null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    roleName: row.roleName,
   };
 }

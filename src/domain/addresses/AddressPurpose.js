@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/domain/addresses/AddressPurpose.js
+ * File: src/domain/addresses/AddressPurpose.js
  */
 
 

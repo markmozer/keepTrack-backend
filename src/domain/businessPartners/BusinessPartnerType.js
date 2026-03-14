@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/domain/businessPartners/BusinessPartnerType.js
+ * File: src/domain/businessPartners/BusinessPartnerType.js
  */
 
 /**

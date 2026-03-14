@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/tests/integration/tenants/tenants.create.int.test.js
+ * File: src/tests/integration/tenants/tenants.create.int.test.js
  */
 
 import request from "supertest";

@@ -8,12 +8,14 @@
  * @typedef {import("../../../../application/ports/users/user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByEmailInput} FindUserByEmailInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByIdInput } FindUserByIdInput
+ * @typedef {import("../../../../application/ports/users/user.types.js").SetInviteTokenRepoInput} SetInviteTokenRepoInput
  */
 
 const userSelectPublic = {
   id: true,
   tenantId: true,
   email: true,
+  inviteTokenExpiresAt: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -72,7 +74,25 @@ export class UserRepositoryPrisma {
       },
       select: userSelectPublic,
     });
-
     return row;
+  }
+
+  /**
+   * @param {SetInviteTokenRepoInput} input
+   * @returns {Promise<UserRowPublic>}
+   */
+  async setInviteToken({
+    userId,
+    tenantId,
+    status,
+    inviteTokenHash,
+    inviteTokenExpiresAt,
+    updatedAt,
+  }) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { status, inviteTokenHash, inviteTokenExpiresAt, updatedAt },
+      select: userSelectPublic,
+    });
   }
 }

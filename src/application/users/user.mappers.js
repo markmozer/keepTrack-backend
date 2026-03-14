@@ -17,6 +17,7 @@ export function toUserDtoPublic(row) {
     id: row.id,
     tenantId: row.tenantId,
     email: row.email,
+    inviteTokenExpiresAt: row.inviteTokenExpiresAt ? row.inviteTokenExpiresAt.toISOString() : null,
     status: row.status,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),

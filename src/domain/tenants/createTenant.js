@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/domain/tenants/createTenant.js
+ * File: src/domain/tenants/createTenant.js
  */
 
 import { ValidationError } from "../shared/errors/index.js";

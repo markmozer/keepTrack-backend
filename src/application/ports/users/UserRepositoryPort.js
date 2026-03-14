@@ -8,6 +8,7 @@
  * @typedef {import("./user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("./user.types.js").FindUserByIdInput} FindUserByIdInput
  * @typedef {import("./user.types.js").FindUserByEmailInput} FindUserByEmailInput
+ * @typedef {import("./user.types.js").SetInviteTokenRepoInput} SetInviteTokenRepoInput
  */
 
 /**
@@ -15,6 +16,7 @@
  * @property {(input: FindUserByIdInput) => Promise<UserRowPublic | null>} findById
  * @property {(input: FindUserByEmailInput) => Promise<UserRowPublic | null>} findByEmail
  * @property {(input: CreateUserRepoInput) => Promise<UserRowPublic>} create
+ * @property {(input: SetInviteTokenRepoInput) => Promise<UserRowPublic>} setInviteToken
  */
 
 /**
@@ -27,10 +29,11 @@ export function assertUserRepositoryPort(repo) {
     typeof repo !== "object" ||
     typeof /** @type {any} */ (repo).findById !== "function" ||
     typeof /** @type {any} */ (repo).findByEmail !== "function" ||
-    typeof /** @type {any} */ (repo).create !== "function"
+    typeof /** @type {any} */ (repo).create !== "function" ||
+    typeof /** @type {any} */ (repo).setInviteToken !== "function"
   ) {
     throw new Error(
-      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create() }"
+      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), setInviteToken() }"
     );
   }
 }

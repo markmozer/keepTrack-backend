@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/application/tenants/GetTenantById.js
+ * File: src/application/tenants/GetTenantById.js
  */
 
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
