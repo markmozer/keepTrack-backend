@@ -42,8 +42,6 @@ describe("POST /api/roles", () => {
         id: expect.any(String),
         tenantId: tenant.id,
         name: "ADMIN",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       },
       error: null,
     });

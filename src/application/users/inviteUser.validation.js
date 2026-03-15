@@ -5,23 +5,16 @@
 import { v } from "../../domain/shared/validation/validators.js";
 
 /**
- * @typedef {Object} InviteUserPayload
- * @property {unknown} tenantId
- * @property {unknown} userId
+ * @param {import("../ports/users/user.types.js").InviteUserUCPayload} input
  */
-
-/**
- * @param {InviteUserPayload} input
- */
-export function validateInviteUserInput(input) {
+export function validateInviteUserPayload(input) {
   v.object(input, "input", {
-    allowedKeys: ["tenantId", "userId"],
-    requiredKeys: ["tenantId", "userId"],
+    allowedKeys: ["targetUserId"],
+    requiredKeys: ["targetUserId"],
   });
 
-  const tenantId = v.uuid(input?.tenantId, "tenantId");
-  const userId = v.uuid(input?.userId, "userId");
+  const targetUserId = v.uuid(input?.targetUserId, "targetUserId");
 
 
-  return { tenantId, userId };
+  return { targetUserId };
 }

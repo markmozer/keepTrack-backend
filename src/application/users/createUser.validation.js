@@ -8,23 +8,16 @@ import {
 
 
 /**
- * @typedef {Object} CreateUserPayload
- * @property {unknown} tenantId
- * @property {unknown} email
+ * @param {import("../ports/users/user.types.js").CreateUserUCPayload} input
  */
-
-/**
- * @param {CreateUserPayload} input
- */
-export function validateCreateUserInput(input) {
+export function validateCreateUserPayload(input) {
   v.object(input, "input", {
-    allowedKeys: ["tenantId", "email"],
-    requiredKeys: ["tenantId", "email"],
+    allowedKeys: ["email"],
+    requiredKeys: ["email"],
   });
 
-  const tenantId = v.uuid(input?.tenantId, "tenantId");
   const email = validateUserEmail(input?.email);
 
 
-  return { tenantId, email };
+  return { email };
 }

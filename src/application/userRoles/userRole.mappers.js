@@ -4,16 +4,16 @@
 
 
 /**
- * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleDtoPublic} UserRoleDtoPublic
- * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleRowPublic} UserRoleRowPublic
+ * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleDto} UserRoleDto
+ * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
  */
 
 
 /**
- * @param {UserRoleRowPublic} row
- * @returns {UserRoleDtoPublic}
+ * @param {UserRoleRow} row
+ * @returns {UserRoleDto}
  */
-export function toUserRoleDtoPublic(row) {
+export function toUserRoleDto(row) {
   return {
     id: row.id,
     tenantId: row.tenantId,
@@ -21,8 +21,6 @@ export function toUserRoleDtoPublic(row) {
     roleId: row.roleId,
     validFrom: row.validFrom.toISOString(),
     validTo: row.validTo ? row.validTo.toISOString(): null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
     roleName: row.roleName,
   };
 }

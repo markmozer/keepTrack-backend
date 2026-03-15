@@ -19,7 +19,5 @@ export function toUserDtoPublic(row) {
     email: row.email,
     inviteTokenExpiresAt: row.inviteTokenExpiresAt ? row.inviteTokenExpiresAt.toISOString() : null,
     status: row.status,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
   };
 }

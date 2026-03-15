@@ -2,17 +2,19 @@
  * File: src/application/users/InviteUser.js
  */
 
+import { v } from "../../domain/shared/validation/validators.js";
+import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { UserStatus } from "../../domain/users/UserStatus.js";
 import { isInvitableStatus } from "../../domain/users/UserStatus.js";
 import {
   ResourceNotFoundError,
   ValidationError,
 } from "../../domain/shared/errors/index.js";
-import { validateInviteUserInput } from "./inviteUser.validation.js";
+import { validateInviteUserPayload } from "./inviteUser.validation.js";
 import { toUserDtoPublic } from "./user.mappers.js";
 
 /**
- * @typedef {import("../ports/users/user.types.js").InviteUserUseCaseInput} InviteUserUseCaseInput
+ * @typedef {import("../ports/users/user.types.js").InviteUserUCInput} InviteUserUCInput
  * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
  *
  * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
@@ -60,34 +62,36 @@ export class InviteUser {
 
   /**
    *
-   * @param {InviteUserUseCaseInput} input
+   * @param {InviteUserUCInput} input
    * @returns {Promise<UserDtoPublic>}
    */
   async execute(input) {
-    const validated = validateInviteUserInput({
-      tenantId: input?.tenantId,
-      userId: input?.userId,
-    });
 
+    const obj = v.object(input, "InviteUser input");
+
+    const principal = validatePrincipal(obj.principal);
+    const payload = validateInviteUserPayload(obj.payload);
+
+    const tenantId = principal.tenantId;    
     const baseUrl = this.config?.appBaseUrl;
     if (!baseUrl) throw new Error("InviteUser: config.appBaseUrl is required");
     
     const existingTenant = await this.tenantRepository.findById(
-      validated.tenantId,
+      tenantId,
     );
     if (!existingTenant) {
       throw new ResourceNotFoundError("tenant", {
-        tenantId: validated.tenantId,
+        tenantId,
       });
     }
 
     const existingUser = await this.userRepository.findById({
-      tenantId: validated.tenantId,
-      userId: validated.userId,
+      tenantId,
+      userId: payload.targetUserId,
     });
 
     if (!existingUser) {
-      throw new ResourceNotFoundError("user", { userId: validated.userId });
+      throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
     }
 
     if (!isInvitableStatus(existingUser.status)) {
@@ -97,13 +101,13 @@ export class InviteUser {
     }
 
     const assignedRoles = await this.userRoleRepository.findByUser({
-      tenantId: validated.tenantId,
-      userId: validated.userId,
+      tenantId: tenantId,
+      userId: payload.targetUserId,
     });
 
     if (!assignedRoles || assignedRoles.length === 0)
       throw new ValidationError("user has no roles", {
-        userId: validated.userId,
+        userId: payload.targetUserId,
       });
 
     const now = this.clockService.now();
@@ -114,7 +118,7 @@ export class InviteUser {
       throw new ValidationError(
         "user has no valid roles now or in the future",
         {
-          userId: validated.userId,
+          userId: payload.targetUserId,
         },
       );
     }
@@ -123,9 +127,9 @@ export class InviteUser {
     const ttlDays = this.config?.inviteTtlDays ?? 14;
     const expiresAt = this.clockService.addDays(now, ttlDays);
 
-    const updated = await this.userRepository.setInviteToken({
-      userId: validated.userId,
-      tenantId: validated.tenantId,
+    const updated = await this.userRepository.markAsInvited({
+      userId: payload.targetUserId,
+      tenantId,
       status: UserStatus.INVITED,
       inviteTokenHash: tokenHash,
       inviteTokenExpiresAt: expiresAt,

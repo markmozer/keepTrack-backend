@@ -4,7 +4,7 @@
 
 /**
  * @typedef {import("../../../../application/ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleRowPublic} UserRoleRowPublic
+ * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
  * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").AssignRoleToUserRepoInput} AssignRoleToUserRepoInput
  */
 
@@ -37,7 +37,7 @@ export class UserRoleRepositoryPrisma {
 
   /**
    * @param {{tenantId: string, userId: string, roleId: string}} params
-   * @returns {Promise<UserRoleRowPublic | null>}
+   * @returns {Promise<UserRoleRow | null>}
    */
   async findByUserAndRole({ tenantId, userId, roleId }) {
     const row = await this.prisma.userRole.findUnique({
@@ -52,7 +52,7 @@ export class UserRoleRepositoryPrisma {
 
   /**
    * @param {{ tenantId: string, userId: string, atDate: Date }} params
-   * @returns {Promise<UserRoleRowPublic[] | null>}
+   * @returns {Promise<UserRoleRow[] | null>}
    */
   async findValidByUser({ tenantId, userId, atDate }) {
     return this.prisma.userRole.findMany({
@@ -68,7 +68,7 @@ export class UserRoleRepositoryPrisma {
 
     /**
    * @param {{ tenantId: string, userId: string }} params
-   * @returns {Promise<UserRoleRowPublic[] | null>}
+   * @returns {Promise<UserRoleRow[] | null>}
    */
   async findByUser({ tenantId, userId }) {
     return this.prisma.userRole.findMany({
@@ -84,7 +84,7 @@ export class UserRoleRepositoryPrisma {
 
   /**
    * @param {AssignRoleToUserRepoInput} input
-   * @returns {Promise<UserRoleRowPublic>}
+   * @returns {Promise<UserRoleRow>}
    */
   async create(input) {
     const row = await this.prisma.userRole.create({

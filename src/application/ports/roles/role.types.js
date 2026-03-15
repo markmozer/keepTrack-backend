@@ -2,9 +2,10 @@
  * File: src/application/ports/roles/role.types.js
  */
 
-
+// =====================================================
+// Repository models returned by persistance layer.
+// =====================================================
 /**
- * Repository model returned by persistence layer.
  * matches roleSelect
  *
  * @typedef {Object} RoleRow
@@ -15,39 +16,50 @@
  * @property {Date} updatedAt
  */
 
+// =====================================================
+// DTOs returned by application layer.
+// =====================================================
 /**
- * DTO returned by application layer.
  * mapped from RoleRow
  *
  * @typedef {Object} RoleDto
  * @property {string} id
  * @property {string} tenantId
  * @property {string} name
- * @property {string} createdAt
- * @property {string} updatedAt
+ */
+
+// =====================================================
+// Use Case related
+// =====================================================
+
+// --- CreateRole ---
+/**
+ * UCPayload
+ * @typedef {Object} CreateRoleUCPayload
+ * @property {unknown} name
  */
 
 /**
- * Input for CreateRole.
- *
- * UseCaseInput
- * @typedef {Object} CreateRoleUseCaseInput
- * @property {string} tenantId
- * @property {string} name
- * 
+ * UCInput
+ * @typedef {Object} CreateRoleUCInput
+ * @property {unknown} principal
+ * @property {CreateRoleUCPayload} payload
+ */
+
+/**
  * RepoInput
  * @typedef {Object} CreateRoleRepoInput
  * @property {string} id
  * @property {string} tenantId
  * @property {string} name
- * @property {Date} [createdAt]
- * @property {Date} [updatedAt]
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
  */
 
 /**
  * Input for findById
  * 
- * UseCaseInput = RepoInput
+ * UCInput = RepoInput
  * @typedef {Object} FindRoleByIdInput
  * @property {string} tenantId
  * @property {string} roleId
@@ -56,7 +68,7 @@
 /**
  * Input for findByName
  * 
- * UseCaseInput = RepoInput
+ * UCInput = RepoInput
  * @typedef {Object} FindRoleByNameInput
  * @property {string} tenantId
  * @property {string} name

@@ -2,23 +2,28 @@
  * File: src/application/users/CreateUser.js
  */
 
+import { v } from "../../domain/shared/validation/validators.js";
+import { validatePrincipal } from "../auth/validatePrincipal.js";
+import { validateCreateUserPayload } from "./createUser.validation.js";
 
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
-import { validateCreateUserInput } from "./createUser.validation.js";
-import { randomUUID } from "node:crypto";
 
-import { ResourceNotFoundError, ConflictError } from "../../domain/shared/errors/index.js";
+import {
+  ResourceNotFoundError,
+  ConflictError,
+} from "../../domain/shared/errors/index.js";
+
+import { randomUUID } from "node:crypto";
 import { UserStatus } from "../../domain/users/UserStatus.js";
 import { toUserDtoPublic } from "./user.mappers.js";
 
 /**
- * @typedef {import("../ports/users/user.types.js").CreateUserUseCaseInput} CreateUserUseCaseInput
+ * @typedef {import("../ports/users/user.types.js").CreateUserUCInput} CreateUserUCInput
  * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
  * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
  * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
  */
-
 
 export class CreateUser {
   /**
@@ -32,35 +37,41 @@ export class CreateUser {
   }
 
   /**
-   * @param {CreateUserUseCaseInput} input
+   * @param {CreateUserUCInput} input
    * @returns {Promise<UserDtoPublic>}
    */
   async execute(input) {
-    const validated = validateCreateUserInput({
-      tenantId: input?.tenantId,
-      email: input?.email,
-    });
+    const obj = v.object(input, "CreateUser input");
 
-    const existingTenant = await this.tenantRepository.findById(validated.tenantId);
+    const principal = validatePrincipal(obj.principal);
+    const payload = validateCreateUserPayload(obj.payload);
+
+    const tenantId = principal.tenantId;
+
+    const existingTenant = await this.tenantRepository.findById(
+      tenantId,
+    );
     if (!existingTenant) {
-      throw new ResourceNotFoundError("tenant", {tenantId: validated.tenantId})
-    };
+      throw new ResourceNotFoundError("tenant", {
+        tenantId: tenantId,
+      });
+    }
 
     const existingUser = await this.userRepository.findByEmail({
-      tenantId: validated.tenantId,
-      email: validated.email,
+      tenantId,
+      email: payload.email,
     });
 
     if (existingUser) {
-      throw new ConflictError(`User '${validated.email}' already exists.`);
+      throw new ConflictError(`User '${payload.email}' already exists.`);
     }
 
     const date = new Date();
-    
+
     const row = await this.userRepository.create({
       id: randomUUID(),
-      tenantId: validated.tenantId,
-      email: validated.email,
+      tenantId: tenantId,
+      email: payload.email,
       status: UserStatus.NEW,
       createdAt: date,
       updatedAt: date,

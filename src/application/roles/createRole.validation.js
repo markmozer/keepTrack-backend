@@ -15,16 +15,15 @@ import {
 /**
  * @param {CreateRolePayload} input
  */
-export function validateCreateRoleInput(input) {
+export function validateCreateRolePayload(input) {
   v.object(input, "input", {
-    allowedKeys: ["tenantId", "name"],
-    requiredKeys: ["tenantId", "name"],
+    allowedKeys: ["name"],
+    requiredKeys: ["name"],
   });
 
-  const tenantId = v.uuid(input?.tenantId, "tenantId");
   const name = validateRoleName(input?.name);
 
 
-  return { tenantId, name };
+  return { name };
 }
 

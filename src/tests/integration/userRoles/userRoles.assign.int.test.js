@@ -64,8 +64,6 @@ describe("POST /api/users/:userId/roles", () => {
         roleId: role.id,
         validFrom: expect.any(String),
         validTo: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       },
       error: null,
     });
@@ -141,8 +139,6 @@ describe("POST /api/users/:userId/roles", () => {
         roleId: role.id,
         validFrom: existing.validFrom.toISOString(),
         validTo: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       },
       error: null,
     });

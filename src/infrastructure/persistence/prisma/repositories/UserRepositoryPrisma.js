@@ -8,7 +8,7 @@
  * @typedef {import("../../../../application/ports/users/user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByEmailInput} FindUserByEmailInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByIdInput } FindUserByIdInput
- * @typedef {import("../../../../application/ports/users/user.types.js").SetInviteTokenRepoInput} SetInviteTokenRepoInput
+ * @typedef {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  */
 
 const userSelectPublic = {
@@ -78,10 +78,10 @@ export class UserRepositoryPrisma {
   }
 
   /**
-   * @param {SetInviteTokenRepoInput} input
+   * @param {MarkAsInvitedRepoInput} input
    * @returns {Promise<UserRowPublic>}
    */
-  async setInviteToken({
+  async markAsInvited({
     userId,
     tenantId,
     status,

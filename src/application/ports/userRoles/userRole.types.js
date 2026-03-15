@@ -2,11 +2,13 @@
  * File: src/application/ports/userRoles/userRole.types.js
  */
 
+// =====================================================
+// Repository models returned by persistance layer.
+// =====================================================
 /**
- * Repository model returned by persistence layer.
  * matches userRoleRowPublicSelect
  *
- * @typedef {Object} UserRoleRowPublic
+ * @typedef {Object} UserRoleRow
  * @property {string} id
  * @property {string} tenantId
  * @property {string} userId
@@ -18,43 +20,53 @@
  * @property {string} roleName
  */
 
+// =====================================================
+// DTOs returned by application layer.
+// =====================================================
 /**
- * DTO returned by application layer.
- * mapped from UserRoleRowPublic
+ * mapped from UserRoleRow
  *
- * @typedef {Object} UserRoleDtoPublic
+ * @typedef {Object} UserRoleDto
  * @property {string} id
  * @property {string} tenantId
  * @property {string} userId
  * @property {string} roleId
  * @property {string} validFrom
  * @property {string | null} validTo
- * @property {string} createdAt
- * @property {string} updatedAt
  * @property {string} roleName
  */
 
 /**
- * DTO returned by application layer.
  * Specific for AssignRoleToUser
+ * to accomodate idempotent behaviour (created true || false)
  *
  * @typedef {Object} AssignRoleToUserDto
  * @property {boolean} created
- * @property {UserRoleDtoPublic} payload
+ * @property {UserRoleDto} payload
  */
 
+// =====================================================
+// Use Case related
+// =====================================================
+
+// --- AssignRoleToUser ---
 /**
- * Input used for AssignRoleToUser.
- * 
- * UseCaseInput
- * @typedef {Object} AssignRoleToUserUseCaseInput
- * @property {string} tenantId
- * @property {string} userId
- * @property {string} roleId
- * @property {string} validFrom
- * @property {string} validTo
- * 
- * 
+ * UCPayload
+ * @typedef {Object} AssignRoleToUserUCPayload
+ * @property {unknown} targetUserId
+ * @property {unknown} roleId
+ * @property {unknown} validFrom
+ * @property {unknown} validTo
+ */ 
+ 
+/**
+ * UCInput
+ * @typedef {Object} AssignRoleToUserUCInput
+ * @property {unknown} principal
+ * @property {AssignRoleToUserUCPayload} payload
+ */
+
+/** 
  * RepoInput
  * @typedef {Object} AssignRoleToUserRepoInput
  * @property {string} id
@@ -67,10 +79,12 @@
  * @property {Date} updatedAt
  */
 
+
+
 /**
  * Input used for findUserRoleByUserAndRole
  * 
- * UseCaseInput === RepoInput 
+ * UCInput === RepoInput 
  * @typedef {Object}  FindUserRoleByUserAndRoleInput
  * @property {string} tenantId
  * @property {string} userId
@@ -81,7 +95,7 @@
 /**
  * Input used for findUserRolesByUser
  * 
- * UseCaseInput === RepoInput 
+ * UCInput === RepoInput 
  * @typedef {Object}  FindUserRolesByUserInput
  * @property {string} tenantId
  * @property {string} userId
@@ -91,7 +105,7 @@
 /**
  * Input used for findValidUserRolesByUser
  * 
- * UseCaseInput === RepoInput 
+ * UCInput === RepoInput 
  * @typedef {Object}  FindValidUserRolesByUserInput
  * @property {string} tenantId
  * @property {string} userId

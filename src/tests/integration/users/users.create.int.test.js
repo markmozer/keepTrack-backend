@@ -45,8 +45,6 @@ describe("POST /api/users", () => {
         email: "mark.mozer@example.com",
         status: "NEW",
         inviteTokenExpiresAt: null,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       },
       error: null,
     });

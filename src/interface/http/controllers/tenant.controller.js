@@ -2,8 +2,10 @@
  * File: src/interface/http/controllers/tenants.controller.js
  */
 
-import { BadRequestError } from "../../../domain/shared/errors/index.js";
+import { v } from "../../../domain/shared/validation/validators.js";
+import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
 import { AppResponse } from "../AppResponse.js";
+import { randomUUID } from "node:crypto";
 
 /**
  * @typedef {Object} Deps
@@ -27,17 +29,14 @@ export function createTenantController({
      */
     async createTenant(req, res, next) {
       try {
-        const body = req.body;
-
-        if (!body || typeof body !== "object" || Array.isArray(body)) {
-          throw new BadRequestError("Body must be a JSON object.");
-        }
-
-        const { name, slug } = body;
+        const body = v.object(req.body, "body");
 
         const tenant = await createTenantUseCase.execute({
-          name,
-          slug,
+          principal: createSystemPrincipal({ tenantId: randomUUID() }),
+          payload: {
+            name: body.name,
+            slug: body.slug,
+          },
         });
 
         res.status(201).json(AppResponse.ok(tenant));
@@ -53,9 +52,15 @@ export function createTenantController({
      */
     async getTenantById(req, res, next) {
       try {
-        const { tenantId } = req.params;
-
-        const tenant = await getTenantByIdUseCase.execute({tenantId});
+        
+        const targetTenantId = req.params.tenantId;
+      
+        const tenant = await getTenantByIdUseCase.execute({ 
+          principal: createSystemPrincipal({ tenantId: randomUUID() }),
+          payload: {
+            targetTenantId,
+          }
+        });
 
         res.status(200).json(AppResponse.ok(tenant));
       } catch (e) {

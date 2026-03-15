@@ -18,7 +18,5 @@ export function toTenantDto(row) {
     name: row.name,
     slug: row.slug,
     status: row.status,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
   };
 }

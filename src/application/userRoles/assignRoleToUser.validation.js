@@ -7,25 +7,15 @@ import { ValidationError } from "../../domain/shared/errors/ValidationError.js";
 import { v } from "../../domain/shared/validation/validators.js";
 
 /**
- * @typedef {Object} AssignRoleToUserPayload
- * @property {unknown} tenantId
- * @property {unknown} userId
- * @property {unknown} roleId
- * @property {unknown} validFrom
- * @property {unknown} validTo
+ * @param {import("../ports/userRoles/userRole.types.js").AssignRoleToUserUCPayload} input
  */
-
-/**
- * @param {AssignRoleToUserPayload} input
- */
-export function validateAssignRoleToUserInput(input) {
+export function validateAssignRoleToUserPayload(input) {
   v.object(input, "input", {
-    allowedKeys: ["tenantId", "userId", "roleId", "validFrom", "validTo"],
-    requiredKeys: ["tenantId", "userId", "roleId"],
+    allowedKeys: ["targetUserId", "roleId", "validFrom", "validTo"],
+    requiredKeys: ["targetUserId", "roleId"],
   });
 
-  const tenantId = v.uuid(input?.tenantId, "tenantId");
-  const userId = v.uuid(input?.userId, "userId");
+  const targetUserId = v.uuid(input?.targetUserId, "targetUserId");
   const roleId = v.uuid(input?.roleId, "roleId");
   const resolvedValidFrom = v.date(input?.validFrom, "validFrom", {
     nullable: true,
@@ -46,5 +36,5 @@ export function validateAssignRoleToUserInput(input) {
     });
   }
 
-  return { tenantId, userId, roleId, validFrom, validTo };
+  return { targetUserId, roleId, validFrom, validTo };
 }

@@ -30,8 +30,6 @@ describe("POST /api/tenants", () => {
         name: "Mozer Consulting",
         slug: "mozer-consulting",
         status: "ACTIVE",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       },
       error: null,
     });

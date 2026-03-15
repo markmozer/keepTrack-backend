@@ -17,7 +17,5 @@ export function toRoleDto(row) {
     id: row.id,
     tenantId: row.tenantId,
     name: row.name,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
   };
 }

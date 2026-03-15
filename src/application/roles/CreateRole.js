@@ -1,17 +1,19 @@
 /**
  * File: src/application/roles/CreateRole.js
  */
-
+import { v } from "../../domain/shared/validation/validators.js";
+import { validatePrincipal } from "../auth/validatePrincipal.js";
+import { validateCreateRolePayload } from "./createRole.validation.js";
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertRoleRepositoryPort } from "../ports/roles/RoleRepositoryPort.js";
-import { validateCreateRoleInput } from "./createRole.validation.js";
+
 import { randomUUID } from "node:crypto";
 
 import { ResourceNotFoundError, ConflictError } from "../../domain/shared/errors/index.js";
 import { toRoleDto } from "./role.mappers.js";
 
 /**
- * @typedef {import("../ports/roles/role.types.js").CreateRoleUseCaseInput} CreateRoleUseCaseInput
+ * @typedef {import("../ports/roles/role.types.js").CreateRoleUCInput} CreateRoleUCInput
  * @typedef {import("../ports/roles/role.types.js").RoleDto} RoleDto
  * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
  * @typedef {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
@@ -30,36 +32,35 @@ export class CreateRole {
   }
 
   /**
-   * @param {CreateRoleUseCaseInput} input
+   * @param {CreateRoleUCInput} input
    * @returns {Promise<RoleDto>}
    */
   async execute(input) {
-    const roleId = randomUUID();
-    const validated = validateCreateRoleInput({
-      tenantId: input?.tenantId,
-      name: input?.name,
-    });
+    const obj = v.object(input, "CreateUser input");
 
-    const existingTenant = await this.tenantRepository.findById(validated.tenantId);
+    const principal = validatePrincipal(obj.principal);
+    const payload = validateCreateRolePayload(obj.payload);
+
+    const existingTenant = await this.tenantRepository.findById(principal.tenantId);
     if (!existingTenant) {
-      throw new ResourceNotFoundError("tenant", {tenantId: validated.tenantId})
+      throw new ResourceNotFoundError("tenant", {tenantId: principal.tenantId})
     };
 
     const existingRole = await this.roleRepository.findByName({
-      tenantId: validated.tenantId,
-      name: validated.name,
+      tenantId: principal.tenantId,
+      name: payload.name,
     });
 
     if (existingRole) {
-      throw new ConflictError(`Role '${validated.name}' already exists.`);
+      throw new ConflictError(`Role '${payload.name}' already exists.`);
     }
 
     const date = new Date();
 
     const row = await this.roleRepository.create({
       id: randomUUID(),
-      tenantId: validated.tenantId,
-      name: validated.name,
+      tenantId: principal.tenantId,
+      name: payload.name,
       createdAt: date,
       updatedAt: date,
     });

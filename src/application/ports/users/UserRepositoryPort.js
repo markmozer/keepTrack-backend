@@ -8,7 +8,7 @@
  * @typedef {import("./user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("./user.types.js").FindUserByIdInput} FindUserByIdInput
  * @typedef {import("./user.types.js").FindUserByEmailInput} FindUserByEmailInput
- * @typedef {import("./user.types.js").SetInviteTokenRepoInput} SetInviteTokenRepoInput
+ * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  */
 
 /**
@@ -16,7 +16,7 @@
  * @property {(input: FindUserByIdInput) => Promise<UserRowPublic | null>} findById
  * @property {(input: FindUserByEmailInput) => Promise<UserRowPublic | null>} findByEmail
  * @property {(input: CreateUserRepoInput) => Promise<UserRowPublic>} create
- * @property {(input: SetInviteTokenRepoInput) => Promise<UserRowPublic>} setInviteToken
+ * @property {(input: MarkAsInvitedRepoInput) => Promise<UserRowPublic>} markAsInvited
  */
 
 /**
@@ -30,10 +30,10 @@ export function assertUserRepositoryPort(repo) {
     typeof /** @type {any} */ (repo).findById !== "function" ||
     typeof /** @type {any} */ (repo).findByEmail !== "function" ||
     typeof /** @type {any} */ (repo).create !== "function" ||
-    typeof /** @type {any} */ (repo).setInviteToken !== "function"
+    typeof /** @type {any} */ (repo).markAsInvited !== "function"
   ) {
     throw new Error(
-      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), setInviteToken() }"
+      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), markAsInvited() }"
     );
   }
 }

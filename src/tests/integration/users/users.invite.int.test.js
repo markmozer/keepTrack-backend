@@ -70,8 +70,6 @@ describe("POST /api/users/:userId/invite", () => {
         email: "mark@mozer-consulting.com",
         inviteTokenExpiresAt: expect.any(String),
         status: "INVITED",
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
       },
       error: null,
     });

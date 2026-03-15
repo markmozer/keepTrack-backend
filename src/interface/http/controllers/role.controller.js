@@ -2,6 +2,8 @@
  * File: src/interface/http/controllers/role.controller.js
  */
 
+import { v } from "../../../domain/shared/validation/validators.js";
+import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
 import { BadRequestError } from "../../../domain/shared/errors/index.js";
 import { AppResponse } from "../AppResponse.js";
 
@@ -25,18 +27,14 @@ export function createRoleController({
      */
     async createRole(req, res, next) {
       try {
-        const body = req.body;
-
-        if (!body || typeof body !== "object" || Array.isArray(body)) {
-          throw new BadRequestError("Body must be a JSON object.");
-        }
-
-        const { tenantId, name } = body;
-
-        const role = await createRoleUseCase.execute({
-          tenantId,
-          name,
-        });
+            const body = v.object(req.body, "body");
+        
+                const role = await createRoleUseCase.execute({
+                  principal: createSystemPrincipal({ tenantId: body.tenantId }),
+                  payload: {
+                    name: body.name,
+                  },
+                });
 
         res.status(201).json(AppResponse.created(role));
       } catch (e) {
