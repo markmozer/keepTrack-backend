@@ -22,9 +22,22 @@ export const UserStatus = Object.freeze({
  * @param {UserStatusValue} status
  * @returns {boolean}
  */
-export function isInvitableStatus(status) {
+export function isStatusForInviteUser(status) {
   return (
     status === UserStatus.NEW ||
+    status === UserStatus.INVITED
+  );
+}
+
+/**
+ * Business rule:
+ * A user can only be invited if status is NEW or INVITED.
+ *
+ * @param {UserStatusValue} status
+ * @returns {boolean}
+ */
+export function isStatusForAcceptInvite(status) {
+  return (
     status === UserStatus.INVITED
   );
 }

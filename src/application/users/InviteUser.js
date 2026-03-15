@@ -2,10 +2,17 @@
  * File: src/application/users/InviteUser.js
  */
 
+import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
+import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
+import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleRepositoryPort.js";
+import { assertTokenServicePort } from "../ports/security/TokenServicePort.js";
+import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
+import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
+
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { UserStatus } from "../../domain/users/UserStatus.js";
-import { isInvitableStatus } from "../../domain/users/UserStatus.js";
+import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
 import {
   ResourceNotFoundError,
   ValidationError,
@@ -51,6 +58,12 @@ export class InviteUser {
     clockService,
     config,
   }) {
+    assertTenantRepositoryPort(tenantRepository);
+    assertUserRepositoryPort(userRepository);
+    assertUserRoleRepositoryPort(userRoleRepository);
+    assertTokenServicePort(tokenService);
+    assertEmailServicePort(emailService);
+    assertClockServicePort(clockService);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
     this.userRoleRepository = userRoleRepository;
@@ -94,7 +107,7 @@ export class InviteUser {
       throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
     }
 
-    if (!isInvitableStatus(existingUser.status)) {
+    if (!isStatusForInviteUser(existingUser.status)) {
       throw new ValidationError("user status must be NEW or INVITED", {
         status: existingUser.status,
       });

@@ -5,8 +5,8 @@
 
 /**
  * @typedef {Object} PasswordServicePort
- * @property {(passwordPlaintext: string) => string} hash
- * @property {(passwordPlaintext: string, passwordHash: string) => boolean} verify
+ * @property {(passwordPlaintext: string) => Promise<string>} hash
+ * @property {(passwordPlaintext: string, passwordHash: string) => Promise<boolean>} verify
  */
 
 /**

@@ -37,6 +37,7 @@ import { CreateRole } from "../application/roles/CreateRole.js";
 import { CreateUser } from "../application/users/CreateUser.js";
 import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
 import { InviteUser } from "../application/users/InviteUser.js";
+import { AcceptInvite } from "../application/users/AcceptInvite.js";
  
 /**
  * @param {string | undefined} value
@@ -101,6 +102,7 @@ export function buildContainer() {
       clockService,
       tokenService,
       emailService,
+      passwordService,
     },
     useCases: {
       createTenant: new CreateTenant({ tenantRepository }),
@@ -109,6 +111,7 @@ export function buildContainer() {
       createUser: new CreateUser({ tenantRepository, userRepository }),
       assignRoleToUser: new AssignRoleToUser({ tenantRepository, userRepository, roleRepository, userRoleRepository}),
       inviteUser: new InviteUser({tenantRepository, userRepository, userRoleRepository, tokenService, emailService, clockService, config: {inviteTtlDays, appBaseUrl}}),
+      acceptInvite: new AcceptInvite({userRepository, tokenService, clockService, passwordService}),
     },
   };
 }

@@ -4,13 +4,13 @@
 
 import { v } from "../../../domain/shared/validation/validators.js";
 import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
-import { BadRequestError } from "../../../domain/shared/errors/index.js";
 import { AppResponse } from "../AppResponse.js";
 
 /**
  * @typedef {Object} Deps
  * @property {import("../../../application/users/CreateUser.js").CreateUser} createUserUseCase
  * @property {import("../../../application/users/InviteUser.js").InviteUser} inviteUserUseCase
+ * @property {import("../../../application/users/AcceptInvite.js").AcceptInvite} acceptInviteUseCase
  */
 
 /**
@@ -19,6 +19,7 @@ import { AppResponse } from "../AppResponse.js";
 export function createUserController({
   createUserUseCase,
   inviteUserUseCase,
+  acceptInviteUseCase,
 }) {
   return {
     /**
@@ -58,6 +59,30 @@ export function createUserController({
           principal: createSystemPrincipal({ tenantId: body.tenantId }),
           payload: {
             targetUserId,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+        return;
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * POST /api/users/accept-invite
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async acceptInvite(req, res, next) {
+      try {
+        const body = v.object(req.body, "body");
+
+        const result = await acceptInviteUseCase.execute({
+          principal: null,
+          payload: {
+            tokenPlain: body.token,
+            passwordPlain: body.password,
           },
         });
 

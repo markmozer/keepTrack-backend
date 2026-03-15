@@ -6,17 +6,21 @@
 /**
  * @typedef {import("./user.types.js").UserRowPublic} UserRowPublic
  * @typedef {import("./user.types.js").CreateUserRepoInput} CreateUserRepoInput
- * @typedef {import("./user.types.js").FindUserByIdInput} FindUserByIdInput
- * @typedef {import("./user.types.js").FindUserByEmailInput} FindUserByEmailInput
+ * @typedef {import("./user.types.js").FindUserByIdRepoInput} FindUserByIdRepoInput
+ * @typedef {import("./user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
+ * @typedef {import("./user.types.js").FindByInviteTokenHashRepoInput} FindByInviteTokenHashRepoInput
+ * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  */
 
 /**
  * @typedef {Object} UserRepositoryPort
- * @property {(input: FindUserByIdInput) => Promise<UserRowPublic | null>} findById
- * @property {(input: FindUserByEmailInput) => Promise<UserRowPublic | null>} findByEmail
+ * @property {(input: FindUserByIdRepoInput) => Promise<UserRowPublic | null>} findById
+ * @property {(input: FindUserByEmailRepoInput) => Promise<UserRowPublic | null>} findByEmail
  * @property {(input: CreateUserRepoInput) => Promise<UserRowPublic>} create
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserRowPublic>} markAsInvited
+ * @property {(input: FindByInviteTokenHashRepoInput) => Promise<UserRowPublic | null>} findByInviteTokenHash
+ * @property {(input: ActivateFromInviteRepoInput) => Promise<UserRowPublic>} activateFromInvite
  */
 
 /**
@@ -30,10 +34,12 @@ export function assertUserRepositoryPort(repo) {
     typeof /** @type {any} */ (repo).findById !== "function" ||
     typeof /** @type {any} */ (repo).findByEmail !== "function" ||
     typeof /** @type {any} */ (repo).create !== "function" ||
-    typeof /** @type {any} */ (repo).markAsInvited !== "function"
+    typeof /** @type {any} */ (repo).markAsInvited !== "function" ||
+    typeof /** @type {any} */ (repo).findByInviteTokenHash !== "function" ||
+    typeof /** @type {any} */ (repo).activateFromInvite !== "function"
   ) {
     throw new Error(
-      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), markAsInvited() }"
+      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), markAsInvited(), findByInviteTokenHash(), activateFromInvite }"
     );
   }
 }

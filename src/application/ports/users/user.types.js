@@ -91,11 +91,42 @@
  * @property {Date} updatedAt
  */
 
+// --- AcceptInvite ---
+/**
+ * UCPayload
+ * @typedef {Object} AcceptInviteUCPayload
+ * @property {unknown} tokenPlain
+ * @property {unknown} passwordPlain
+ */
+
+/**
+ * UCInput
+ * @typedef {Object} AcceptInviteUCInput
+ * @property {null} principal
+ * @property {AcceptInviteUCPayload} payload
+ */
+
+/**
+ * RepoInput
+ * @typedef {Object} ActivateFromInviteRepoInput
+ * @property {string} userId
+ * @property {string} passwordHash
+ * @property {null} inviteTokenHash
+ * @property {null} inviteTokenExpiresAt
+ * @property {UserStatus} status
+ * @property {Date} updatedAt
+ */
+
+
+// =====================================================
+// repo only types
+// =====================================================
+
 /**
  * Input used for findById
  * 
- * UCInput === RepoInput 
- * @typedef {Object} FindUserByIdInput
+ * RepoInput 
+ * @typedef {Object} FindUserByIdRepoInput
  * @property {string} tenantId
  * @property {string} userId
  */
@@ -103,12 +134,19 @@
 /**
  * Input used for findByEmail
  * 
- * UCInput === RepoInput
- * @typedef {Object} FindUserByEmailInput
+ * RepoInput
+ * @typedef {Object} FindUserByEmailRepoInput
  * @property {string} tenantId
  * @property {string} email
  */
 
+/**
+ * Input for findByInviteTokenHash
+ * 
+ * repoinput
+ * @typedef {Object} FindByInviteTokenHashRepoInput
+ * @property {string} inviteTokenHash
+ */
 
 
 export {};

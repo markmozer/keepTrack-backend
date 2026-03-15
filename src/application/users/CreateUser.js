@@ -1,13 +1,12 @@
 /**
  * File: src/application/users/CreateUser.js
  */
+import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
+import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { validateCreateUserPayload } from "./createUser.validation.js";
-
-import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
-import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
 
 import {
   ResourceNotFoundError,

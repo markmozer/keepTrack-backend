@@ -12,6 +12,7 @@ export function createUsersRouter({ userController }) {
 
   router.post("/", userController.createUser);
   router.post("/:userId/invite", userController.inviteUser);
+  router.post("/accept-invite", userController.acceptInvite)
 
   return router;
 }

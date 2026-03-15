@@ -39,16 +39,16 @@ export function createApp() {
   const app = express();
   app.disable("x-powered-by");
   app.use(express.json());
-  //  app.use(cookieParser());
+  app.use(cookieParser());
   if (requireEnv(process.env.NODE_ENV, "NODE_ENV") !== "test") {
     app.use(morgan("dev"));
   }
   app.use(responseMiddleware);
-  // app.use(
-  //   cors({
-  //     origin: [requireEnv(process.env.APP_BASE_URL, "NODE_ENV")],
-  //   }),
-  // );
+  app.use(
+    cors({
+      origin: [requireEnv(process.env.APP_BASE_URL, "NODE_ENV")],
+    }),
+  );
 
   const container = buildContainer();
 
@@ -65,6 +65,7 @@ export function createApp() {
   const userController = createUserController({
     createUserUseCase: container.useCases.createUser,
     inviteUserUseCase: container.useCases.inviteUser,
+    acceptInviteUseCase: container.useCases.acceptInvite,
   });
 
   const userRoleController = createUserRoleController({
