@@ -3,6 +3,7 @@
  */
 
 import express from "express";
+import {requireAuth} from "../middleware/requireAuth.middleware.js"
 
 /**
  * @param {{ userController: any }} deps
@@ -10,8 +11,8 @@ import express from "express";
 export function createUsersRouter({ userController }) {
   const router = express.Router();
 
-  router.post("/", userController.createUser);
-  router.post("/:userId/invite", userController.inviteUser);
+  router.post("/", requireAuth, userController.createUser);
+  router.post("/:userId/invite", requireAuth, userController.inviteUser);
   router.post("/accept-invite", userController.acceptInvite)
 
   return router;

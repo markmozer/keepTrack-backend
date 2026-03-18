@@ -4,6 +4,7 @@
 
 
 import express from "express";
+import {requireAuth} from "../middleware/requireAuth.middleware.js"
 
 /**
  * @param {{ tenantController: any }} deps
@@ -11,8 +12,8 @@ import express from "express";
 export function createTenantsRouter({ tenantController }) {
   const router = express.Router();
 
-  router.post("/", tenantController.createTenant);
-  router.get("/:tenantId", tenantController.getTenantById);
+  router.post("/", requireAuth, tenantController.createTenant);
+  router.get("/:tenantId",requireAuth, tenantController.getTenantById);
 
   return router;
 }

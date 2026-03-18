@@ -6,6 +6,7 @@
 /**
  * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleDto} UserRoleDto
  * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
+ * 
  */
 
 
@@ -21,6 +22,7 @@ export function toUserRoleDto(row) {
     roleId: row.roleId,
     validFrom: row.validFrom.toISOString(),
     validTo: row.validTo ? row.validTo.toISOString(): null,
-    roleName: row.roleName,
+    roleName: row.role.name,
   };
 }
+

@@ -28,6 +28,13 @@
  * @property {string} name
  */
 
+/**
+ * For auth
+ *
+ * @typedef {Object} RoleNameDto
+ * @property {string} name
+ */
+
 // =====================================================
 // Use Case related
 // =====================================================

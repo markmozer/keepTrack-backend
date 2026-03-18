@@ -10,7 +10,7 @@
 // Repository models returned by persistance layer.
 // =====================================================
 /**
- * matches userRowPublicSelect
+ * matches userSelectPublic
  *
  * @typedef {Object} UserRowPublic
  * @property {string} tenantId

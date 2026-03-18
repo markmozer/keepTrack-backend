@@ -14,7 +14,6 @@
 /**
  * @typedef {Object} UserRoleRepositoryPort
  * @property {(input: FindUserRoleByUserAndRoleInput) => Promise<UserRoleRow | null>} findByUserAndRole
- * @property {(input: FindUserRoleByUserAndRoleInput) => Promise<UserRoleRow | null>} findByUserAndRole
  * @property {(input: AssignRoleToUserRepoInput) => Promise<UserRoleRow>} create
  * @property {(input: FindUserRolesByUserInput) => Promise<UserRoleRow[] | null>} findByUser
  * @property {(input: FindValidUserRolesByUserInput) => Promise<UserRoleRow[] | null>} findValidByUser

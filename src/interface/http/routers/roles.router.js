@@ -3,6 +3,7 @@
  */
 
 import express from "express";
+import {requireAuth} from "../middleware/requireAuth.middleware.js"
 
 /**
  * @param {{ roleController: any }} deps
@@ -10,7 +11,7 @@ import express from "express";
 export function createRolesRouter({ roleController }) {
   const router = express.Router();
 
-  router.post("/", roleController.createRole);
+  router.post("/",requireAuth, roleController.createRole);
 
 
   return router;

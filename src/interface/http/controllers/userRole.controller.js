@@ -18,7 +18,7 @@ export function createUserRoleController({ assignRoleToUserUseCase }) {
   return {
     /**
      * POST /api/users/:userId/roles
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */

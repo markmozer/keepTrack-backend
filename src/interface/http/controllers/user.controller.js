@@ -24,7 +24,7 @@ export function createUserController({
   return {
     /**
      * POST /api/users
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
@@ -33,7 +33,7 @@ export function createUserController({
         const body = v.object(req.body, "body");
 
         const user = await createUserUseCase.execute({
-          principal: createSystemPrincipal({ tenantId: body.tenantId }),
+          principal: req.principal, //createSystemPrincipal({ tenantId: body.tenantId }),
           payload: {
             email: body.email,
           },
@@ -46,7 +46,7 @@ export function createUserController({
     },
     /**
      * POST /api/users/:userId/invite
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
@@ -70,7 +70,7 @@ export function createUserController({
     },
     /**
      * POST /api/users/accept-invite
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */

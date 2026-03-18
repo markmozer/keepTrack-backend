@@ -17,7 +17,7 @@
  * @property {Date | null} validTo
  * @property {Date} createdAt
  * @property {Date} updatedAt
- * @property {string} roleName
+ * @property {{name: string}} role
  */
 
 // =====================================================

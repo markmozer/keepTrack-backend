@@ -11,6 +11,9 @@
  * @typedef {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindByInviteTokenHashRepoInput} FindByInviteTokenHashRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
+ *
+ * @typedef {import("../../../../application/ports/auth/auth.types.js").UserRowForAuth} UserRowForAuth
+ * @typedef {import("../../../../application/ports/auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
  */
 
 const userSelectPublic = {
@@ -18,6 +21,16 @@ const userSelectPublic = {
   tenantId: true,
   email: true,
   inviteTokenExpiresAt: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
+const userSelectForAuth = {
+  id: true,
+  tenantId: true,
+  email: true,
+  passwordHash: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -114,7 +127,14 @@ export class UserRepositoryPrisma {
    * @param {ActivateFromInviteRepoInput} params
    * @returns {Promise<UserRowPublic>}
    */
-  async activateFromInvite({ userId, passwordHash, inviteTokenHash, inviteTokenExpiresAt, status, updatedAt  }) {
+  async activateFromInvite({
+    userId,
+    passwordHash,
+    inviteTokenHash,
+    inviteTokenExpiresAt,
+    status,
+    updatedAt,
+  }) {
     const row = await this.prisma.user.update({
       where: { id: userId },
       data: {
@@ -128,5 +148,18 @@ export class UserRepositoryPrisma {
     });
 
     return row;
+  }
+
+  /**
+   * @param {FindUserByEmailForAuthRepoInput} params
+   * @returns {Promise<UserRowForAuth| null>}
+   */
+  async findByEmailForAuth({ tenantId, email }) {
+    const row = await this.prisma.user.findUnique({
+      where: { tenantId_email: { tenantId, email } },
+      select: userSelectForAuth,
+    });
+
+    return row ? row : null;
   }
 }

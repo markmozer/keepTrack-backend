@@ -23,7 +23,7 @@ export function createTenantController({
   return {
     /**
      * POST /api/tenants
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
@@ -46,7 +46,7 @@ export function createTenantController({
     },
     /**
      * GET /api/tenants/:tenantId
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */

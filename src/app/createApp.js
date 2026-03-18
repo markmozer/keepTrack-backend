@@ -11,17 +11,11 @@ import cors from "cors";
 import { errorMiddleware } from "../interface/http/middleware/error.middleware.js";
 import { responseMiddleware } from "../interface/http/middleware/response.middleware.js";
 import { notFoundMiddleware } from "../interface/http/middleware/notFound.middleware.js";
+import { sessionMiddleware } from "../interface/http/middleware/session.middleware.js";
+import { createTenantResolutionMiddleware } from "../interface/http/middleware/tenantResolution.middleware.js";
 
 import { buildContainer } from "./buildContainer.js";
-import { createTenantController } from "../interface/http/controllers/tenant.controller.js";
-import { createTenantsRouter } from "../interface/http/routers/tenants.router.js";
-import { createRoleController } from "../interface/http/controllers/role.controller.js";
-import { createRolesRouter } from "../interface/http/routers/roles.router.js";
-import { createUserController } from "../interface/http/controllers/user.controller.js";
-import { createUsersRouter } from "../interface/http/routers/users.router.js";
-import { createUserRoleController } from "../interface/http/controllers/userRole.controller.js";
-import { createUserRolesRouter } from "../interface/http/routers/userRoles.router.js";
-
+import { registerRoutes } from "./registerRoutes.js";
 
 /**
  * @param {string | undefined} value
@@ -35,58 +29,45 @@ function requireEnv(value, name) {
   return value;
 }
 
+/**
+ * @returns {{ app: import("express").Express, shutdown: () => Promise<void> }}
+ */
 export function createApp() {
   const app = express();
+  const container = buildContainer();
+
   app.disable("x-powered-by");
   app.use(express.json());
   app.use(cookieParser());
+
   if (requireEnv(process.env.NODE_ENV, "NODE_ENV") !== "test") {
     app.use(morgan("dev"));
   }
-  app.use(responseMiddleware);
+  
   app.use(
-    cors({
-      origin: [requireEnv(process.env.APP_BASE_URL, "NODE_ENV")],
+    sessionMiddleware(container.services.sessionService, {
+      cookieName: process.env.SESSION_COOKIE_NAME ?? "sid",
     }),
   );
 
-  const container = buildContainer();
+  app.use(responseMiddleware);
 
-  // --- Controllers (Interface/http) ---
-  const tenantController = createTenantController({
-    createTenantUseCase: container.useCases.createTenant,
-    getTenantByIdUseCase: container.useCases.getTenantById,
+  app.use(
+    cors({
+      origin: [requireEnv(process.env.APP_BASE_URL, "APP_BASE_URL")],
+      credentials: true,
+    }),
+  );
+
+  registerRoutes(app, container, {
+    tenantResolutionMiddleware: createTenantResolutionMiddleware({
+      tenantRepository: container.repositories.tenantRepository,
+    }),
   });
-
-  const roleController = createRoleController({
-    createRoleUseCase: container.useCases.createRole,
-  });
-
-  const userController = createUserController({
-    createUserUseCase: container.useCases.createUser,
-    inviteUserUseCase: container.useCases.inviteUser,
-    acceptInviteUseCase: container.useCases.acceptInvite,
-  });
-
-  const userRoleController = createUserRoleController({
-    assignRoleToUserUseCase: container.useCases.assignRoleToUser,
-  })
-
-  // --- Routers (Interface/http) ---
-  const apiRouter = express.Router();
-
-  apiRouter.use("/tenants", createTenantsRouter({tenantController,}));
-  apiRouter.use("/roles", createRolesRouter({roleController,}));
-  apiRouter.use("/users", createUsersRouter({userController}));
-  apiRouter.use("/users", createUserRolesRouter({userRoleController}))
-
-  app.use("/api", apiRouter);
-
-  async function shutdown() {}
 
   // 404 + error middleware
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
 
-  return { app, shutdown };
+  return { app, shutdown: container.shutdown };
 }

@@ -4,7 +4,6 @@
 
 import { v } from "../../../domain/shared/validation/validators.js";
 import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
-import { BadRequestError } from "../../../domain/shared/errors/index.js";
 import { AppResponse } from "../AppResponse.js";
 
 /**
@@ -21,14 +20,14 @@ export function createRoleController({
   return {
     /**
      * POST /api/roles
-     * @param {import("express").Request} req
+     * @param {import("../http.types.js").RequestWithContext} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async createRole(req, res, next) {
       try {
             const body = v.object(req.body, "body");
-        
+            
                 const role = await createRoleUseCase.execute({
                   principal: createSystemPrincipal({ tenantId: body.tenantId }),
                   payload: {
