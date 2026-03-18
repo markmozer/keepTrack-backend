@@ -3,7 +3,6 @@
  */
 
 import { v } from "../../../domain/shared/validation/validators.js";
-import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
 import { AppResponse } from "../AppResponse.js";
 
 /**
@@ -33,7 +32,7 @@ export function createUserController({
         const body = v.object(req.body, "body");
 
         const user = await createUserUseCase.execute({
-          principal: req.principal, //createSystemPrincipal({ tenantId: body.tenantId }),
+          principal: req.principal,
           payload: {
             email: body.email,
           },
@@ -56,7 +55,7 @@ export function createUserController({
         const targetUserId = /** @type {string} */ (req.params.userId);
 
         const result = await inviteUserUseCase.execute({
-          principal: createSystemPrincipal({ tenantId: body.tenantId }),
+          principal: req.principal,
           payload: {
             targetUserId,
           },

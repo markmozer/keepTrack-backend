@@ -5,12 +5,14 @@
 /**
  * @typedef {import("./tenant.types.js").TenantRow} TenantRow
  * @typedef {import("./tenant.types.js").CreateTenantRepoInput} CreateTenantRepoInput
+ * @typedef {import("./tenant.types.js").FindTenantByIdRepoInput} FindTenantByIdRepoInput
+ * @typedef {import("./tenant.types.js").FindTenantBySlugRepoInput} FindTenantBySlugRepoInput
  */
 
 /**
  * @typedef {Object} TenantRepositoryPort
- * @property {(id: string) => Promise<TenantRow | null>} findById
- * @property {(slug: string) => Promise<TenantRow | null>} findBySlug
+ * @property {(id: FindTenantByIdRepoInput) => Promise<TenantRow | null>} findById
+ * @property {(slug: FindTenantBySlugRepoInput) => Promise<TenantRow | null>} findBySlug
  * @property {(input: CreateTenantRepoInput) => Promise<TenantRow>} create
  */
 

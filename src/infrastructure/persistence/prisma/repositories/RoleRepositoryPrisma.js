@@ -6,6 +6,8 @@
  * @typedef {import("../../../../application/ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
  * @typedef {import("../../../../application/ports/roles/role.types.js").RoleRow} RoleRow
  * @typedef {import("../../../../application/ports/roles/role.types.js").CreateRoleRepoInput} CreateRoleRepoInput
+ * @typedef {import("../../../../application/ports/roles/role.types.js").FindRoleByIdRepoInput} FindRoleByIdRepoInput
+ * @typedef {import("../../../../application/ports/roles/role.types.js").FindRoleByNameRepoInput} FindRoleByNameRepoInput
  */
 
 const roleSelect = {
@@ -28,7 +30,7 @@ export class RoleRepositoryPrisma {
   }
 
   /**
-   * @param {{tenantId: string, roleId: string}} params
+   * @param {FindRoleByIdRepoInput} params
    * @returns {Promise<RoleRow | null>}
    */
   async findById({ tenantId, roleId }) {
@@ -41,7 +43,7 @@ export class RoleRepositoryPrisma {
   }
 
   /**
-   * @param {{tenantId: string, name: string}} params
+   * @param {FindRoleByNameRepoInput} params
    * @returns {Promise<RoleRow| null>}
    */
   async findByName({ tenantId, name }) {

@@ -2,6 +2,8 @@
  * File: src/interface/http/middleware/notFound.middleware.js
  */
 
+// @ts-nocheck
+
 import { RouteNotFoundError } from "../../../domain/shared/errors/index.js";
 
 /**

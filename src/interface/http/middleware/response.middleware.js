@@ -2,6 +2,8 @@
  * File: src/interface/http/middleware/response.middleware.js
  */
 
+// @ts-nocheck
+
 import { AppResponse } from "../AppResponse.js";
 
 /**

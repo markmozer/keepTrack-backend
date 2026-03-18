@@ -80,12 +80,15 @@
  */
 
 
+// =====================================================
+// repo only types
+// =====================================================
 
 /**
  * Input used for findUserRoleByUserAndRole
  * 
- * UCInput === RepoInput 
- * @typedef {Object}  FindUserRoleByUserAndRoleInput
+ * RepoInput 
+ * @typedef {Object}  FindUserRoleByUserAndRoleRepoInput
  * @property {string} tenantId
  * @property {string} userId
  * @property {string} roleId
@@ -95,8 +98,8 @@
 /**
  * Input used for findUserRolesByUser
  * 
- * UCInput === RepoInput 
- * @typedef {Object}  FindUserRolesByUserInput
+ * RepoInput 
+ * @typedef {Object}  FindUserRolesByUserRepoInput
  * @property {string} tenantId
  * @property {string} userId
  */
@@ -105,8 +108,8 @@
 /**
  * Input used for findValidUserRolesByUser
  * 
- * UCInput === RepoInput 
- * @typedef {Object}  FindValidUserRolesByUserInput
+ * RepoInput 
+ * @typedef {Object}  FindValidUserRolesByUserRepoInput
  * @property {string} tenantId
  * @property {string} userId
  * @property {Date} atDate

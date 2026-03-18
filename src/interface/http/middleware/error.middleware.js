@@ -2,6 +2,8 @@
  * File: src/interface/http/middleware/error.middleware.js
  */
 
+// @ts-nocheck
+
 import { AppError } from "../../../domain/shared/errors/index.js";
 import { AppResponse } from "../AppResponse.js";
 

@@ -63,11 +63,15 @@
  * @property {Date} updatedAt
  */
 
+
+// =====================================================
+// repo only types
+// =====================================================
 /**
  * Input for findById
  * 
- * UCInput = RepoInput
- * @typedef {Object} FindRoleByIdInput
+ * RepoInput
+ * @typedef {Object} FindRoleByIdRepoInput
  * @property {string} tenantId
  * @property {string} roleId
  */
@@ -75,8 +79,7 @@
 /**
  * Input for findByName
  * 
- * UCInput = RepoInput
- * @typedef {Object} FindRoleByNameInput
+ * @typedef {Object} FindRoleByNameRepoInput
  * @property {string} tenantId
  * @property {string} name
  */

@@ -2,6 +2,11 @@
  * File: src/infrastructure/email/templates/inviteUserEmail.js
  */
 
+/**
+ * 
+ * @param {{link: string, expiresAt: Date}} params 
+ * @returns {Object}
+ */
 export function buildInviteUserEmail({ link, expiresAt }) {
   const expiryText = expiresAt instanceof Date ? expiresAt.toISOString().slice(0, 10) : String(expiresAt);
 

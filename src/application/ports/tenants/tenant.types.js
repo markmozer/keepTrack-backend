@@ -84,4 +84,22 @@
  * @typedef {Object} GetTenantByIdRepoInput
  * @property {string} targetTenantId
  */
+
+ // =====================================================
+// repo only types
+// =====================================================
+/**
+ * Input for findById
+ * 
+ * RepoInput
+ * @typedef {Object} FindTenantByIdRepoInput
+ * @property {string} tenantId
+ */
+
+/**
+ * Input for findBySlug
+ * 
+ * @typedef {Object} FindTenantBySlugRepoInput
+ * @property {string} slug
+ */
 export {};

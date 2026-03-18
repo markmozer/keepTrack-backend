@@ -3,7 +3,6 @@
  */
 
 import { v } from "../../../domain/shared/validation/validators.js";
-import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
 import { AppResponse } from "../AppResponse.js";
 import { randomUUID } from "node:crypto";
 
@@ -32,7 +31,7 @@ export function createTenantController({
         const body = v.object(req.body, "body");
 
         const tenant = await createTenantUseCase.execute({
-          principal: createSystemPrincipal({ tenantId: randomUUID() }),
+          principal: req.principal,
           payload: {
             name: body.name,
             slug: body.slug,
@@ -56,7 +55,7 @@ export function createTenantController({
         const targetTenantId = req.params.tenantId;
       
         const tenant = await getTenantByIdUseCase.execute({ 
-          principal: createSystemPrincipal({ tenantId: randomUUID() }),
+          principal: req.principal,
           payload: {
             targetTenantId,
           }

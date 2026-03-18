@@ -3,7 +3,6 @@
  */
 
 import { v } from "../../../domain/shared/validation/validators.js";
-import { createSystemPrincipal } from "../../../application/auth/systemPrincipal.js";
 import { AppResponse } from "../AppResponse.js";
 
 /**
@@ -29,7 +28,7 @@ export function createUserRoleController({ assignRoleToUserUseCase }) {
 
 
         const result = await assignRoleToUserUseCase.execute({
-          principal: createSystemPrincipal({ tenantId: body.tenantId }),
+          principal: req.principal,
           payload: {
             targetUserId,
             roleId: body.roleId,
