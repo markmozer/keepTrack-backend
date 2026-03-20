@@ -35,6 +35,7 @@ export function createTenantController({
           payload: {
             name: body.name,
             slug: body.slug,
+            type: body.type,
           },
         });
 

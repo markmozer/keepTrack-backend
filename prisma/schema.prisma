@@ -26,6 +26,12 @@ datasource db {
 // ENUMS
 // =====================================================
 
+enum TenantType {
+  BASE
+  CLIENT
+  DEMO
+}
+
 enum TenantStatus {
   ACTIVE
   INACTIVE
@@ -46,6 +52,7 @@ model Tenant {
   id                                    String                                  @id @default(uuid())
   name                                  String
   slug                                  String                                  @unique
+  type                                  TenantType
   status                                TenantStatus                            @default(ACTIVE)
 
   createdAt                             DateTime                                @default(now())

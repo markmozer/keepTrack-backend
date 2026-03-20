@@ -17,6 +17,7 @@ export function toTenantDto(row) {
     id: row.id,
     name: row.name,
     slug: row.slug,
+    type: row.type,
     status: row.status,
   };
 }

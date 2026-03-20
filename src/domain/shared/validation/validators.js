@@ -5,6 +5,7 @@
 // @ts-check
 
 import { ValidationError } from "../errors/index.js";
+import { toSafeJsonValue } from "../errors/toSafeJsonValue.js";
 
 /**
  * @typedef {Object} StringOptions
@@ -284,4 +285,35 @@ export const v = {
 
     return d;
   },
+  /**
+ * @template {Record<string, string>} TEnum
+ * @param {unknown} raw
+ * @param {TEnum} enumObj
+ * @param {string} fieldName
+ * @param {TEnum[keyof TEnum] | undefined} def 
+ * @returns {TEnum[keyof TEnum]}
+ */
+EnumStringOrDefault(raw, enumObj, fieldName, def) {
+  if (raw == null && def) return def;
+  if (raw == null && !def) {
+    throw new ValidationError(`${fieldName} must be a string`, { received: toSafeJsonValue(raw) });
+  }
+  if (typeof raw !== "string") {
+    throw new ValidationError(`${fieldName} must be a string`, { received: toSafeJsonValue(raw) });
+  }
+  const s = raw.trim();
+  if (s === "" && def ) return def;
+  if (s === "" && !def ) {
+    throw new ValidationError(`${fieldName} must be a string`, { received: toSafeJsonValue(raw) });
+  }
+
+  const normalized = s.toUpperCase();
+  if (!Object.values(enumObj).includes(normalized)) {
+    throw new ValidationError(`${fieldName} is invalid`, {
+      received: s,
+      allowed: Object.values(enumObj),
+    });
+  }
+  return /** @type {any} */ (normalized);
+}
 };

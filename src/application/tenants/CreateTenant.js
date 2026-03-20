@@ -52,8 +52,6 @@ export class CreateTenant {
 
     const payload = validateCreateTenantPayload(obj.payload);
 
-
-
     const existing = await this.tenantRepository.findBySlug(payload.slug);
     if (existing) {
       throw new ConflictError(
@@ -67,6 +65,7 @@ export class CreateTenant {
       id: randomUUID(),
       name: payload.name,
       slug: payload.slug,
+      type: payload.type,
       status: TenantStatus.ACTIVE,
       createdAt: date,
       updatedAt: date,

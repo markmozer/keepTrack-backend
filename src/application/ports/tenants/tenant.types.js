@@ -4,6 +4,7 @@
 
 /**
  * @typedef {import("../../../domain/tenants/TenantStatus.js").TenantStatusValue} TenantStatus
+ * @typedef {import("../../../domain/tenants/TenantType.js").TenantTypeValue} TenantType
  */
 
 // =====================================================
@@ -17,6 +18,7 @@
  * @property {string} id
  * @property {string} name
  * @property {string} slug
+ * @property {TenantType} type
  * @property {TenantStatus} status
  * @property {Date} createdAt
  * @property {Date} updatedAt
@@ -32,6 +34,7 @@
  * @property {string} id
  * @property {string} name
  * @property {string} slug
+ * @property {TenantType} type
  * @property {TenantStatus} status
  */
 
@@ -45,6 +48,7 @@
  * @typedef {Object} CreateTenantUCPayload
  * @property {unknown} name
  * @property {unknown} slug
+ * @property {unknown} type
  */
 
 /**
@@ -60,6 +64,7 @@
  * @property {string} id
  * @property {string} name
  * @property {string} slug
+ * @property {TenantType} type
  * @property {TenantStatus} status
  * @property {Date} createdAt
  * @property {Date} updatedAt
