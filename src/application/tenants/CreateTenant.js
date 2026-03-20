@@ -36,7 +36,6 @@ export class CreateTenant {
     const principal = validatePrincipal(obj.principal);
     const payload = validateCreateTenantPayload(obj.payload);
 
-    const tenantId = principal.tenantId;
 
     const existing = await this.tenantRepository.findBySlug(payload.slug);
     if (existing) {

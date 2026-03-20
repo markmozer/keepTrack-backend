@@ -58,9 +58,9 @@ export class AcceptInvite {
 
     const inviteTokenHash = this.tokenService.hash(payload.tokenPlain);
 
-    const targetUser = await this.userRepository.findByInviteTokenHash({
-      inviteTokenHash,
-    });
+    const targetUser = await this.userRepository.findByInviteTokenHash(
+      inviteTokenHash
+    );
 
     if (!targetUser) throw new ValidationError("Invite token is invalid.");
 

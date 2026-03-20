@@ -12,7 +12,7 @@ export function resolveTenantSlug(req) {
   const defaultTenantSlug = process.env.DEFAULT_TENANT_SLUG;
 
   // Local development fallback
-  if (env === "dev" && defaultTenantSlug) {
+  if ((env === "dev" || env === "test") && defaultTenantSlug) {
     return defaultTenantSlug.trim().toLowerCase();
   }
 

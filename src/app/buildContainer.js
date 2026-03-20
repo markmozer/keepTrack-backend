@@ -28,6 +28,9 @@ import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
 import { InviteUser } from "../application/users/InviteUser.js";
 import { AcceptInvite } from "../application/users/AcceptInvite.js";
 import { AuthenticateUser } from "../application/auth/AuthenticateUser.js";
+import { AuthorizeAction } from "../application/authz/AuthorizeAction.js";
+import { RolePolicy } from "../domain/authz/RolePolicy.js";
+import { permissionsByRole } from "../domain/authz/permissionsByRole.js";
 
 /**
  * @param {string | undefined} value
@@ -108,40 +111,56 @@ export function buildContainer() {
   // --- Use cases ---
   const appBaseUrl = requireEnv(process.env.APP_BASE_URL, "APP_BASE_URL");
   const inviteTtlDays = 14;
+  const policy = new RolePolicy({ permissionsByRole });
+
+  const authenticateUser = new AuthenticateUser({
+    userRepository,
+    userRoleRepository,
+    passwordService,
+    sessionService,
+    clockService,
+  });
+  const authorizeAction = new AuthorizeAction({ policy });
+  const createTenant = new CreateTenant({ tenantRepository });
+  const getTenantById = new GetTenantById({ tenantRepository });
+  const createRole = new CreateRole({ tenantRepository, roleRepository });
+  const createUser = new CreateUser({
+    tenantRepository,
+    userRepository,
+    authorizeAction,
+  });
+  const assignRoleToUser = new AssignRoleToUser({
+    tenantRepository,
+    userRepository,
+    roleRepository,
+    userRoleRepository,
+  });
+  const inviteUser = new InviteUser({
+    tenantRepository,
+    userRepository,
+    userRoleRepository,
+    tokenService,
+    emailService,
+    clockService,
+    config: { inviteTtlDays, appBaseUrl },
+  });
+  const acceptInvite = new AcceptInvite({
+    userRepository,
+    tokenService,
+    clockService,
+    passwordService,
+  });
 
   const useCases = {
-    createTenant: new CreateTenant({ tenantRepository }),
-    getTenantById: new GetTenantById({ tenantRepository }),
-    createRole: new CreateRole({ tenantRepository, roleRepository }),
-    createUser: new CreateUser({ tenantRepository, userRepository }),
-    assignRoleToUser: new AssignRoleToUser({
-      tenantRepository,
-      userRepository,
-      roleRepository,
-      userRoleRepository,
-    }),
-    inviteUser: new InviteUser({
-      tenantRepository,
-      userRepository,
-      userRoleRepository,
-      tokenService,
-      emailService,
-      clockService,
-      config: { inviteTtlDays, appBaseUrl },
-    }),
-    acceptInvite: new AcceptInvite({
-      userRepository,
-      tokenService,
-      clockService,
-      passwordService,
-    }),
-    authenticateUser: new AuthenticateUser({
-      userRepository,
-      userRoleRepository,
-      passwordService,
-      sessionService,
-      clockService,
-    })
+    authenticateUser,
+    authorizeAction,
+    createTenant,
+    getTenantById,
+    createRole,
+    createUser,
+    assignRoleToUser,
+    inviteUser,
+    acceptInvite,
   };
 
   // --- Other ---

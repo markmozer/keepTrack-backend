@@ -140,13 +140,6 @@
  * @property {string} email
  */
 
-/**
- * Input for findByInviteTokenHash
- * 
- * repoinput
- * @typedef {Object} FindByInviteTokenHashRepoInput
- * @property {string} inviteTokenHash
- */
 
 
 export {};

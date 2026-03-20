@@ -92,7 +92,6 @@ export class AuthenticateUser {
       atDate: this.clockService.now(),
     });
 
-    console.log(validUserRoles);
 
     if (!validUserRoles || validUserRoles.length === 0) {
       throw new NoValidRolesError("User has no valid roles");

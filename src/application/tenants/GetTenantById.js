@@ -36,9 +36,9 @@ export class GetTenantById {
     const payload = validateGetTenantByIdPayload(obj.payload);
 
     const tenantId = principal.tenantId;
-    const targetTtenantId = payload.targetTenantId;
+    const targetTenantId = payload.targetTenantId;
 
-    const tenantRow = await this.tenantRepository.findById(targetTtenantId);
+    const tenantRow = await this.tenantRepository.findById(targetTenantId);
     if (!tenantRow) {
       throw new ResourceNotFoundError("tenant", { tenantId: tenantId });
     }

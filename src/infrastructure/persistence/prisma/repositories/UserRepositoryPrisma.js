@@ -9,7 +9,6 @@
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByIdRepoInput } FindUserByIdRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
- * @typedef {import("../../../../application/ports/users/user.types.js").FindByInviteTokenHashRepoInput} FindByInviteTokenHashRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  *
  * @typedef {import("../../../../application/ports/auth/auth.types.js").UserRowForAuth} UserRowForAuth
@@ -111,10 +110,10 @@ export class UserRepositoryPrisma {
   }
 
   /**
-   * @param {FindByInviteTokenHashRepoInput} params
+   * @param {string} inviteTokenHash
    * @returns {Promise<UserRowPublic| null>}
    */
-  async findByInviteTokenHash({ inviteTokenHash }) {
+  async findByInviteTokenHash(inviteTokenHash) {
     const row = await this.prisma.user.findFirst({
       where: { inviteTokenHash },
       select: userSelectPublic,

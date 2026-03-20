@@ -9,7 +9,6 @@
  * @typedef {import("./user.types.js").FindUserByIdRepoInput} FindUserByIdRepoInput
  * @typedef {import("./user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
- * @typedef {import("./user.types.js").FindByInviteTokenHashRepoInput} FindByInviteTokenHashRepoInput
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  * 
  * @typedef {import("../auth/auth.types.js").UserRowForAuth} UserRowForAuth
@@ -22,7 +21,7 @@
  * @property {(input: FindUserByEmailRepoInput) => Promise<UserRowPublic | null>} findByEmail
  * @property {(input: CreateUserRepoInput) => Promise<UserRowPublic>} create
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserRowPublic>} markAsInvited
- * @property {(input: FindByInviteTokenHashRepoInput) => Promise<UserRowPublic | null>} findByInviteTokenHash
+ * @property {(InviteTokenHash: string) => Promise<UserRowPublic | null>} findByInviteTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserRowPublic>} activateFromInvite
  * 
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserRowForAuth | null>} findByEmailForAuth

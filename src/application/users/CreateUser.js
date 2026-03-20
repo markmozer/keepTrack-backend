@@ -22,17 +22,19 @@ import { toUserDtoPublic } from "./user.mappers.js";
  * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
  * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
  * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
+ * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
  */
 
 export class CreateUser {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, userRepository: UserRepositoryPort }} deps
+   * @param {{ tenantRepository: TenantRepositoryPort, userRepository: UserRepositoryPort, authorizeAction: AuthorizeAction }} deps
    */
-  constructor({ tenantRepository, userRepository }) {
+  constructor({ tenantRepository, userRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
+    this.authorizeAction = authorizeAction;
   }
 
   /**
@@ -43,13 +45,20 @@ export class CreateUser {
     const obj = v.object(input, "CreateUser input");
 
     const principal = validatePrincipal(obj.principal);
+
+    this.authorizeAction.execute({
+      principal,
+      action: "create",
+      resource: "user",
+      context: { useCase: "CreateUser" },
+    });
+
+
     const payload = validateCreateUserPayload(obj.payload);
 
     const tenantId = principal.tenantId;
 
-    const existingTenant = await this.tenantRepository.findById(
-      tenantId,
-    );
+    const existingTenant = await this.tenantRepository.findById(tenantId);
     if (!existingTenant) {
       throw new ResourceNotFoundError("tenant", {
         tenantId: tenantId,
