@@ -13,8 +13,12 @@ import {
   ConflictError,
 } from "../../domain/shared/errors/index.js";
 
-import { randomUUID } from "node:crypto";
+
 import { UserStatus } from "../../domain/users/UserStatus.js";
+import { CrudAction } from "../../domain/authz/authz.types.js";
+import { Resource } from "../../domain/authz/authz.types.js";
+
+import { randomUUID } from "node:crypto";
 import { toUserDtoPublic } from "./user.mappers.js";
 
 /**
@@ -27,7 +31,10 @@ import { toUserDtoPublic } from "./user.mappers.js";
 
 export class CreateUser {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, userRepository: UserRepositoryPort, authorizeAction: AuthorizeAction }} deps
+   * @param {{ 
+   * tenantRepository: TenantRepositoryPort, 
+   * userRepository: UserRepositoryPort, 
+   * authorizeAction: AuthorizeAction }} deps
    */
   constructor({ tenantRepository, userRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
@@ -48,8 +55,8 @@ export class CreateUser {
 
     this.authorizeAction.execute({
       principal,
-      action: "create",
-      resource: "user",
+      action: CrudAction.create,
+      resource: Resource.user,
       context: { useCase: "CreateUser" },
     });
 
@@ -63,7 +70,7 @@ export class CreateUser {
       throw new ResourceNotFoundError("tenant", {
         tenantId: tenantId,
       });
-    }
+    };
 
     const existingUser = await this.userRepository.findByEmail({
       tenantId,

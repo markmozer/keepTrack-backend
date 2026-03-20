@@ -41,3 +41,16 @@ export function isStatusForAcceptInvite(status) {
     status === UserStatus.INVITED
   );
 }
+
+/**
+ * Business rule:
+ * A user can only login if status is ACTIVE.
+ *
+ * @param {UserStatusValue} status
+ * @returns {boolean}
+ */
+export function isStatusForAuthenticateUser(status) {
+  return (
+    status === UserStatus.ACTIVE
+  );
+}

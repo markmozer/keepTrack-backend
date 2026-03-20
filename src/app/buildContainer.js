@@ -121,9 +121,13 @@ export function buildContainer() {
     clockService,
   });
   const authorizeAction = new AuthorizeAction({ policy });
-  const createTenant = new CreateTenant({ tenantRepository });
-  const getTenantById = new GetTenantById({ tenantRepository });
-  const createRole = new CreateRole({ tenantRepository, roleRepository });
+  const createTenant = new CreateTenant({ tenantRepository, authorizeAction });
+  const getTenantById = new GetTenantById({ tenantRepository, authorizeAction });
+  const createRole = new CreateRole({
+    tenantRepository,
+    roleRepository,
+    authorizeAction,
+  });
   const createUser = new CreateUser({
     tenantRepository,
     userRepository,
@@ -134,6 +138,7 @@ export function buildContainer() {
     userRepository,
     roleRepository,
     userRoleRepository,
+    authorizeAction,
   });
   const inviteUser = new InviteUser({
     tenantRepository,
@@ -143,6 +148,7 @@ export function buildContainer() {
     emailService,
     clockService,
     config: { inviteTtlDays, appBaseUrl },
+    authorizeAction,
   });
   const acceptInvite = new AcceptInvite({
     userRepository,

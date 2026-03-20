@@ -1,28 +1,34 @@
 /**
  * File: src/application/tenants/GetTenantById.js
  */
-
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
+
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { validateGetTenantByIdPayload } from "./getTenantById.validation.js";
 
 import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
+
+import { CrudAction } from "../../domain/authz/authz.types.js";
+import { Resource } from "../../domain/authz/authz.types.js";
+
 import { toTenantDto } from "./tenant.mappers.js";
 
 /**
  * @typedef {import("../ports/tenants/tenant.types.js").GetTenantByIdUCInput} GetTenantByIdUCInput
  * @typedef {import("../ports/tenants/tenant.types.js").TenantDto} TenantDto
  * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
+ * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
  */
 
 export class GetTenantById {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort }} deps
+   * @param {{ tenantRepository: TenantRepositoryPort, authorizeAction: AuthorizeAction }} deps
    */
-  constructor({ tenantRepository }) {
+  constructor({ tenantRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
     this.tenantRepository = tenantRepository;
+    this.authorizeAction = authorizeAction;
   }
 
   /**
@@ -33,6 +39,14 @@ export class GetTenantById {
     const obj = v.object(input, "GetTenantById input");
 
     const principal = validatePrincipal(obj.principal);
+    
+    this.authorizeAction.execute({
+      principal,
+      action: CrudAction.read,
+      resource: Resource.tenant,
+      context: { useCase: "GetTenantById" },
+    });
+
     const payload = validateGetTenantByIdPayload(obj.payload);
 
     const tenantId = principal.tenantId;

@@ -11,13 +11,19 @@ import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
-import { UserStatus } from "../../domain/users/UserStatus.js";
-import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
+import { validateInviteUserPayload } from "./inviteUser.validation.js";
+
 import {
   ResourceNotFoundError,
   ValidationError,
 } from "../../domain/shared/errors/index.js";
-import { validateInviteUserPayload } from "./inviteUser.validation.js";
+
+
+import { UserStatus } from "../../domain/users/UserStatus.js";
+import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
+import { CrudAction } from "../../domain/authz/authz.types.js";
+import { Resource } from "../../domain/authz/authz.types.js";
+
 import { toUserDtoPublic } from "./user.mappers.js";
 
 /**
@@ -30,6 +36,7 @@ import { toUserDtoPublic } from "./user.mappers.js";
  * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
  * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
  * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
+ * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
  */
 
 /**
@@ -47,7 +54,8 @@ export class InviteUser {
    * tokenService: TokenServicePort,
    * emailService: EmailServicePort,
    * clockService: ClockServicePort,
-   * config: Config }} deps
+   * config: Config
+   * authorizeAction: AuthorizeAction }} deps
    */
   constructor({
     tenantRepository,
@@ -57,6 +65,7 @@ export class InviteUser {
     emailService,
     clockService,
     config,
+    authorizeAction,
   }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
@@ -71,6 +80,7 @@ export class InviteUser {
     this.emailService = emailService;
     this.clockService = clockService;
     this.config = config;
+    this.authorizeAction = authorizeAction;
   }
 
   /**
@@ -83,6 +93,15 @@ export class InviteUser {
     const obj = v.object(input, "InviteUser input");
 
     const principal = validatePrincipal(obj.principal);
+    
+    this.authorizeAction.execute({
+      principal,
+      action: CrudAction.update,
+      resource: Resource.user,
+      context: { useCase: "InviteUser" },
+    });
+    
+    
     const payload = validateInviteUserPayload(obj.payload);
 
     const tenantId = principal.tenantId;    

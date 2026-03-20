@@ -1,20 +1,23 @@
 /**
  * File: src/application/userRoles/AssignRoleToUser.js
  */
-
-import { v } from "../../domain/shared/validation/validators.js";
-import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
 import { assertRoleRepositoryPort } from "../ports/roles/RoleRepositoryPort.js";
 import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleRepositoryPort.js";
+
+import { v } from "../../domain/shared/validation/validators.js";
+import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { validateAssignRoleToUserPayload } from "./assignRoleToUser.validation.js";
-import { randomUUID } from "node:crypto";
 
 import {
   ResourceNotFoundError,
-  ConflictError,
 } from "../../domain/shared/errors/index.js";
+
+import { CrudAction } from "../../domain/authz/authz.types.js";
+import { Resource } from "../../domain/authz/authz.types.js";
+
+import { randomUUID } from "node:crypto";
 import { toUserRoleDto } from "../userRoles/userRole.mappers.js";
 
 /**
@@ -24,17 +27,19 @@ import { toUserRoleDto } from "../userRoles/userRole.mappers.js";
  * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
  * @typedef {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
  * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
+ * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
  */
 
 export class AssignRoleToUser {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, userRepository: UserRepositoryPort, roleRepository: RoleRepositoryPort, userRoleRepository: UserRoleRepositoryPort }} deps
+   * @param {{ tenantRepository: TenantRepositoryPort, userRepository: UserRepositoryPort, roleRepository: RoleRepositoryPort, userRoleRepository: UserRoleRepositoryPort, authorizeAction: AuthorizeAction  }} deps
    */
   constructor({
     tenantRepository,
     userRepository,
     roleRepository,
     userRoleRepository,
+    authorizeAction,
   }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
@@ -44,6 +49,7 @@ export class AssignRoleToUser {
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.userRoleRepository = userRoleRepository;
+    this.authorizeAction = authorizeAction;
   }
 
   /**
@@ -54,6 +60,15 @@ export class AssignRoleToUser {
     const obj = v.object(input, "AssignRoleToUser input");
 
     const principal = validatePrincipal(obj.principal);
+  
+      this.authorizeAction.execute({
+      principal,
+      action: CrudAction.create,
+      resource: Resource.roleAssignment,
+      context: { useCase: "AssignRoleToUser" },
+    });  
+    
+       
     const payload = validateAssignRoleToUserPayload(obj.payload);
 
     const tenantId = principal.tenantId;

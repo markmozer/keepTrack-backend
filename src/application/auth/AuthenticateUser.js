@@ -6,12 +6,16 @@ import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleReposit
 import { assertPasswordServicePort } from "../ports/security/PasswordServicePort.js";
 import { assertSessionServicePort } from "../ports/session/SessionServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
+
+import { v } from "../../domain/shared/validation/validators.js";
 import { validateAuthenticateUserPayload } from "./authenticateUser.validation.js";
+
 import {
   InvalidCredentialsError,
   NoValidRolesError,
 } from "../../domain/shared/errors/index.js";
-import { UserStatus } from "../../domain/users/UserStatus.js";
+
+import { isStatusForAuthenticateUser } from "../../domain/users/UserStatus.js";
 
 /**
  * @typedef {import("../ports/auth/auth.types.js").AuthenticateUserUCInput} AuthenticateUserUCInput
@@ -58,18 +62,20 @@ export class AuthenticateUser {
    * @returns {Promise<AuthenticationResultDto>}
    */
   async execute(input) {
-    const validated = validateAuthenticateUserPayload(input?.payload);
+    const obj = v.object(input, "AuthenticateUser input");
+
+    const payload = validateAuthenticateUserPayload(obj.payload);
 
     const user = await this.userRepository.findByEmailForAuth({
-      tenantId: validated.tenantId,
-      email: validated.email,
+      tenantId: payload.tenantId,
+      email: payload.email,
     });
 
     if (!user) {
       throw new InvalidCredentialsError();
     }
 
-    if (user.status !== UserStatus.ACTIVE) {
+    if (!isStatusForAuthenticateUser(user.status)) {
       throw new InvalidCredentialsError();
     }
 
@@ -78,7 +84,7 @@ export class AuthenticateUser {
     }
 
     const ok = await this.passwordService.verify(
-      validated.passwordPlain,
+      payload.passwordPlain,
       user.passwordHash,
     );
 
