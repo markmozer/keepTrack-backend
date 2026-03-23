@@ -4,8 +4,8 @@
 
 import { resolveTenantSlug } from "../utils/resolveTenantSlug.js";
 import {
+  BadRequestError,
   ResourceNotFoundError,
-  UnauthorizedError,
 } from "../../../domain/shared/errors/index.js";
 
 /**
@@ -17,25 +17,27 @@ import {
  * @returns {import("express").RequestHandler}
  */
 export function createTenantResolutionMiddleware({ tenantRepository }) {
-/**
- * @param {import("../http.types.js").RequestWithContext} req
- * @param {import("express").Response} res
- * @param {import("express").NextFunction} next
- */
+  /**
+   * @param {import("../http.types.js").RequestWithContext} req
+   * @param {import("express").Response} res
+   * @param {import("express").NextFunction} next
+   */
   return async function tenantResolutionMiddleware(req, res, next) {
     try {
       const slug = resolveTenantSlug(req);
 
       if (!slug) {
-        throw new UnauthorizedError(
-          "Tenant could not be resolved from request.",
+        throw new BadRequestError(
+          `Tenant could not be resolved from host: ${req.headers.host} .`
         );
       }
 
       const tenant = await tenantRepository.findBySlug(slug);
 
       if (!tenant) {
-        throw new ResourceNotFoundError(`Tenant not found for slug '${slug}'.`);
+        throw new ResourceNotFoundError("tenant", {
+          message: `Tenant not found for slug '${slug}'.`,
+        });
       }
 
       req.context ??= {};

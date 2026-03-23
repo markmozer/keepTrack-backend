@@ -5,11 +5,13 @@
 
 /**
  * @typedef {import("./user.types.js").UserRowPublic} UserRowPublic
+ * @typedef {import("./user.types.js").UserRowPublicWithRoles} UserRowPublicWithRoles
  * @typedef {import("./user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("./user.types.js").FindUserByIdRepoInput} FindUserByIdRepoInput
  * @typedef {import("./user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
+ * @typedef {import("./user.types.js").FindUsersByRoleIdRepoInput} FindUserByRoleIdRepoInput
  * 
  * @typedef {import("../auth/auth.types.js").UserRowForAuth} UserRowForAuth
  * @typedef {import("../auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
@@ -23,6 +25,7 @@
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserRowPublic>} markAsInvited
  * @property {(InviteTokenHash: string) => Promise<UserRowPublic | null>} findByInviteTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserRowPublic>} activateFromInvite
+ * @property {(input: FindUserByRoleIdRepoInput ) => Promise<UserRowPublicWithRoles[]>} findByRoleId
  * 
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserRowForAuth | null>} findByEmailForAuth
 
@@ -42,7 +45,8 @@ export function assertUserRepositoryPort(repo) {
     typeof /** @type {any} */ (repo).markAsInvited !== "function" ||
     typeof /** @type {any} */ (repo).findByInviteTokenHash !== "function" ||
     typeof /** @type {any} */ (repo).activateFromInvite !== "function" ||
-    typeof /** @type {any} */ (repo).findByEmailForAuth !== "function"
+    typeof /** @type {any} */ (repo).findByEmailForAuth !== "function" ||
+    typeof /** @type {any} */ (repo).findByRoleId !== "function"
   ) {
     
     throw new Error(

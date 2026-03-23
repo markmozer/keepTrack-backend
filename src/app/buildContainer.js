@@ -20,6 +20,8 @@ import { PasswordHasherBcrypt } from "../infrastructure/services/security/Passwo
 import { EmailServiceMock } from "../infrastructure/services/email/EmailServiceMock.js";
 import { EmailServiceMicrosoftGraph } from "../infrastructure/services/email/EmailServiceMicrosoftGraph.js";
 
+// Use-Cases
+import { ProvisionBaseTenant } from "../application/provisioning/ProvisionBaseTenant.js";
 import { CreateTenant } from "../application/tenants/CreateTenant.js";
 import { GetTenantById } from "../application/tenants/GetTenantById.js";
 import { CreateRole } from "../application/roles/CreateRole.js";
@@ -113,6 +115,15 @@ export function buildContainer() {
   const inviteTtlDays = 14;
   const policy = new RolePolicy({ permissionsByRole });
 
+  const provisionBaseTenant = new ProvisionBaseTenant({
+    tenantRepository,
+    roleRepository,
+    userRepository,
+    userRoleRepository,
+    tokenService,
+    clockService,
+  });
+
   const authenticateUser = new AuthenticateUser({
     userRepository,
     userRoleRepository,
@@ -122,7 +133,10 @@ export function buildContainer() {
   });
   const authorizeAction = new AuthorizeAction({ policy });
   const createTenant = new CreateTenant({ tenantRepository, authorizeAction });
-  const getTenantById = new GetTenantById({ tenantRepository, authorizeAction });
+  const getTenantById = new GetTenantById({
+    tenantRepository,
+    authorizeAction,
+  });
   const createRole = new CreateRole({
     tenantRepository,
     roleRepository,
@@ -169,15 +183,21 @@ export function buildContainer() {
     acceptInvite,
   };
 
+  const provisioning = {
+    provisionBaseTenant,
+  };
+
   // --- Other ---
   async function shutdown() {
     await prisma.$disconnect();
   }
 
   return {
+    prisma,
     repositories,
     services,
     useCases,
+    provisioning,
     shutdown,
   };
 }

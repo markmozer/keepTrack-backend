@@ -22,6 +22,36 @@
  * @property {Date} updatedAt
  */
 
+/**
+ * Minimal role row embedded in UserRowPublicWithRoles
+ *
+ * @typedef {Object} RoleRowPublic
+ * @property {string} id
+ * @property {string} name
+ */
+
+/**
+ * Minimal userRole row embedded in UserRowPublicWithRoles
+ *
+ * @typedef {Object} UserRoleRowPublicWithRole
+ * @property {string} id
+ * @property {RoleRowPublic} role
+ */
+
+/**
+ * matches userSelectPublicWithRoles
+ *
+ * @typedef {Object} UserRowPublicWithRoles
+ * @property {string} tenantId
+ * @property {string} id
+ * @property {string} email
+ * @property {Date | null} inviteTokenExpiresAt
+ * @property {UserStatus} status
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ * @property {UserRoleRowPublicWithRole[]} userRoles
+ */
+
 // =====================================================
 // DTOs returned by application layer.
 // =====================================================
@@ -35,6 +65,30 @@
  * @property {string | null} inviteTokenExpiresAt
  * @property {UserStatus} status
  */
+
+/**
+ * Public role DTO
+ *
+ * @typedef {Object} RoleDtoPublic
+ * @property {string} id
+ * @property {string} name
+ */
+
+/**
+ * DTO returned by application layer
+ * (user + roles flattened)
+ *
+ * @typedef {Object} UserDtoPublicWithRoles
+ * @property {string} tenantId
+ * @property {string} id
+ * @property {string} email
+ * @property {string | null} inviteTokenExpiresAt
+ * @property {UserStatus} status
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {RoleDtoPublic[]} roles
+ */
+
 
 
 // =====================================================
@@ -140,6 +194,11 @@
  * @property {string} email
  */
 
-
+/**
+ * Input used for findFindByRoleId
+ * @typedef {Object} FindUsersByRoleIdRepoInput
+ * @property {string} tenantId
+ * @property {string} roleId
+ */
 
 export {};

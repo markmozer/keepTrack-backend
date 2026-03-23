@@ -4,6 +4,7 @@
 
 import { v } from "../../../domain/shared/validation/validators.js";
 import { AppResponse } from "../AppResponse.js";
+import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
  * @typedef {Object} Deps
@@ -19,16 +20,17 @@ export function createRoleController({
   return {
     /**
      * POST /api/roles
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async createRole(req, res, next) {
       try {
-            const body = v.object(req.body, "body");
+        const reqWithContext = asRequestWithContext(req);    
+        const body = v.object(reqWithContext.body, "body");
             
                 const role = await createRoleUseCase.execute({
-                  principal: req.principal,
+                  principal: reqWithContext.principal,
                   payload: {
                     name: body.name,
                   },

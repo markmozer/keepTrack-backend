@@ -6,6 +6,7 @@
  * @typedef {import("../../../../application/ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
  * @typedef {import("../../../../application/ports/tenants/tenant.types.js").TenantRow} TenantRow
  * @typedef {import("../../../../application/ports/tenants/tenant.types.js").CreateTenantRepoInput} CreateTenantRepoInput
+ * @typedef {import("../../../../domain/tenants/TenantType.js").TenantTypeValue} TenantType
  */
 
 const tenantSelect = {
@@ -37,6 +38,19 @@ export class TenantRepositoryPrisma {
   async findById(id) {
     const row = await this.prisma.tenant.findUnique({
       where: { id },
+      select: tenantSelect,
+    });
+
+    return row ? row : null;
+  }
+
+  /**
+   * @param {TenantType} type
+   * @returns {Promise<TenantRow| null>}
+   */
+  async findByType(type) {
+    const row = await this.prisma.tenant.findFirst({
+      where: { type },
       select: tenantSelect,
     });
 

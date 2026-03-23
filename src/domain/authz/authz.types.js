@@ -8,10 +8,11 @@
  * @enum {string}
  */
 export const Role = {
-  ADMIN: 'admin',
-  USER_ADMIN: 'user admin',
-  USER_EDITOR: 'user editor',
-  USER_VIEWER: 'user viewer',
+  SUPER_ADMIN: 'SUPER_ADMIN',
+  ADMIN: 'ADMIN',
+  USER_ADMIN: 'USER_ADMIN',
+  USER_EDITOR: 'USER_EDITOR',
+  USER_VIEWER: 'USER_VIEWER',
 };
 
 /**

@@ -66,7 +66,7 @@ export class UserRoleRepositoryPrisma {
     });
   }
 
-    /**
+  /**
    * @param {{ tenantId: string, userId: string }} params
    * @returns {Promise<UserRoleRow[] | null>}
    */

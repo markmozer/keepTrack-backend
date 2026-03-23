@@ -5,17 +5,19 @@
 /**
  * @typedef {import("../../../../application/ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
  * @typedef {import("../../../../application/ports/users/user.types.js").UserRowPublic} UserRowPublic
+ * @typedef {import("../../../../application/ports/users/user.types.js").UserRowPublicWithRoles} UserRowPublicWithRoles
  * @typedef {import("../../../../application/ports/users/user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUserByIdRepoInput } FindUserByIdRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
+ * @typedef {import("../../../../application/ports/users/user.types.js").FindUsersByRoleIdRepoInput } FindUserByRoleIdRepoInput
  *
  * @typedef {import("../../../../application/ports/auth/auth.types.js").UserRowForAuth} UserRowForAuth
  * @typedef {import("../../../../application/ports/auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
  */
 
-const userSelectPublic = {
+export const userSelectPublic = {
   id: true,
   tenantId: true,
   email: true,
@@ -33,6 +35,21 @@ const userSelectForAuth = {
   status: true,
   createdAt: true,
   updatedAt: true,
+};
+
+export const userSelectPublicWithRoles = {
+  ...userSelectPublic,
+  userRoles: {
+    select: {
+      id: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  },
 };
 
 /**
@@ -161,4 +178,28 @@ export class UserRepositoryPrisma {
 
     return row ? row : null;
   }
+
+/**
+ * @param {FindUserByRoleIdRepoInput} input
+ * @returns {Promise<UserRowPublicWithRoles[]>}
+ */
+async findByRoleId(input) {
+  const { tenantId, roleId } = input;
+
+  return this.prisma.user.findMany({
+    where: {
+      tenantId,
+      userRoles: {
+        some: {
+          roleId,
+        },
+      },
+    },
+    select: userSelectPublicWithRoles,
+    orderBy: {
+      email: "asc",
+    },
+  });
 }
+}
+

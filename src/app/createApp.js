@@ -13,6 +13,7 @@ import { responseMiddleware } from "../interface/http/middleware/response.middle
 import { notFoundMiddleware } from "../interface/http/middleware/notFound.middleware.js";
 import { sessionMiddleware } from "../interface/http/middleware/session.middleware.js";
 import { createTenantResolutionMiddleware } from "../interface/http/middleware/tenantResolution.middleware.js";
+import { asRequestWithContext } from "../interface/http/utils/asRequestWithContext.js";
 
 import { buildContainer } from "./buildContainer.js";
 import { registerRoutes } from "./registerRoutes.js";
@@ -41,9 +42,22 @@ export function createApp() {
   app.use(cookieParser());
 
   if (requireEnv(process.env.NODE_ENV, "NODE_ENV") !== "test") {
-    app.use(morgan("dev"));
+    morgan.token("host", (req) => req.headers.host || "-");
+    morgan.token(
+      "tenant",
+      (req) => asRequestWithContext(req).context?.tenant?.slug || "-",
+    );
+    morgan.token(
+      "user",
+      (req) => asRequestWithContext(req).principal?.userId || "anon",
+    );
+    app.use(
+      morgan(
+        ":method :host (tenant :tenant) (principal :user) :url :status :response-time ms",
+      ),
+    );
   }
-  
+
   app.use(
     sessionMiddleware(container.services.sessionService, {
       cookieName: process.env.SESSION_COOKIE_NAME ?? "sid",

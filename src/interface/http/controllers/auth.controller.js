@@ -5,6 +5,7 @@
 import { v } from "../../../domain/shared/validation/validators.js";
 import { AppResponse } from "../AppResponse.js";
 import { ValidationError } from "../../../domain/shared/errors/index.js";
+import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
  * @typedef {Object} Deps
@@ -22,19 +23,20 @@ export function createAuthController({
   return {
     /**
      * POST /api/auth/login
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async authenticateUser(req, res, next) {
       try {
-        const body = v.object(req.body, "body");
+        const reqWithContext = asRequestWithContext(req);
+        const body = v.object(reqWithContext.body, "body");
 
-        if (!req.context?.tenant) {
+        if (!reqWithContext.context?.tenant) {
           throw new ValidationError("Invalid credentials.");
         }
 
-        const tenantId = req.context.tenant.id;
+        const tenantId = reqWithContext.context.tenant.id;
 
         const result = await authenticateUserUseCase.execute({
           principal: null,
@@ -64,7 +66,7 @@ export function createAuthController({
 
     /**
      * POST /api/auth/logout
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      * @returns {Promise<void>}
@@ -96,15 +98,14 @@ export function createAuthController({
     },
     /**
      * POST /api/auth/logout
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      * @returns {Promise<void>}
      */
     async me(req, res, next) {
       try {
-        const request =
-          /** @type {import("../http.types.js").RequestWithContext} */ (req);
+        const request = asRequestWithContext(req);
 
         res.status(200).json({
           success: true,

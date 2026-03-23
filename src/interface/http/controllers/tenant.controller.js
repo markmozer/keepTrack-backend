@@ -4,7 +4,7 @@
 
 import { v } from "../../../domain/shared/validation/validators.js";
 import { AppResponse } from "../AppResponse.js";
-import { randomUUID } from "node:crypto";
+import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
  * @typedef {Object} Deps
@@ -22,16 +22,17 @@ export function createTenantController({
   return {
     /**
      * POST /api/tenants
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async createTenant(req, res, next) {
       try {
-        const body = v.object(req.body, "body");
+        const reqWithContext = asRequestWithContext(req);
+        const body = v.object(reqWithContext.body, "body");
 
         const tenant = await createTenantUseCase.execute({
-          principal: req.principal,
+          principal: reqWithContext.principal,
           payload: {
             name: body.name,
             slug: body.slug,
@@ -46,17 +47,18 @@ export function createTenantController({
     },
     /**
      * GET /api/tenants/:tenantId
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async getTenantById(req, res, next) {
       try {
         
-        const targetTenantId = req.params.tenantId;
+        const reqWithContext = asRequestWithContext(req);
+        const targetTenantId = reqWithContext.params.tenantId;
       
         const tenant = await getTenantByIdUseCase.execute({ 
-          principal: req.principal,
+          principal: reqWithContext.principal,
           payload: {
             targetTenantId,
           }

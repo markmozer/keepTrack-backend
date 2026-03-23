@@ -1,5 +1,24 @@
 -- CreateEnum
+CREATE TYPE "TenantType" AS ENUM ('BASE', 'CLIENT', 'DEMO');
+
+-- CreateEnum
+CREATE TYPE "TenantStatus" AS ENUM ('ACTIVE', 'INACTIVE');
+
+-- CreateEnum
 CREATE TYPE "UserStatus" AS ENUM ('NEW', 'INVITED', 'ACTIVE', 'INACTIVE');
+
+-- CreateTable
+CREATE TABLE "Tenant" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "type" "TenantType" NOT NULL,
+    "status" "TenantStatus" NOT NULL DEFAULT 'ACTIVE',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Tenant_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -7,6 +26,8 @@ CREATE TABLE "User" (
     "tenantId" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "passwordHash" TEXT,
+    "inviteTokenHash" TEXT,
+    "inviteTokenExpiresAt" TIMESTAMP(3),
     "status" "UserStatus" NOT NULL DEFAULT 'NEW',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -40,6 +61,12 @@ CREATE TABLE "UserRole" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Tenant_slug_key" ON "Tenant"("slug");
+
+-- CreateIndex
+CREATE INDEX "Tenant_status_idx" ON "Tenant"("status");
+
+-- CreateIndex
 CREATE INDEX "User_tenantId_status_idx" ON "User"("tenantId", "status");
 
 -- CreateIndex
@@ -58,7 +85,7 @@ CREATE INDEX "UserRole_tenantId_userId_idx" ON "UserRole"("tenantId", "userId");
 CREATE INDEX "UserRole_tenantId_roleId_idx" ON "UserRole"("tenantId", "roleId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "UserRole_tenantId_userId_roleId_validFrom_key" ON "UserRole"("tenantId", "userId", "roleId", "validFrom");
+CREATE UNIQUE INDEX "UserRole_tenantId_userId_roleId_key" ON "UserRole"("tenantId", "userId", "roleId");
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "Tenant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

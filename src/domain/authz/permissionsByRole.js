@@ -55,10 +55,16 @@ const resourceAdmin = (resource) => [
 
 /** @type {PermissionsByRole} */
 export const permissionsByRole = Object.freeze({
-  ADMIN: [
+  SUPER_ADMIN: [
     ...resourceAdmin("tenant"),
     ...resourceAdmin("user"),
     ...resourceAdmin("role"),
+    ...resourceAdmin("roleAssignment"),
+  ],
+  ADMIN: [
+    ...resourceViewer("tenant"),
+    ...resourceAdmin("user"),
+    ...resourceViewer("role"),
     ...resourceAdmin("roleAssignment"),
   ],
   USER_ADMIN: [

@@ -5,12 +5,14 @@
 /**
  * @typedef {import("./tenant.types.js").TenantRow} TenantRow
  * @typedef {import("./tenant.types.js").CreateTenantRepoInput} CreateTenantRepoInput
+ * @typedef {import("../../../domain/tenants/TenantType.js").TenantTypeValue} TenantType
  */
 
 /**
  * @typedef {Object} TenantRepositoryPort
  * @property {(tenantId: string) => Promise<TenantRow | null>} findById
  * @property {(slug: string) => Promise<TenantRow | null>} findBySlug
+ * @property {(type: TenantType) => Promise<TenantRow | null>} findByType
  * @property {(input: CreateTenantRepoInput) => Promise<TenantRow>} create
  */
 
@@ -24,6 +26,7 @@ export function assertTenantRepositoryPort(repo) {
     typeof repo !== "object" ||
     typeof /** @type {any} */ (repo).findById !== "function" ||
     typeof /** @type {any} */ (repo).findBySlug !== "function" ||
+    typeof /** @type {any} */ (repo).findByType !== "function" ||
     typeof /** @type {any} */ (repo).create !== "function"
   ) {
     throw new Error(

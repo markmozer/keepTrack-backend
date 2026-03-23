@@ -4,6 +4,7 @@
 
 import { v } from "../../../domain/shared/validation/validators.js";
 import { AppResponse } from "../AppResponse.js";
+import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
  * @typedef {Object} Deps
@@ -23,16 +24,17 @@ export function createUserController({
   return {
     /**
      * POST /api/users
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async createUser(req, res, next) {
       try {
-        const body = v.object(req.body, "body");
+        const reqWithContext = asRequestWithContext(req);
+        const body = v.object(reqWithContext.body, "body");
 
         const user = await createUserUseCase.execute({
-          principal: req.principal,
+          principal: reqWithContext.principal,
           payload: {
             email: body.email,
           },
@@ -45,17 +47,18 @@ export function createUserController({
     },
     /**
      * POST /api/users/:userId/invite
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
     async inviteUser(req, res, next) {
       try {
-        const body = v.object(req.body, "body");
-        const targetUserId = /** @type {string} */ (req.params.userId);
+        const reqWithContext = asRequestWithContext(req);
+        const body = v.object(reqWithContext.body, "body");
+        const targetUserId = reqWithContext.params.userId;
 
         const result = await inviteUserUseCase.execute({
-          principal: req.principal,
+          principal: reqWithContext.principal,
           payload: {
             targetUserId,
           },
@@ -69,7 +72,7 @@ export function createUserController({
     },
     /**
      * POST /api/users/accept-invite
-     * @param {import("../http.types.js").RequestWithContext} req
+     * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
