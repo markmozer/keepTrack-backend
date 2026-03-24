@@ -176,7 +176,8 @@ export class InviteUser {
       );
     }
 
-    const link = `${baseUrl}/set-password?token=${encodeURIComponent(tokenPlaintext)}`;
+    const slug = existingTenant.slug;
+    const link = `${slug}.${baseUrl}/set-password?token=${encodeURIComponent(tokenPlaintext)}`;
 
     await this.emailService.sendInviteUserEmail({
       to: updated.email,
