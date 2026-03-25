@@ -11,6 +11,7 @@ import crypto from "crypto";
  * @typedef {import("../../../application/ports/session/session.types.js").SessionData} SessionData
  * @typedef {import("../../../application/ports/session/session.types.js").SessionId} SessionId
  * @typedef {import("../../../application/ports/session/session.types.js").CreatedSession} CreatedSession
+ * @typedef {import("../session/SessionStoreRedis.js").SessionStoreRedis} SessionStoreRedis
  */
 
 /**
@@ -18,11 +19,13 @@ import crypto from "crypto";
  */
 export class SessionServiceRedis {
   /**
-   * @param {{ sessionStore: any }} deps
+   * @param {Object} params
+   * @param {SessionStoreRedis} params.sessionStore
+   * @param {import("../../../shared/config/appConfig.js").SessionConfig} params.config
    */
-  constructor({ sessionStore }, { ttlSeconds = 60 * 60 * 24 } = {}) {
+  constructor({ sessionStore, config }) {
     this.sessionStore = sessionStore;
-    this.ttlSeconds = ttlSeconds;
+    this.ttlSeconds = config.ttlSeconds;
   }
 
   /**

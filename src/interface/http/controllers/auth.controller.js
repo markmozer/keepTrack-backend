@@ -8,17 +8,21 @@ import { ValidationError } from "../../../domain/shared/errors/index.js";
 import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
- * @typedef {Object} Deps
- * @property {import("../../../application/auth/AuthenticateUser.js").AuthenticateUser} authenticateUserUseCase
- * @property {import("../../../application/ports/session/SessionServicePort.js").SessionServicePort} sessionServicePort
+ * @typedef {import("../../../application/auth/AuthenticateUser.js").AuthenticateUser} AuthenticateUser
+ * @typedef {import("../../../application/ports/session/SessionServicePort.js").SessionServicePort} SessionServicePort
+ * @typedef {import("../../../shared/config/appConfig.js").CookieConfig} CookieConfig
  */
 
 /**
- * @param {Deps} deps
- */
+   * @param {Object} params
+   * @param {AuthenticateUser} params.authenticateUserUseCase
+   * @param {SessionServicePort} params.sessionServicePort
+   * @param {CookieConfig} params.config
+   */
 export function createAuthController({
   authenticateUserUseCase,
   sessionServicePort,
+  config,
 }) {
   return {
     /**
@@ -47,13 +51,11 @@ export function createAuthController({
           },
         });
 
-        const cookieName = process.env.SESSION_COOKIE_NAME ?? "sid";
-
-        res.cookie(cookieName, result.sessionId, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-          path: "/",
+        res.cookie(config.name, result.sessionId, {
+          httpOnly: config.httpOnly,
+          sameSite: config.sameSite,
+          secure: config.secure,
+          path: config.path,
         });
 
         const { sessionId, ...payload } = result;
@@ -73,18 +75,18 @@ export function createAuthController({
      */
     async logout(req, res, next) {
       try {
-        const cookieName = process.env.SESSION_COOKIE_NAME ?? "sid";
+        const cookieName = config.name;
         const sid = req.cookies?.[cookieName];
 
         if (sid) {
           await sessionServicePort.destroySession({ sessionId: sid });
         }
 
-        res.clearCookie(cookieName, {
-          httpOnly: true,
-          sameSite: "lax",
-          secure: process.env.NODE_ENV === "production",
-          path: "/",
+        res.clearCookie(config.name, {
+          httpOnly: config.httpOnly,
+          sameSite: config.sameSite,
+          secure: config.secure,
+          path: config.path,
         });
 
         res.status(200).json({

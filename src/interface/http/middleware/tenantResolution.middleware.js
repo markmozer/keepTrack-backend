@@ -2,21 +2,24 @@
  * File: src/interface/http/middleware/tenantResolution.middleware.js
  */
 
-import { resolveTenantSlug } from "../utils/resolveTenantSlug.js";
 import {
   BadRequestError,
   ResourceNotFoundError,
 } from "../../../domain/shared/errors/index.js";
+import { resolveTenantSlugFromRequest } from "./resolveTenantSlugFromRequest.js";
 
 /**
  * @typedef {import("../../../application/ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
+ * @typedef {import("../../../shared/config/appConfig.js").AppConfig} AppConfig
  */
 
 /**
- * @param {{ tenantRepository: TenantRepositoryPort }} deps
+ * @param {Object} deps
+ * @param {AppConfig} deps.appConfig
+ * @param {TenantRepositoryPort} deps.tenantRepository
  * @returns {import("express").RequestHandler}
  */
-export function createTenantResolutionMiddleware({ tenantRepository }) {
+export function createTenantResolutionMiddleware({ appConfig, tenantRepository }) {
   /**
    * @param {import("../http.types.js").RequestWithContext} req
    * @param {import("express").Response} res
@@ -24,7 +27,7 @@ export function createTenantResolutionMiddleware({ tenantRepository }) {
    */
   return async function tenantResolutionMiddleware(req, res, next) {
     try {
-      const slug = resolveTenantSlug(req);
+      const slug = resolveTenantSlugFromRequest(req, appConfig);
 
       if (!slug) {
         throw new BadRequestError(

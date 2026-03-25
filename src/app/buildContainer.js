@@ -2,7 +2,8 @@
  * File: src/app/buildContainer.js
  */
 
-import { getPrisma } from "../infrastructure/persistence/prisma/prismaClient.js";
+import { loadAppConfig } from "../shared/config/appConfig.js";
+import { createPrisma } from "../infrastructure/persistence/prisma/prismaClient.js";
 import { RedisClient } from "../infrastructure/services/redis/RedisClient.js";
 import { SessionStoreRedis } from "../infrastructure/services/session/SessionStoreRedis.js";
 import { SessionServiceRedis } from "../infrastructure/services/session/SessionServiceRedis.js";
@@ -19,6 +20,7 @@ import { TokenServiceCrypto } from "../infrastructure/services/security/TokenSer
 import { PasswordHasherBcrypt } from "../infrastructure/services/security/PasswordHasherBcrypt.js";
 import { EmailServiceMock } from "../infrastructure/services/email/EmailServiceMock.js";
 import { EmailServiceMicrosoftGraph } from "../infrastructure/services/email/EmailServiceMicrosoftGraph.js";
+import { TenantInviteLinkBuilder } from "../infrastructure/services/url/TenantInviteLinkBuilder.js";
 
 // Use-Cases
 import { ProvisionBaseTenant } from "../application/provisioning/ProvisionBaseTenant.js";
@@ -34,30 +36,59 @@ import { AuthorizeAction } from "../application/authz/AuthorizeAction.js";
 import { RolePolicy } from "../domain/authz/RolePolicy.js";
 import { permissionsByRole } from "../domain/authz/permissionsByRole.js";
 
-/**
- * @param {string | undefined} value
- * @param {string} name
- * @returns {string}
- */
-function requireEnv(value, name) {
-  if (!value) {
-    throw new Error(`Missing required env var: ${name}`);
-  }
-  return value;
-}
-
 export function buildContainer() {
+  const appConfig = loadAppConfig();
+
   // --- Infrastructure ---
-  const prisma = getPrisma();
-  const redisClient = new RedisClient();
-  const sessionStore = new SessionStoreRedis(
-    { redisClient: redisClient.client },
-    {
-      prefix:
-        requireEnv(process.env.SESSION_KEY_PREFIX, "SESSION_KEY_PREFIX") ??
-        "sess:",
-    },
-  );
+  const prisma = createPrisma({
+    config: appConfig.database,
+  });
+
+  const redisClient = new RedisClient({
+    config: appConfig.session,
+  });
+
+  const sessionStore = new SessionStoreRedis({
+    redisClient: redisClient.client,
+    config: appConfig.session,
+  });
+
+  const sessionService = new SessionServiceRedis({
+    sessionStore,
+    config: appConfig.session,
+  });
+
+  const clockService = new SystemClock();
+  const tokenService = new TokenServiceCrypto();
+  const passwordService = new PasswordHasherBcrypt();
+
+  let emailService;
+
+  switch (appConfig.email.provider) {
+    case "mock":
+      emailService = new EmailServiceMock();
+      break;
+
+    case "msgraph": {
+      const msgraph = appConfig.email.msgraph;
+      if (!msgraph) {
+        throw new Error("Missing msgraph config.");
+      }
+
+      emailService = new EmailServiceMicrosoftGraph({
+        config: msgraph,
+      });
+      break;
+    }
+    default:
+      throw new Error(
+        `Unsupported email provider: ${appConfig.email.provider}`,
+      );
+  }
+
+  const inviteLinkBuilder = new TenantInviteLinkBuilder({
+    config: appConfig.frontend,
+  });
 
   // --- Repositories ---
   const tenantRepository = new TenantRepositoryPrisma({ prisma });
@@ -72,46 +103,16 @@ export function buildContainer() {
     userRoleRepository,
   };
 
-  // --- Services ---
-
-  const ttlSeconds = Number(process.env.SESSION_TTL_SECONDS ?? 60 * 60 * 24); // 24h
-  const sessionService = new SessionServiceRedis(
-    { sessionStore },
-    { ttlSeconds },
-  );
-
-  const clockService = new SystemClock();
-  const tokenService = new TokenServiceCrypto();
-  const passwordService = new PasswordHasherBcrypt();
-
-  let emailService;
-  if (requireEnv(process.env.EMAIL_PROVIDER, "EMAIL_PROVIDER") === "mock") {
-    emailService = new EmailServiceMock();
-  } else {
-    emailService = new EmailServiceMicrosoftGraph({
-      tenantId: requireEnv(process.env.MSAL_TENANT_ID, "MSAL_TENANT_ID"),
-      clientId: requireEnv(process.env.MSAL_CLIENT_ID, "MSAL_CLIENT_ID"),
-      clientSecret: requireEnv(
-        process.env.MSAL_CLIENT_SECRET,
-        "MSAL_CLIENT_SECRET",
-      ),
-      fromEmail: requireEnv(
-        process.env.USER_PRINCIPAL_NAME,
-        "USER_PRINCIPAL_NAME",
-      ),
-    });
-  }
-
   const services = {
     sessionService,
     clockService,
     tokenService,
     passwordService,
     emailService,
+    inviteLinkBuilder,
   };
 
   // --- Use cases ---
-  const appBaseUrl = requireEnv(process.env.APP_BASE_URL, "APP_BASE_URL");
   const inviteTtlDays = 14;
   const policy = new RolePolicy({ permissionsByRole });
 
@@ -161,8 +162,9 @@ export function buildContainer() {
     tokenService,
     emailService,
     clockService,
-    config: { inviteTtlDays, appBaseUrl },
+    inviteLinkBuilder,
     authorizeAction,
+    config: appConfig.auth,
   });
   const acceptInvite = new AcceptInvite({
     userRepository,
@@ -190,9 +192,11 @@ export function buildContainer() {
   // --- Other ---
   async function shutdown() {
     await prisma.$disconnect();
+    await redisClient.client.quit();
   }
 
   return {
+    appConfig,
     prisma,
     repositories,
     services,

@@ -4,21 +4,26 @@
 
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { getPgPool } from "./pgPool.js";
-
-/** @type {(import("@prisma/client").PrismaClient)} prisma  */
-let prisma;
+import pg from "pg";
 
 /**
- * Singleton PrismaClient (using PrismaPg adapter)
+ * @typedef {import("../../../shared/config/appConfig.js").DatabaseConfig} DatabaseConfig
  */
-export function getPrisma() {
-  if (prisma) return prisma;
 
-  const pool = getPgPool();
+/**
+ * @param {Object} params
+ * @param {DatabaseConfig} params.config
+ */
+export function createPrisma({ config }) {
+  if (!config?.url) {
+    throw new Error("Missing database url");
+  }
+
+  const pool = new pg.Pool({
+    connectionString: config.url,
+  });
+
   const adapter = new PrismaPg(pool);
 
-  prisma = new PrismaClient({ adapter });
-
-  return prisma;
+  return new PrismaClient({ adapter });
 }

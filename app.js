@@ -3,13 +3,21 @@
  */
 import "dotenv/config";
 import { createApp } from "./src/app/createApp.js";
+import { getEnv } from "./src/shared/config/env.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT ?? 3000);
+
+if (Number.isNaN(PORT)) {
+  throw new Error("PORT must be a valid number.");
+}
+
+const nodeEnv = getEnv("NODE_ENV", "development");
+
 const { app, shutdown } = createApp();
 
 let server = null;
 
-if (process.env.NODE_ENV !== "test") {
+if (nodeEnv !== "test") {
   server = app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });

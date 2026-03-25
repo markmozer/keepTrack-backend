@@ -3,9 +3,20 @@
  */
 import Redis from "ioredis";
 
+/**
+ * @typedef {import("../../../shared/config/appConfig.js").SessionConfig} SessionConfig
+ */
+
 export class RedisClient {
-  constructor({ url = process.env.REDIS_URL } = {}) {
-    if (!url) throw new Error("REDIS_URL is not set");
-    this.client = new Redis(url);
+  /**
+   * @param {Object} params
+   * @param {SessionConfig} params.config
+   */
+  constructor({ config }) {
+    if (!config?.redisUrl) {
+      throw new Error("RedisClient requires redisUrl");
+    }
+
+    this.client = new Redis(config.redisUrl);
   }
 }

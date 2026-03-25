@@ -2,7 +2,6 @@
  * File: src/infrastructure/services/email/EmailServiceMicrosoftGraph.js
  */
 
-
 import { Client } from "@microsoft/microsoft-graph-client";
 import { ClientSecretCredential } from "@azure/identity";
 // import "isomorphic-fetch"; // soms nodig afhankelijk van je setup
@@ -10,11 +9,7 @@ import { ClientSecretCredential } from "@azure/identity";
 import { buildInviteUserEmail } from "./templates/inviteUserEmail.js";
 
 /**
- * @typedef {Object} EmailServiceMicrosoftGraphConfig
- * @property {string} tenantId
- * @property {string} clientId
- * @property {string} clientSecret
- * @property {string} fromEmail
+ * @typedef {import("../../../shared/config/appConfig.js").MsGraphEmailConfig} MsGraphEmailConfig
  */
 
 /**
@@ -32,33 +27,53 @@ function asErrorInfo(err) {
 
 export class EmailServiceMicrosoftGraph {
   /**
-   * @param {EmailServiceMicrosoftGraphConfig} config
+   * @param {Object} params
+   * @param {MsGraphEmailConfig} params.config
    */
-  constructor({ tenantId, clientId, clientSecret, fromEmail }) {
-    if (!tenantId || !clientId || !clientSecret || !fromEmail) {
-      throw new Error("EmailServiceMicrosoftGraph: missing required config");
+  constructor({ config }) {
+    if (
+      !config ||
+      !config.tenantId ||
+      !config.clientId ||
+      !config.clientSecret ||
+      !config.userPrincipalName
+    ) {
+      throw new Error("Invalid MS Graph config");
     }
 
-    this.fromEmail = fromEmail;
+    this.userPrincipalName = config.userPrincipalName;
 
-    const credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+    const credential = new ClientSecretCredential(
+      config.tenantId,
+      config.clientId,
+      config.clientSecret,
+    );
 
     this.graphClient = Client.initWithMiddleware({
       authProvider: {
         getAccessToken: async () => {
-          const tokenResponse = await credential.getToken("https://graph.microsoft.com/.default");
+          const tokenResponse = await credential.getToken(
+            "https://graph.microsoft.com/.default",
+          );
+
+          if (!tokenResponse?.token) {
+            throw new Error("Failed to acquire access token");
+          }
           return tokenResponse.token;
         },
       },
     });
   }
 
-/**
-   * @param {import("../../application/ports/email/EmailServicePort.js").SendInviteUserEmailInput} params
+  /**
+   * @param {import("../../../application/ports/email/EmailServicePort.js").SendInviteUserEmailInput} params
    * @returns {Promise<void>}
    */
   async sendInviteUserEmail({ to, link, expiresAt }) {
-    const { subject, contentType, content } = buildInviteUserEmail({ link, expiresAt });
+    const { subject, contentType, content } = buildInviteUserEmail({
+      link,
+      expiresAt,
+    });
 
     const mail = {
       message: {
@@ -73,18 +88,20 @@ export class EmailServiceMicrosoftGraph {
     };
 
     try {
-      await this.graphClient.api(`/users/${this.fromEmail}/sendMail`).post(mail);
+      await this.graphClient
+        .api(`/users/${this.userPrincipalName}/sendMail`)
+        .post(mail);
     } catch (error) {
-  const info = asErrorInfo(error);
+      const info = asErrorInfo(error);
 
-  console.error("EmailServiceMicrosoftGraph: sendInviteUserEmail failed", {
-    to,
-    code: info.code,
-    message: info.message,
-    statusCode: info.statusCode ?? info.status,
-  });
+      console.error("EmailServiceMicrosoftGraph: sendInviteUserEmail failed", {
+        to,
+        code: info.code,
+        message: info.message,
+        statusCode: info.statusCode ?? info.status,
+      });
 
-  throw new Error("Email send failed");
-}
+      throw new Error("Email send failed");
+    }
   }
 }

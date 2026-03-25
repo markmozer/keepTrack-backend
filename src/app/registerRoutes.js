@@ -53,6 +53,7 @@ export function registerRoutes(app, container, { tenantResolutionMiddleware }) {
   const authController = createAuthController({
     authenticateUserUseCase: container.useCases.authenticateUser,
     sessionServicePort: container.services.sessionService,
+    config: container.appConfig.cookie,
   })
 
   // --- Routers (Interface/http) ---

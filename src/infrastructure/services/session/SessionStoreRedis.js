@@ -3,20 +3,19 @@
  */
 
 /**
- * @typedef {Object} SessionStoreRedisDeps
- * @property {import("ioredis").Redis} redisClient
+ * @typedef {import("../../../application/ports/session/session.types.js").SessionData} SessionData
  */
 
+
 export class SessionStoreRedis {
-  #client;
-  #prefix;
   /**
-   * @param {SessionStoreRedisDeps} deps
-   * @param {{ prefix?: string }} [options]
+   * @param {Object} params
+   * @param {import("ioredis").Redis} params.redisClient
+   * @param {import("../../../shared/config/appConfig.js").SessionConfig} params.config
    */
-  constructor({ redisClient }, { prefix = "sess:" } = {}) {
-    this.#client = redisClient;
-    this.#prefix = prefix;
+  constructor({ redisClient, config }) {
+    this.redis = redisClient;
+    this.prefix = config.keyPrefix;
   }
 
   /**
@@ -25,7 +24,7 @@ export class SessionStoreRedis {
    * @returns {string}
    */
   #key(sessionId) {
-    return `${this.#prefix}${sessionId}`;
+    return `${this.prefix}${sessionId}`;
   }
 
   /**
@@ -39,7 +38,7 @@ export class SessionStoreRedis {
     if (!Number.isInteger(ttlSeconds) || ttlSeconds <= 0) {
       throw new Error("ttlSeconds must be a positive integer");
     }
-    await this.#client.set(
+    await this.redis.set(
       this.#key(sessionId),
       JSON.stringify(data),
       "EX",
@@ -50,10 +49,10 @@ export class SessionStoreRedis {
   /**
    *
    * @param {string} sessionId
-   * @returns {Promise<Record<string, any>|null>}
+   * @returns {Promise<SessionData|null>}
    */
   async get(sessionId) {
-    const value = await this.#client.get(this.#key(sessionId));
+    const value = await this.redis.get(this.#key(sessionId));
     return value ? JSON.parse(value) : null;
   }
 
@@ -62,15 +61,15 @@ export class SessionStoreRedis {
    * @param {string} sessionId
    */
   async del(sessionId) {
-    await this.#client.del(this.#key(sessionId));
+    await this.redis.del(this.#key(sessionId));
   }
 
   /** 👇 alleen voor tests / tooling */
   async deleteByPrefix() {
-    const keys = await this.#client.keys(`${this.#prefix}*`);
+    const keys = await this.redis.keys(`${this.prefix}*`);
     if (keys.length > 0) {
-      await this.#client.del(keys);
+      await this.redis.del(keys);
     }
   }
 }
-0;
+

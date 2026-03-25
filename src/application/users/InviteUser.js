@@ -8,6 +8,7 @@ import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleReposit
 import { assertTokenServicePort } from "../ports/security/TokenServicePort.js";
 import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
+import { assertInviteLinkBuilderPort } from "../ports/urls/InviteLinkBuilderPort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
@@ -17,7 +18,6 @@ import {
   ResourceNotFoundError,
   ValidationError,
 } from "../../domain/shared/errors/index.js";
-
 
 import { UserStatus } from "../../domain/users/UserStatus.js";
 import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
@@ -36,13 +36,13 @@ import { toUserDtoPublic } from "./user.mappers.js";
  * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
  * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
  * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
+ * @typedef {import("../ports/urls/InviteLinkBuilderPort.js").InviteLinkBuilderPort} InviteLinkBuilderPort
  * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
  */
 
 /**
  * @typedef {Object} Config
  * @property {number} inviteTtlDays
- * @property {string} appBaseUrl
  */
 
 export class InviteUser {
@@ -54,8 +54,9 @@ export class InviteUser {
    * tokenService: TokenServicePort,
    * emailService: EmailServicePort,
    * clockService: ClockServicePort,
-   * config: Config
-   * authorizeAction: AuthorizeAction }} deps
+   * inviteLinkBuilder: InviteLinkBuilderPort,
+   * authorizeAction: AuthorizeAction,
+   * config: Config }} deps
    */
   constructor({
     tenantRepository,
@@ -64,8 +65,9 @@ export class InviteUser {
     tokenService,
     emailService,
     clockService,
-    config,
+    inviteLinkBuilder,
     authorizeAction,
+    config,
   }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
@@ -73,14 +75,16 @@ export class InviteUser {
     assertTokenServicePort(tokenService);
     assertEmailServicePort(emailService);
     assertClockServicePort(clockService);
+    assertInviteLinkBuilderPort(inviteLinkBuilder);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
     this.userRoleRepository = userRoleRepository;
     this.tokenService = tokenService;
     this.emailService = emailService;
     this.clockService = clockService;
-    this.config = config;
+    this.inviteLinkBuilder = inviteLinkBuilder;
     this.authorizeAction = authorizeAction;
+    this.config = config;
   }
 
   /**
@@ -89,28 +93,22 @@ export class InviteUser {
    * @returns {Promise<UserDtoPublic>}
    */
   async execute(input) {
-
     const obj = v.object(input, "InviteUser input");
 
     const principal = validatePrincipal(obj.principal);
-    
+
     this.authorizeAction.execute({
       principal,
       action: CrudAction.update,
       resource: Resource.user,
       context: { useCase: "InviteUser" },
     });
-    
-    
+
     const payload = validateInviteUserPayload(obj.payload);
 
-    const tenantId = principal.tenantId;    
-    const baseUrl = this.config?.appBaseUrl;
-    if (!baseUrl) throw new Error("InviteUser: config.appBaseUrl is required");
-    
-    const existingTenant = await this.tenantRepository.findById(
-      tenantId,
-    );
+    const tenantId = principal.tenantId;
+
+    const existingTenant = await this.tenantRepository.findById(tenantId);
     if (!existingTenant) {
       throw new ResourceNotFoundError("tenant", {
         tenantId,
@@ -176,12 +174,14 @@ export class InviteUser {
       );
     }
 
-    const slug = existingTenant.slug;
-    const link = `${slug}.${baseUrl}/set-password?token=${encodeURIComponent(tokenPlaintext)}`;
+    const inviteLink = this.inviteLinkBuilder.buildInviteLink({
+      slug: existingTenant.slug,
+      token: tokenPlaintext,
+    });
 
     await this.emailService.sendInviteUserEmail({
       to: updated.email,
-      link,
+      link: inviteLink,
       expiresAt: returnedExpiresAt,
     });
 
