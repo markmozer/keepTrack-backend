@@ -1,9 +1,9 @@
 /**
  * File: src/interface/cli/provisionBaseTenant.cli.js
  */
-
+import { getEnv } from "../../shared/config/env.js";
 import { buildContainer } from "../../app/buildContainer.js";
-import { createProvisioningPrincipal } from "../../application/auth/createProvisioningPrincipal.js"
+import { createProvisioningPrincipal } from "../../application/auth/createProvisioningPrincipal.js";
 
 function getArgValue(args, name) {
   const prefix = `--${name}=`;
@@ -30,7 +30,27 @@ Arguments:
 `);
 }
 
+/**
+ * @param {string} value
+ * @returns {NodeEnv}
+ */
+function parseNodeEnv(value) {
+  if (value === "test" || value === "production") {
+    return value;
+  }
+  return "development";
+}
+
 async function main() {
+  const nodeEnv = parseNodeEnv(getEnv("NODE_ENV", "development"));
+
+  if (getEnv("NODE_ENV", "development") !== "production") {
+  try {
+    await import("dotenv/config");
+  } catch (e) {
+    // dotenv niet geïnstalleerd → negeren
+  }
+}
   let shutdown;
 
   try {
@@ -43,7 +63,10 @@ async function main() {
 
     const name = requireArg(getArgValue(args, "name"), "name");
     const slug = requireArg(getArgValue(args, "slug"), "slug");
-    const adminEmail = requireArg(getArgValue(args, "adminEmail"), "adminEmail");
+    const adminEmail = requireArg(
+      getArgValue(args, "adminEmail"),
+      "adminEmail",
+    );
 
     const container = buildContainer();
     shutdown = container.shutdown;
