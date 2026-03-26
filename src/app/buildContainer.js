@@ -133,6 +133,8 @@ export function buildContainer() {
     userRoleRepository,
     tokenService,
     clockService,
+    inviteLinkBuilder,
+    emailService,
   });
 
   const authenticateUser = new AuthenticateUser({
