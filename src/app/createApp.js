@@ -5,7 +5,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import morgan from "morgan";
-import cors from "cors";
 
 // INTERFACE imports
 import { errorMiddleware } from "../interface/http/middleware/error.middleware.js";
@@ -18,8 +17,6 @@ import { asRequestWithContext } from "../interface/http/utils/asRequestWithConte
 
 import { buildContainer } from "./buildContainer.js";
 import { registerRoutes } from "./registerRoutes.js";
-
-import { requireEnv } from "../shared/config/env.js";
 
 /**
  * @returns {{ app: import("express").Express, shutdown: () => Promise<void> }}
@@ -50,6 +47,7 @@ export function createApp() {
       ),
     );
   }
+
 
   app.use(
     sessionMiddleware(container.services.sessionService, {

@@ -3,10 +3,10 @@
  */
 
 import {
-  BadRequestError,
+//  BadRequestError,
   ResourceNotFoundError,
 } from "../../../domain/shared/errors/index.js";
-import { resolveTenantSlugFromRequest } from "./resolveTenantSlugFromRequest.js";
+// import { resolveTenantSlugFromRequest } from "./resolveTenantSlugFromRequest.js";
 
 /**
  * @typedef {import("../../../application/ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
@@ -19,7 +19,10 @@ import { resolveTenantSlugFromRequest } from "./resolveTenantSlugFromRequest.js"
  * @param {TenantRepositoryPort} deps.tenantRepository
  * @returns {import("express").RequestHandler}
  */
-export function createTenantResolutionMiddleware({ appConfig, tenantRepository }) {
+export function createTenantResolutionMiddleware({
+  appConfig,
+  tenantRepository,
+}) {
   /**
    * @param {import("../http.types.js").RequestWithContext} req
    * @param {import("express").Response} res
@@ -27,28 +30,32 @@ export function createTenantResolutionMiddleware({ appConfig, tenantRepository }
    */
   return async function tenantResolutionMiddleware(req, res, next) {
     try {
-      const slug = resolveTenantSlugFromRequest(req, appConfig);
+      //const slug = resolveTenantSlugFromRequest(req, appConfig);
+      const headerSlug = req.header("X-Tenant-Slug");
+      const slug = headerSlug ? headerSlug : null
 
-      if (!slug) {
-        throw new BadRequestError(
-          `Tenant could not be resolved from host: ${req.headers.host} .`
-        );
+      // if (!slug) {
+      //   throw new BadRequestError(
+      //     `Tenant could not be resolved from host: ${req.headers.host} .`,
+      //   );
+      // }
+
+      if (slug) {
+        const tenant = await tenantRepository.findBySlug(slug);
+
+        if (!tenant) {
+          throw new ResourceNotFoundError("tenant", {
+            message: `Tenant not found for slug '${slug}'.`,
+          });
+        }
+
+        req.context ??= {};
+        req.context.tenant = {
+          id: tenant.id,
+          slug: tenant.slug,
+          name: tenant.name,
+        };
       }
-
-      const tenant = await tenantRepository.findBySlug(slug);
-
-      if (!tenant) {
-        throw new ResourceNotFoundError("tenant", {
-          message: `Tenant not found for slug '${slug}'.`,
-        });
-      }
-
-      req.context ??= {};
-      req.context.tenant = {
-        id: tenant.id,
-        slug: tenant.slug,
-        name: tenant.name,
-      };
 
       next();
     } catch (error) {

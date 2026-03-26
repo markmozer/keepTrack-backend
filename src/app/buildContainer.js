@@ -21,6 +21,8 @@ import { PasswordHasherBcrypt } from "../infrastructure/services/security/Passwo
 import { EmailServiceMock } from "../infrastructure/services/email/EmailServiceMock.js";
 import { EmailServiceMicrosoftGraph } from "../infrastructure/services/email/EmailServiceMicrosoftGraph.js";
 import { TenantInviteLinkBuilder } from "../infrastructure/services/url/TenantInviteLinkBuilder.js";
+import { DbHealthServicePrisma } from "../infrastructure/services/db/DbHealthServicePrisma.js";
+import { SessionHealthServiceRedis } from "../infrastructure/services/session/SessionHealthServiceRedis.js";
 
 // Use-Cases
 import { ProvisionBaseTenant } from "../application/provisioning/ProvisionBaseTenant.js";
@@ -35,6 +37,10 @@ import { AuthenticateUser } from "../application/auth/AuthenticateUser.js";
 import { AuthorizeAction } from "../application/authz/AuthorizeAction.js";
 import { RolePolicy } from "../domain/authz/RolePolicy.js";
 import { permissionsByRole } from "../domain/authz/permissionsByRole.js";
+import { GetAppHealth } from "../application/system/GetAppHealth.js";
+import { GetDbHealth } from "../application/system/GetDbHealth.js";
+import { GetSessionHealth } from "../application/system/GetSessionHealth.js";
+import { GetSystemHealth } from "../application/system/GetSystemHealth.js";
 
 export function buildContainer() {
   const appConfig = loadAppConfig();
@@ -90,6 +96,9 @@ export function buildContainer() {
     config: appConfig.frontend,
   });
 
+  const dbHealthService = new DbHealthServicePrisma({prismaClient: prisma});
+  const sessionHealthService = new SessionHealthServiceRedis({redisClient: redisClient.client});
+
   // --- Repositories ---
   const tenantRepository = new TenantRepositoryPrisma({ prisma });
   const roleRepository = new RoleRepositoryPrisma({ prisma });
@@ -110,10 +119,11 @@ export function buildContainer() {
     passwordService,
     emailService,
     inviteLinkBuilder,
+    dbHealthService,
+    sessionHealthService,
   };
 
   // --- Use cases ---
-  const inviteTtlDays = 14;
   const policy = new RolePolicy({ permissionsByRole });
 
   const provisionBaseTenant = new ProvisionBaseTenant({
@@ -172,6 +182,18 @@ export function buildContainer() {
     clockService,
     passwordService,
   });
+  const getAppHealth = new GetAppHealth();
+  const getDbHealth = new GetDbHealth({
+    dbHealthService,
+  });
+  const getSessionHealth = new GetSessionHealth({
+    sessionHealthService,
+  });
+  const getSystemHealth = new GetSystemHealth({
+    getAppHealth,
+    getDbHealth,
+    getSessionHealth,
+  });
 
   const useCases = {
     authenticateUser,
@@ -183,6 +205,10 @@ export function buildContainer() {
     assignRoleToUser,
     inviteUser,
     acceptInvite,
+    getAppHealth,
+    getDbHealth,
+    getSessionHealth,
+    getSystemHealth,
   };
 
   const provisioning = {

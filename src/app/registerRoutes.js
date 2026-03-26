@@ -20,6 +20,9 @@ import { createUserRolesRouter } from "../interface/http/routers/userRoles.route
 import { createAuthController } from "../interface/http/controllers/auth.controller.js";
 import { createAuthRouter } from "../interface/http/routers/auth.router.js";
 
+import { createSystemController } from "../interface/http/controllers/system.controller.js";
+import { createSystemRouter } from "../interface/http/routers/system.router.js";
+
 /**
  * @typedef {ReturnType<import("./buildContainer.js").buildContainer>} AppContainer
  */
@@ -54,7 +57,11 @@ export function registerRoutes(app, container, { tenantResolutionMiddleware }) {
     authenticateUserUseCase: container.useCases.authenticateUser,
     sessionServicePort: container.services.sessionService,
     config: container.appConfig.cookie,
-  })
+  });
+
+  const systemController = createSystemController({
+    getSystemHealthUseCase: container.useCases.getSystemHealth,
+  });
 
   // --- Routers (Interface/http) ---
   const apiRouter = express.Router();
@@ -67,6 +74,7 @@ export function registerRoutes(app, container, { tenantResolutionMiddleware }) {
   apiRouter.use("/users", createUsersRouter({ userController }));
   apiRouter.use("/users", createUserRolesRouter({ userRoleController }));
   apiRouter.use("/auth",  createAuthRouter({ authController }));
+  apiRouter.use("/system", createSystemRouter({systemController}));
 
   app.use("/api", apiRouter);
 }

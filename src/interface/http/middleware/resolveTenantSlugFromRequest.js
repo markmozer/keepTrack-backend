@@ -56,6 +56,17 @@ function extractSlugBeforeSuffix(hostname, suffix) {
  * @returns {string | null}
  */
 export function resolveTenantSlugFromRequest(req, appConfig) {
+
+  let slug=null;
+
+    // 1. Header (primary in jouw huidige setup)
+  const headerSlug = req.header("X-Tenant-Slug");
+  if (headerSlug) {
+    slug = headerSlug;
+    if (slug) return slug;
+  }
+
+
   const originHostname = tryGetHostnameFromUrl(
     typeof req.headers.origin === "string" ? req.headers.origin : undefined
   );
