@@ -3,7 +3,8 @@
  */
 
 import express from "express";
-import {requireAuth} from "../middleware/requireAuth.middleware.js"
+import {requireAuth} from "../middleware/requireAuth.middleware.js";
+import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js";
 
 /**
  * @param {{ userController: any }} deps
@@ -11,9 +12,9 @@ import {requireAuth} from "../middleware/requireAuth.middleware.js"
 export function createUsersRouter({ userController }) {
   const router = express.Router();
 
-  router.post("/", requireAuth, userController.createUser);
-  router.post("/:userId/invite", requireAuth, userController.inviteUser);
-  router.post("/accept-invite", userController.acceptInvite)
+  router.post("/",requireTenantMiddleware, requireAuth, userController.createUser);
+  router.post("/:userId/invite", requireTenantMiddleware, requireAuth, userController.inviteUser);
+  router.post("/accept-invite", requireTenantMiddleware, userController.acceptInvite)
 
   return router;
 }

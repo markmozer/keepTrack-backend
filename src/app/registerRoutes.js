@@ -30,9 +30,8 @@ import { createSystemRouter } from "../interface/http/routers/system.router.js";
 /**
  * @param {import("express").Express} app
  * @param {AppContainer} container
- * @param {{ tenantResolutionMiddleware: import("express").RequestHandler }} deps
  */
-export function registerRoutes(app, container, { tenantResolutionMiddleware }) {
+export function registerRoutes(app, container) {
   // --- Controllers (Interface/http) ---
   const tenantController = createTenantController({
     createTenantUseCase: container.useCases.createTenant,
@@ -66,8 +65,6 @@ export function registerRoutes(app, container, { tenantResolutionMiddleware }) {
   // --- Routers (Interface/http) ---
   const apiRouter = express.Router();
 
-  // Tenant resolution only for /api routes
-  apiRouter.use(tenantResolutionMiddleware);
 
   apiRouter.use("/tenants", createTenantsRouter({ tenantController }));
   apiRouter.use("/roles", createRolesRouter({ roleController }));

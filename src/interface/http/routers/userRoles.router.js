@@ -4,7 +4,8 @@
 
 
 import express from "express";
-import {requireAuth} from "../middleware/requireAuth.middleware.js"
+import {requireAuth} from "../middleware/requireAuth.middleware.js";
+import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js";
 
 /**
  * @param {{ userRoleController: any }} deps
@@ -12,7 +13,7 @@ import {requireAuth} from "../middleware/requireAuth.middleware.js"
 export function createUserRolesRouter({ userRoleController }) {
   const router = express.Router();
 
-  router.post("/:userId/roles",requireAuth, userRoleController.assignRoleToUser);
+  router.post("/:userId/roles",requireTenantMiddleware, requireAuth, userRoleController.assignRoleToUser);
 
   return router;
 }

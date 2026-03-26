@@ -47,8 +47,9 @@ export function createApp() {
       ),
     );
   }
-
-
+  
+  app.use(createTenantResolutionMiddleware({ tenantRepository: container.repositories.tenantRepository }));
+  
   app.use(
     sessionMiddleware(container.services.sessionService, {
       cookieName: appConfig.cookie.name,
@@ -59,12 +60,7 @@ export function createApp() {
 
   app.use(createCorsMiddleware(appConfig));
 
-  registerRoutes(app, container, {
-    tenantResolutionMiddleware: createTenantResolutionMiddleware({
-      tenantRepository: container.repositories.tenantRepository,
-      appConfig: appConfig,
-    }),
-  });
+  registerRoutes(app, container);
 
   // 404 + error middleware
   app.use(notFoundMiddleware);
