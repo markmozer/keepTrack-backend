@@ -12,6 +12,7 @@
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  * @typedef {import("./user.types.js").FindUsersByRoleIdRepoInput} FindUserByRoleIdRepoInput
+ * @typedef {import("./user.types.js").MarkAsPwdResetRequestedRepoInput} MarkAsPwdResetRequestedRepoInput
  * 
  * @typedef {import("../auth/auth.types.js").UserRowForAuth} UserRowForAuth
  * @typedef {import("../auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
@@ -26,6 +27,7 @@
  * @property {(InviteTokenHash: string) => Promise<UserRowPublic | null>} findByInviteTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserRowPublic>} activateFromInvite
  * @property {(input: FindUserByRoleIdRepoInput ) => Promise<UserRowPublicWithRoles[]>} findByRoleId
+ * @property {(input: MarkAsPwdResetRequestedRepoInput) => Promise<UserRowPublic>} markAsPwdResetRequested
  * 
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserRowForAuth | null>} findByEmailForAuth
 
@@ -46,11 +48,12 @@ export function assertUserRepositoryPort(repo) {
     typeof /** @type {any} */ (repo).findByInviteTokenHash !== "function" ||
     typeof /** @type {any} */ (repo).activateFromInvite !== "function" ||
     typeof /** @type {any} */ (repo).findByEmailForAuth !== "function" ||
-    typeof /** @type {any} */ (repo).findByRoleId !== "function"
+    typeof /** @type {any} */ (repo).findByRoleId !== "function" ||
+    typeof /** @type {any} */ (repo).markAsPwdResetRequested !== "function"
   ) {
     
     throw new Error(
-      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), markAsInvited(), findByInviteTokenHash(), activateFromInvite(), findByEmailForAuth() }"
+      "UserRepositoryPort not implemented: expected { findById(), findByEmail(), create(), markAsInvited(), findByInviteTokenHash(), activateFromInvite(), findByEmailForAuth(), markAsPwdResetRequested() }"
     );
   }
 }

@@ -8,7 +8,7 @@ import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleReposit
 import { assertTokenServicePort } from "../ports/security/TokenServicePort.js";
 import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
-import { assertInviteLinkBuilderPort } from "../ports/urls/InviteLinkBuilderPort.js";
+import { assertTenantLinkBuilderServicePort } from "../ports/urls/TenantLinkBuilderServicePort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
@@ -36,7 +36,7 @@ import { toUserDtoPublic } from "./user.mappers.js";
  * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
  * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
  * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
- * @typedef {import("../ports/urls/InviteLinkBuilderPort.js").InviteLinkBuilderPort} InviteLinkBuilderPort
+ * @typedef {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
  * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
  */
 
@@ -54,7 +54,7 @@ export class InviteUser {
    * tokenService: TokenServicePort,
    * emailService: EmailServicePort,
    * clockService: ClockServicePort,
-   * inviteLinkBuilder: InviteLinkBuilderPort,
+   * tenantLinkBuilderService: TenantLinkBuilderServicePort,
    * authorizeAction: AuthorizeAction,
    * config: Config }} deps
    */
@@ -65,7 +65,7 @@ export class InviteUser {
     tokenService,
     emailService,
     clockService,
-    inviteLinkBuilder,
+    tenantLinkBuilderService,
     authorizeAction,
     config,
   }) {
@@ -75,14 +75,14 @@ export class InviteUser {
     assertTokenServicePort(tokenService);
     assertEmailServicePort(emailService);
     assertClockServicePort(clockService);
-    assertInviteLinkBuilderPort(inviteLinkBuilder);
+    assertTenantLinkBuilderServicePort(tenantLinkBuilderService);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
     this.userRoleRepository = userRoleRepository;
     this.tokenService = tokenService;
     this.emailService = emailService;
     this.clockService = clockService;
-    this.inviteLinkBuilder = inviteLinkBuilder;
+    this.tenantLinkBuilderService = tenantLinkBuilderService;
     this.authorizeAction = authorizeAction;
     this.config = config;
   }
@@ -156,6 +156,7 @@ export class InviteUser {
     const { tokenPlaintext, tokenHash } = this.tokenService.generate();
     const ttlDays = this.config?.inviteTtlDays ?? 14;
     const expiresAt = this.clockService.addDays(now, ttlDays);
+    const validityPeriod = `${ttlDays} days`;
 
     const updated = await this.userRepository.markAsInvited({
       userId: payload.targetUserId,
@@ -174,7 +175,7 @@ export class InviteUser {
       );
     }
 
-    const inviteLink = this.inviteLinkBuilder.buildInviteLink({
+    const inviteLink = this.tenantLinkBuilderService.buildInviteLink({
       slug: existingTenant.slug,
       token: tokenPlaintext,
     });
@@ -183,6 +184,7 @@ export class InviteUser {
       to: updated.email,
       link: inviteLink,
       expiresAt: returnedExpiresAt,
+      validityPeriod,
     });
 
     return toUserDtoPublic(updated);

@@ -20,7 +20,7 @@ import { TokenServiceCrypto } from "../infrastructure/services/security/TokenSer
 import { PasswordHasherBcrypt } from "../infrastructure/services/security/PasswordHasherBcrypt.js";
 import { EmailServiceMock } from "../infrastructure/services/email/EmailServiceMock.js";
 import { EmailServiceMicrosoftGraph } from "../infrastructure/services/email/EmailServiceMicrosoftGraph.js";
-import { TenantInviteLinkBuilder } from "../infrastructure/services/url/TenantInviteLinkBuilder.js";
+import { TenantLinkBuilderService } from "../infrastructure/services/url/TenantLinkBuilderService.js";
 import { DbHealthServicePrisma } from "../infrastructure/services/db/DbHealthServicePrisma.js";
 import { SessionHealthServiceRedis } from "../infrastructure/services/session/SessionHealthServiceRedis.js";
 
@@ -33,6 +33,7 @@ import { CreateUser } from "../application/users/CreateUser.js";
 import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
 import { InviteUser } from "../application/users/InviteUser.js";
 import { AcceptInvite } from "../application/users/AcceptInvite.js";
+import { RequestPasswordReset } from "../application/users/RequestPasswordReset.js";
 import { AuthenticateUser } from "../application/auth/AuthenticateUser.js";
 import { AuthorizeAction } from "../application/authz/AuthorizeAction.js";
 import { RolePolicy } from "../domain/authz/RolePolicy.js";
@@ -92,7 +93,7 @@ export function buildContainer() {
       );
   }
 
-  const inviteLinkBuilder = new TenantInviteLinkBuilder({
+  const tenantLinkBuilderService = new TenantLinkBuilderService({
     config: appConfig.frontend,
   });
 
@@ -118,7 +119,7 @@ export function buildContainer() {
     tokenService,
     passwordService,
     emailService,
-    inviteLinkBuilder,
+    tenantLinkBuilderService,
     dbHealthService,
     sessionHealthService,
   };
@@ -133,7 +134,7 @@ export function buildContainer() {
     userRoleRepository,
     tokenService,
     clockService,
-    inviteLinkBuilder,
+    tenantLinkBuilderService,
     emailService,
   });
 
@@ -174,7 +175,7 @@ export function buildContainer() {
     tokenService,
     emailService,
     clockService,
-    inviteLinkBuilder,
+    tenantLinkBuilderService,
     authorizeAction,
     config: appConfig.auth,
   });
@@ -183,6 +184,16 @@ export function buildContainer() {
     tokenService,
     clockService,
     passwordService,
+  });
+  const requestPasswordReset = new RequestPasswordReset({
+    tenantRepository,
+    userRepository,
+    userRoleRepository,
+    tokenService,
+    emailService,
+    clockService,
+    tenantLinkBuilderService,
+    config: appConfig.auth,
   });
   const getAppHealth = new GetAppHealth();
   const getDbHealth = new GetDbHealth({
@@ -207,6 +218,7 @@ export function buildContainer() {
     assignRoleToUser,
     inviteUser,
     acceptInvite,
+    requestPasswordReset,
     getAppHealth,
     getDbHealth,
     getSessionHealth,

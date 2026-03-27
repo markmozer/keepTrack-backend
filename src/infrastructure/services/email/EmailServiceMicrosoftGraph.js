@@ -7,6 +7,8 @@ import { ClientSecretCredential } from "@azure/identity";
 // import "isomorphic-fetch"; // soms nodig afhankelijk van je setup
 
 import { buildInviteUserEmail } from "./templates/inviteUserEmail.js";
+import { buildPasswordResetEmail } from "./templates/passwordResetEmail.js";
+
 
 /**
  * @typedef {import("../../../shared/config/appConfig.js").MsGraphEmailConfig} MsGraphEmailConfig
@@ -69,10 +71,11 @@ export class EmailServiceMicrosoftGraph {
    * @param {import("../../../application/ports/email/EmailServicePort.js").SendInviteUserEmailInput} params
    * @returns {Promise<void>}
    */
-  async sendInviteUserEmail({ to, link, expiresAt }) {
+  async sendInviteUserEmail({ to, link, expiresAt, validityPeriod }) {
     const { subject, contentType, content } = buildInviteUserEmail({
       link,
       expiresAt,
+      validityPeriod,
     });
 
     const mail = {
@@ -95,6 +98,47 @@ export class EmailServiceMicrosoftGraph {
       const info = asErrorInfo(error);
 
       console.error("EmailServiceMicrosoftGraph: sendInviteUserEmail failed", {
+        to,
+        code: info.code,
+        message: info.message,
+        statusCode: info.statusCode ?? info.status,
+      });
+
+      throw new Error("Email send failed");
+    }
+  }
+
+    /**
+   * @param {import("../../../application/ports/email/EmailServicePort.js").SendInviteUserEmailInput} params
+   * @returns {Promise<void>}
+   */
+  async sendPasswordResetEmail({ to, link, expiresAt, validityPeriod }) {
+    const { subject, contentType, content } = buildPasswordResetEmail({
+      link,
+      expiresAt,
+      validityPeriod,
+    });
+
+    const mail = {
+      message: {
+        subject,
+        body: {
+          contentType, // "Text" or "HTML"
+          content,
+        },
+        toRecipients: [{ emailAddress: { address: to } }],
+      },
+      saveToSentItems: true,
+    };
+
+    try {
+      await this.graphClient
+        .api(`/users/${this.userPrincipalName}/sendMail`)
+        .post(mail);
+    } catch (error) {
+      const info = asErrorInfo(error);
+
+      console.error("EmailServiceMicrosoftGraph: sendPasswordResetEmail failed", {
         to,
         code: info.code,
         message: info.message,

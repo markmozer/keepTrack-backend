@@ -46,6 +46,7 @@ export function registerRoutes(app, container) {
     createUserUseCase: container.useCases.createUser,
     inviteUserUseCase: container.useCases.inviteUser,
     acceptInviteUseCase: container.useCases.acceptInvite,
+    requestPasswordResetUseCase: container.useCases.requestPasswordReset,
   });
 
   const userRoleController = createUserRoleController({

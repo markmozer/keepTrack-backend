@@ -76,6 +76,8 @@ model User {
   passwordHash                          String?
   inviteTokenHash                       String?
   inviteTokenExpiresAt                  DateTime?
+  resetTokenHash                        String?
+  resetTokenExpiresAt                   DateTime?  
   status                                UserStatus                              @default(NEW)
 
   createdAt                             DateTime                                @default(now())

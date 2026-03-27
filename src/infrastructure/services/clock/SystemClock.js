@@ -7,12 +7,12 @@ export class SystemClock {
     return new Date();
   }
 
-    /**
-     * 
-     * @param {any} date 
-     * @param {any} days 
-     * @returns Date
-     */
+  /**
+   *
+   * @param {any} date
+   * @param {any} days
+   * @returns Date
+   */
   addDays(date, days) {
     if (!(date instanceof Date) || Number.isNaN(date.valueOf())) {
       throw new Error("SystemClock.addDays: invalid date");
@@ -24,5 +24,22 @@ export class SystemClock {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
     return d;
+  }
+  /**
+   *
+   * @param {any} date
+   * @param {any} minutes
+   * @returns Date
+   */
+  addMinutes(date, minutes) {
+    if (!(date instanceof Date) || Number.isNaN(date.valueOf())) {
+      throw new Error("SystemClock.addMinutes: invalid date");
+    }
+
+    if (!Number.isInteger(minutes)) {
+      throw new Error("SystemClock.addMinutes: minutes must be an integer");
+    }
+
+    return new Date(date.getTime() + minutes * 60_000);
   }
 }

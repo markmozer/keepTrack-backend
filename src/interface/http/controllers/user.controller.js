@@ -11,6 +11,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @property {import("../../../application/users/CreateUser.js").CreateUser} createUserUseCase
  * @property {import("../../../application/users/InviteUser.js").InviteUser} inviteUserUseCase
  * @property {import("../../../application/users/AcceptInvite.js").AcceptInvite} acceptInviteUseCase
+ * @property {import("../../../application/users/RequestPasswordReset.js").RequestPasswordReset} requestPasswordResetUseCase
  */
 
 /**
@@ -20,6 +21,7 @@ export function createUserController({
   createUserUseCase,
   inviteUserUseCase,
   acceptInviteUseCase,
+  requestPasswordResetUseCase,
 }) {
   return {
     /**
@@ -85,6 +87,31 @@ export function createUserController({
           payload: {
             tokenPlain: body.token,
             passwordPlain: body.password,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+        return;
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * POST /api/users/accept-invite
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async requestPasswordReset(req, res, next) {
+      try {
+        const reqWithContext = asRequestWithContext(req);
+        const body = v.object(reqWithContext.body, "body");
+
+        const result = await requestPasswordResetUseCase.execute({
+          principal: null,
+          payload: {
+            tenantId: reqWithContext.context?.tenant?.id,
+            email: body.email,
           },
         });
 

@@ -17,6 +17,7 @@
  * @property {string} id
  * @property {string} email
  * @property {Date | null} inviteTokenExpiresAt
+ * @property {Date | null} resetTokenExpiresAt
  * @property {UserStatus} status
  * @property {Date} createdAt
  * @property {Date} updatedAt
@@ -46,6 +47,7 @@
  * @property {string} id
  * @property {string} email
  * @property {Date | null} inviteTokenExpiresAt
+ * @property {Date | null} resetTokenExpiresAt
  * @property {UserStatus} status
  * @property {Date} createdAt
  * @property {Date} updatedAt
@@ -63,6 +65,7 @@
  * @property {string} tenantId
  * @property {string} email
  * @property {string | null} inviteTokenExpiresAt
+ * @property {string | null} resetTokenExpiresAt
  * @property {UserStatus} status
  */
 
@@ -83,6 +86,7 @@
  * @property {string} id
  * @property {string} email
  * @property {string | null} inviteTokenExpiresAt
+ * @property {string | null} resetTokenExpiresAt
  * @property {UserStatus} status
  * @property {string} createdAt
  * @property {string} updatedAt
@@ -171,6 +175,30 @@
  * @property {Date} updatedAt
  */
 
+// --- RequestPasswordReset ---
+/**
+ * UCPayload
+ * @typedef {Object} RequestPasswordResetUCPayload
+ * @property {unknown} email
+ * @property {unknown} tenantId
+ */
+
+/**
+ * UCInput
+ * @typedef {Object} RequestPasswordResetUCInput
+ * @property {null} principal
+ * @property {RequestPasswordResetUCPayload} payload
+ */
+
+/**
+ * RepoInput
+ * @typedef {Object} MarkAsPwdResetRequestedRepoInput
+ * @property {string} tenantId 
+ * @property {string} userId
+ * @property {string} resetTokenHash
+ * @property {Date} resetTokenExpiresAt
+ * @property {Date} updatedAt
+ */
 
 // =====================================================
 // repo only types

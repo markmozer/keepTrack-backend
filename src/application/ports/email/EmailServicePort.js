@@ -6,11 +6,20 @@
  * @property {string} to
  * @property {string} link
  * @property {Date} expiresAt
+ * @property {string} validityPeriod
+ */
+/**
+ * @typedef {Object} SendPasswordResetEmailInput
+ * @property {string} to
+ * @property {string} link
+ * @property {Date} expiresAt
+ * @property {string} validityPeriod
  */
 
 /**
  * @typedef {Object} EmailServicePort
  * @property {(input: SendInviteUserEmailInput) => Promise<void>} sendInviteUserEmail
+ * @property {(input: SendPasswordResetEmailInput) => Promise<void>} sendPasswordResetEmail
  */
 
 /**
@@ -25,10 +34,11 @@ export function assertEmailServicePort(svc) {
   if (
     !svc ||
     typeof svc !== "object" ||
-    typeof anySvc.sendInviteUserEmail !== "function"
+    typeof anySvc.sendInviteUserEmail !== "function" ||
+    typeof anySvc.sendPasswordResetEmail !== "function"
   ) {
     throw new Error(
-      "EmailServicePort not implemented: expected { sendInviteUserEmail() }",
+      "EmailServicePort not implemented: expected { sendInviteUserEmail(), sendPasswordResetEmail() }",
     );
   }
 }

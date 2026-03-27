@@ -2,8 +2,6 @@
  * File: src/infrastructure/services/clock/FixedClock.js
  */
 
-
-
 export class FixedClock {
   /**
    * @param {Date} fixedDate
@@ -16,7 +14,7 @@ export class FixedClock {
   }
 
   /**
-   * 
+   *
    * @returns Date
    */
   now() {
@@ -25,14 +23,26 @@ export class FixedClock {
   }
 
   /**
-   * 
-   * @param {Date} date 
-   * @param {number} days 
+   *
+   * @param {Date} date
+   * @param {number} days
    * @returns Date
    */
   addDays(date, days) {
     const d = new Date(date);
     d.setDate(d.getDate() + days);
+    return d;
+  }
+
+  /**
+   *
+   * @param {any} date
+   * @param {any} minutes
+   * @returns Date
+   */
+  addMinutes(date, minutes) {
+    const d = new Date(date);
+    d.setDate(d.getTime() + minutes * 60000);
     return d;
   }
 }

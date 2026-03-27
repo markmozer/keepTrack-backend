@@ -14,7 +14,8 @@ export function createUsersRouter({ userController }) {
 
   router.post("/",requireTenantMiddleware, requireAuth, userController.createUser);
   router.post("/:userId/invite", requireTenantMiddleware, requireAuth, userController.inviteUser);
-  router.post("/accept-invite", requireTenantMiddleware, userController.acceptInvite)
+  router.post("/accept-invite", requireTenantMiddleware, userController.acceptInvite);
+  router.post("/request-pwd-reset", requireTenantMiddleware, userController.requestPasswordReset);
 
   return router;
 }

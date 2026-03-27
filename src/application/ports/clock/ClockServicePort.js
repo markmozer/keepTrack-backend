@@ -6,6 +6,7 @@
  * @typedef {Object} ClockServicePort
  * @property {() => Date} now
  * @property {(date: Date, days: number) => Date} addDays
+ * @property {(date: Date, minutes: number) => Date} addMinutes
  */
 
 /**
@@ -21,10 +22,11 @@ export function assertClockServicePort(svc) {
     !svc ||
     typeof svc !== "object" ||
     typeof anySvc.now !== "function" ||
-    typeof anySvc.addDays !== "function"
+    typeof anySvc.addDays !== "function" ||
+    typeof anySvc.addMinutes !== "function"
   ) {
     throw new Error(
-      "ClockServicePort not implemented: expected { now(), addDays(date, days) }"
+      "ClockServicePort not implemented: expected { now(), addDays(date, days), addMinutes(date, minutes) }"
     );
   }
 }

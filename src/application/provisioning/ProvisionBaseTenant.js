@@ -10,7 +10,7 @@ import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleReposit
 import { assertTokenServicePort } from "../ports/security/TokenServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
 import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
-import { assertInviteLinkBuilderPort } from "../ports/urls/InviteLinkBuilderPort.js";
+import { assertTenantLinkBuilderServicePort } from "../ports/urls/TenantLinkBuilderServicePort.js";
 
 // imports for validation
 import { v } from "../../domain/shared/validation/validators.js";
@@ -50,7 +50,7 @@ import { randomUUID } from "node:crypto";
  * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
  * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
  * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
- * @typedef {import("../ports/urls/InviteLinkBuilderPort.js").InviteLinkBuilderPort} InviteLinkBuilderPort
+ * @typedef {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
  * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
  *
  */
@@ -102,7 +102,7 @@ export class ProvisionBaseTenant {
    * userRoleRepository: UserRoleRepositoryPort,
    * tokenService: TokenServicePort,
    * clockService: ClockServicePort,
-   * inviteLinkBuilder: InviteLinkBuilderPort,
+   * tenantLinkBuilderService: TenantLinkBuilderServicePort,
    * emailService: EmailServicePort,}} deps
    */
   constructor({
@@ -112,7 +112,7 @@ export class ProvisionBaseTenant {
     userRoleRepository,
     tokenService,
     clockService,
-    inviteLinkBuilder,
+    tenantLinkBuilderService,
     emailService,
   }) {
     assertTenantRepositoryPort(tenantRepository);
@@ -121,7 +121,7 @@ export class ProvisionBaseTenant {
     assertUserRoleRepositoryPort(userRoleRepository);
     assertTokenServicePort(tokenService);
     assertClockServicePort(clockService);
-    assertInviteLinkBuilderPort(inviteLinkBuilder);
+    assertTenantLinkBuilderServicePort(tenantLinkBuilderService);
     assertEmailServicePort(emailService);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
@@ -129,7 +129,7 @@ export class ProvisionBaseTenant {
     this.userRoleRepository = userRoleRepository;
     this.tokenService = tokenService;
     this.clockService = clockService;
-    this.inviteLinkBuilder = inviteLinkBuilder;
+    this.tenantLinkBuilderService = tenantLinkBuilderService;
     this.emailService = emailService;
   }
 
@@ -319,7 +319,7 @@ export class ProvisionBaseTenant {
       throw new Error("Invite token expiration not set correctly");
     }
 
-    const inviteLink = this.inviteLinkBuilder.buildInviteLink({
+    const inviteLink = this.tenantLinkBuilderService.buildInviteLink({
       slug,
       token: tokenPlaintext,
     });

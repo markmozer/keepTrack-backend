@@ -9,7 +9,6 @@
  * @typedef {import("../ports/users/user.types.js").UserRowPublicWithRoles} UserRowPublicWithRoles
  */
 
-
 /**
  * @param {UserRowPublic} row
  * @returns {UserDtoPublic}
@@ -19,7 +18,12 @@ export function toUserDtoPublic(row) {
     id: row.id,
     tenantId: row.tenantId,
     email: row.email,
-    inviteTokenExpiresAt: row.inviteTokenExpiresAt ? row.inviteTokenExpiresAt.toISOString() : null,
+    inviteTokenExpiresAt: row.inviteTokenExpiresAt
+      ? row.inviteTokenExpiresAt.toISOString()
+      : null,
+    resetTokenExpiresAt: row.resetTokenExpiresAt
+      ? row.resetTokenExpiresAt.toISOString()
+      : null,
     status: row.status,
   };
 }
@@ -35,6 +39,9 @@ export function toUserDtoPublicWithRoles(row) {
     email: row.email,
     inviteTokenExpiresAt: row.inviteTokenExpiresAt
       ? row.inviteTokenExpiresAt.toISOString()
+      : null,
+    resetTokenExpiresAt: row.resetTokenExpiresAt
+      ? row.resetTokenExpiresAt.toISOString()
       : null,
     status: row.status,
     createdAt: row.createdAt.toISOString(),

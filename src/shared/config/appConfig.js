@@ -67,6 +67,7 @@ import { getEnv, requireEnv } from "./env.js";
 /**
  * @typedef {Object} AuthConfig
  * @property {number} inviteTtlDays
+ * @property {number} resetTtlMinutes
  */
 
 /**
@@ -203,6 +204,7 @@ export function loadAppConfig() {
     },
     auth: {
       inviteTtlDays: 14,
+      resetTtlMinutes: 15,
     }
   };
 }

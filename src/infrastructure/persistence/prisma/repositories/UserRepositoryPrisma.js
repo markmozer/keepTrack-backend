@@ -12,6 +12,7 @@
  * @typedef {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  * @typedef {import("../../../../application/ports/users/user.types.js").FindUsersByRoleIdRepoInput } FindUserByRoleIdRepoInput
+ * @typedef {import("../../../../application/ports/users/user.types.js").MarkAsPwdResetRequestedRepoInput} MarkAsPwdResetRequestedRepoInput
  *
  * @typedef {import("../../../../application/ports/auth/auth.types.js").UserRowForAuth} UserRowForAuth
  * @typedef {import("../../../../application/ports/auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
@@ -22,6 +23,7 @@ export const userSelectPublic = {
   tenantId: true,
   email: true,
   inviteTokenExpiresAt: true,
+  resetTokenExpiresAt: true,
   status: true,
   createdAt: true,
   updatedAt: true,
@@ -201,5 +203,22 @@ async findByRoleId(input) {
     },
   });
 }
+
+/**
+   * @param {MarkAsPwdResetRequestedRepoInput} input
+   * @returns {Promise<UserRowPublic>}
+   */
+  async markAsPwdResetRequested({
+    userId,
+    resetTokenHash,
+    resetTokenExpiresAt,
+    updatedAt,
+  }) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { resetTokenHash, resetTokenExpiresAt, updatedAt },
+      select: userSelectPublic,
+    });
+  }
 }
 
