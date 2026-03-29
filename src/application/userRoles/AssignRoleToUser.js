@@ -10,9 +10,7 @@ import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
 import { validateAssignRoleToUserPayload } from "./assignRoleToUser.validation.js";
 
-import {
-  ResourceNotFoundError,
-} from "../../domain/shared/errors/index.js";
+import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
 
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
@@ -20,19 +18,15 @@ import { Resource } from "../../domain/authz/authz.types.js";
 import { randomUUID } from "node:crypto";
 import { toUserRoleDto } from "../userRoles/userRole.mappers.js";
 
-/**
- * @typedef {import("../ports/userRoles/userRole.types.js").AssignRoleToUserUCInput} AssignRoleToUserUCInput
- * @typedef {import("../ports/userRoles/userRole.types.js").AssignRoleToUserDto} AssignRoleToUserDto
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
- * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
- */
 
 export class AssignRoleToUser {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, userRepository: UserRepositoryPort, roleRepository: RoleRepositoryPort, userRoleRepository: UserRoleRepositoryPort, authorizeAction: AuthorizeAction  }} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} deps.roleRepository
+   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
+   * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
   constructor({
     tenantRepository,
@@ -53,29 +47,26 @@ export class AssignRoleToUser {
   }
 
   /**
-   * @param {AssignRoleToUserUCInput} input
-   * @returns {Promise<AssignRoleToUserDto>}
+   * @param {import("../ports/userRoles/userRole.types.js").AssignRoleToUserUCInput} input
+   * @returns {Promise<import("../ports/userRoles/userRole.types.js").AssignRoleToUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "AssignRoleToUser input");
 
     const principal = validatePrincipal(obj.principal);
-  
-      this.authorizeAction.execute({
+
+    this.authorizeAction.execute({
       principal,
       action: CrudAction.create,
       resource: Resource.roleAssignment,
       context: { useCase: "AssignRoleToUser" },
-    });  
-    
-       
+    });
+
     const payload = validateAssignRoleToUserPayload(obj.payload);
 
     const tenantId = principal.tenantId;
 
-    const existingTenant = await this.tenantRepository.findById(
-      tenantId,
-    );
+    const existingTenant = await this.tenantRepository.findById(tenantId);
     if (!existingTenant) {
       throw new ResourceNotFoundError("tenant", {
         tenantId,

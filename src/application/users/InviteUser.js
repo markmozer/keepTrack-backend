@@ -24,21 +24,8 @@ import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserDtoPublic } from "./user.mappers.js";
+import { toUserAdminDto } from "./user.mappers.js";
 
-/**
- * @typedef {import("../ports/users/user.types.js").InviteUserUCInput} InviteUserUCInput
- * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
- *
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
- * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
- * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
- * @typedef {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
- * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
- */
 
 /**
  * @typedef {Object} Config
@@ -47,16 +34,17 @@ import { toUserDtoPublic } from "./user.mappers.js";
 
 export class InviteUser {
   /**
-   * @param {{
-   * tenantRepository: TenantRepositoryPort,
-   * userRepository: UserRepositoryPort,
-   * userRoleRepository: UserRoleRepositoryPort,
-   * tokenService: TokenServicePort,
-   * emailService: EmailServicePort,
-   * clockService: ClockServicePort,
-   * tenantLinkBuilderService: TenantLinkBuilderServicePort,
-   * authorizeAction: AuthorizeAction,
-   * config: Config }} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
+   * @param {import("../ports/security/TokenServicePort.js").TokenServicePort} deps.tokenService
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
+   * @param {import("../ports/email/EmailServicePort.js").EmailServicePort} deps.emailService
+   * @param {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} deps.tenantLinkBuilderService
+   * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
+   * @param {Config} deps.config
+   *
    */
   constructor({
     tenantRepository,
@@ -89,8 +77,8 @@ export class InviteUser {
 
   /**
    *
-   * @param {InviteUserUCInput} input
-   * @returns {Promise<UserDtoPublic>}
+   * @param {import("../ports/users/user.types.js").InviteUserUCInput} input
+   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
    */
   async execute(input) {
     const obj = v.object(input, "InviteUser input");
@@ -187,6 +175,6 @@ export class InviteUser {
       validityPeriod,
     });
 
-    return toUserDtoPublic(updated);
+    return toUserAdminDto(updated);
   }
 }

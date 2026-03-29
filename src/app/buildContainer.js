@@ -42,6 +42,7 @@ import { GetAppHealth } from "../application/system/GetAppHealth.js";
 import { GetDbHealth } from "../application/system/GetDbHealth.js";
 import { GetSessionHealth } from "../application/system/GetSessionHealth.js";
 import { GetSystemHealth } from "../application/system/GetSystemHealth.js";
+import { GetUsers } from "../application/users/GetUsers.js";
 
 export function buildContainer() {
   const appConfig = loadAppConfig();
@@ -97,8 +98,10 @@ export function buildContainer() {
     config: appConfig.frontend,
   });
 
-  const dbHealthService = new DbHealthServicePrisma({prismaClient: prisma});
-  const sessionHealthService = new SessionHealthServiceRedis({redisClient: redisClient.client});
+  const dbHealthService = new DbHealthServicePrisma({ prismaClient: prisma });
+  const sessionHealthService = new SessionHealthServiceRedis({
+    redisClient: redisClient.client,
+  });
 
   // --- Repositories ---
   const tenantRepository = new TenantRepositoryPrisma({ prisma });
@@ -207,6 +210,10 @@ export function buildContainer() {
     getDbHealth,
     getSessionHealth,
   });
+  const getUsers = new GetUsers({
+    userRepository,
+    authorizeAction,
+  });
 
   const useCases = {
     authenticateUser,
@@ -223,6 +230,7 @@ export function buildContainer() {
     getDbHealth,
     getSessionHealth,
     getSystemHealth,
+    getUsers,
   };
 
   const provisioning = {

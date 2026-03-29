@@ -19,22 +19,14 @@ import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
 import { randomUUID } from "node:crypto";
-import { toUserDtoPublic } from "./user.mappers.js";
-
-/**
- * @typedef {import("../ports/users/user.types.js").CreateUserUCInput} CreateUserUCInput
- * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
- */
+import { toUserAdminDto } from "./user.mappers.js";
 
 export class CreateUser {
   /**
-   * @param {{ 
-   * tenantRepository: TenantRepositoryPort, 
-   * userRepository: UserRepositoryPort, 
-   * authorizeAction: AuthorizeAction }} deps
+   * @param {object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
   constructor({ tenantRepository, userRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
@@ -45,8 +37,8 @@ export class CreateUser {
   }
 
   /**
-   * @param {CreateUserUCInput} input
-   * @returns {Promise<UserDtoPublic>}
+   * @param {import("../ports/users/user.types.js").CreateUserUCInput} input
+   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
    */
   async execute(input) {
     const obj = v.object(input, "CreateUser input");
@@ -92,6 +84,6 @@ export class CreateUser {
       updatedAt: date,
     });
 
-    return toUserDtoPublic(row);
+    return toUserAdminDto(row);
   }
 }

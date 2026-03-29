@@ -6,53 +6,79 @@
  * @typedef {import("../../../domain/users/UserStatus.js").UserStatusValue} UserStatus
  */
 
-// =====================================================
-// Repository models returned by persistance layer.
-// =====================================================
+
+// ============================================================
+// Infrastructure layer     select              userRowSelect
+// Infrastructure layer     return model        userRow
+// Application layer        return model        userDto
+// ============================================================
+
 /**
- * matches userSelectPublic
- *
- * @typedef {Object} UserRowPublic
+ * @typedef {Object} UserRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
+ * @property {{ role: { name: string } }[]} userRoles
+ */
+
+/**
+ * @typedef {Object} UserDto
  * @property {string} tenantId
  * @property {string} id
  * @property {string} email
+ * @property {UserStatus} status
+ * @property {string[]} roleNames
+ */
+
+// ============================================================
+// Infrastructure layer     select              userAdminRowSelect
+// Infrastructure layer     return model        userAdminRow
+// Application layer        return model        userAdminDto
+// ============================================================
+
+/**
+ * @typedef {Object} UserAdminRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
+ * @property {{ role: { name: string } }[]} userRoles
  * @property {Date | null} inviteTokenExpiresAt
  * @property {Date | null} resetTokenExpiresAt
- * @property {UserStatus} status
  * @property {Date} createdAt
  * @property {Date} updatedAt
  */
 
 /**
- * Minimal role row embedded in UserRowPublicWithRoles
- *
- * @typedef {Object} RoleRowPublic
- * @property {string} id
- * @property {string} name
- */
-
-/**
- * Minimal userRole row embedded in UserRowPublicWithRoles
- *
- * @typedef {Object} UserRoleRowPublicWithRole
- * @property {string} id
- * @property {RoleRowPublic} role
- */
-
-/**
- * matches userSelectPublicWithRoles
- *
- * @typedef {Object} UserRowPublicWithRoles
+ * @typedef {Object} UserAdminDto
  * @property {string} tenantId
  * @property {string} id
  * @property {string} email
- * @property {Date | null} inviteTokenExpiresAt
- * @property {Date | null} resetTokenExpiresAt
  * @property {UserStatus} status
- * @property {Date} createdAt
- * @property {Date} updatedAt
- * @property {UserRoleRowPublicWithRole[]} userRoles
+ * @property {string[]} roleNames
+ * @property {string | null} inviteTokenExpiresAt
+ * @property {string | null} resetTokenExpiresAt
+ * @property {string} createdAt
+ * @property {string} updatedAt
  */
+
+// ============================================================
+// Infrastructure layer     select              userAuthRowSelect
+// Infrastructure layer     return model        userAuthRow
+// Application layer        return model        n/a
+// ============================================================
+
+/**
+ * @typedef {Object} UserAuthRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
+ * @property {string} passwordHash
+ * @property {{ role: { name: string } }[]} userRoles
+ */
+
 
 // =====================================================
 // DTOs returned by application layer.
@@ -69,13 +95,6 @@
  * @property {UserStatus} status
  */
 
-/**
- * Public role DTO
- *
- * @typedef {Object} RoleDtoPublic
- * @property {string} id
- * @property {string} name
- */
 
 /**
  * DTO returned by application layer
@@ -90,9 +109,8 @@
  * @property {UserStatus} status
  * @property {string} createdAt
  * @property {string} updatedAt
- * @property {RoleDtoPublic[]} roles
+ * @property {string[]} roleNames
  */
-
 
 
 // =====================================================
@@ -122,6 +140,56 @@
  * @property {UserStatus} status
  * @property {Date} createdAt
  * @property {Date} updatedAt
+ */
+
+// --- GetUsers ---
+
+/**
+ * @typedef {Object} GetUsersFilters
+ * @property {string} [email]
+ * @property {UserStatus} [status]
+ * @property {string} [roleName]
+ */
+
+/**
+ * @typedef {Object} GetUsersUCPayload
+ * @property {import("../../shared/pagination/pagination.types.js").PaginationInput} [pagination]
+ * @property {GetUsersFilters} [filters]
+ * @property {import("../../shared/pagination/pagination.types.js").SortInput} [sort]
+ */
+
+/**
+ * @typedef {Object} GetUsersUCInput
+ * @property {unknown} principal
+ * @property {GetUsersUCPayload} payload
+ */
+
+/**
+ * Repository filter input after normalization.
+ *
+ * @typedef {Object} GetUsersFiltersRepo
+ * @property {string | undefined} email
+ * @property {UserStatus | undefined} status
+ * @property {string | undefined} roleName
+ */
+
+/**
+ * @typedef {Object} FindUsersPageRepoInput
+ * @property {string} tenantId
+ * @property {number} skip
+ * @property {number} take
+ * @property {GetUsersFiltersRepo} filters
+ * @property {import("../../shared/pagination/pagination.types.js").SortNormalized} sort
+ */
+
+/**
+ * @typedef {Object} FindUsersPageRepoResult
+ * @property {UserRow[]} items
+ * @property {number} totalItems
+ */
+
+/**
+ * @typedef {import("../../shared/pagination/pagination.types.js").PagedResult<UserDto>} GetUsersUCOutput
  */
 
 // --- InviteUser ---

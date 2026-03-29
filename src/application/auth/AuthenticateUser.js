@@ -17,26 +17,14 @@ import {
 
 import { isStatusForAuthenticateUser } from "../../domain/users/UserStatus.js";
 
-/**
- * @typedef {import("../ports/auth/auth.types.js").AuthenticateUserUCInput} AuthenticateUserUCInput
- * @typedef {import("../ports/auth/auth.types.js").AuthenticationResultDto} AuthenticationResultDto
- *
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../ports/security/PasswordServicePort.js").PasswordServicePort} PasswordServicePort
- * @typedef {import("../ports/session/SessionServicePort.js").SessionServicePort} SessionServicePort
- * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
- */
-
 export class AuthenticateUser {
   /**
-   * @param {{
-   * userRepository: UserRepositoryPort,
-   * userRoleRepository: UserRoleRepositoryPort,
-   * passwordService: PasswordServicePort,
-   * sessionService: SessionServicePort,
-   * clockService: ClockServicePort,
-   *  }} deps
+   * @param {Object} deps
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
+   * @param {import("../ports/security/PasswordServicePort.js").PasswordServicePort} deps.passwordService
+   * @param {import("../ports/session/SessionServicePort.js").SessionServicePort} deps.sessionService
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
    */
   constructor({
     userRepository,
@@ -58,8 +46,8 @@ export class AuthenticateUser {
   }
   /**
    *
-   * @param {AuthenticateUserUCInput} input
-   * @returns {Promise<AuthenticationResultDto>}
+   * @param {import("../ports/auth/auth.types.js").AuthenticateUserUCInput} input
+   * @returns {Promise<import("../ports/auth/auth.types.js").AuthenticationResultDto>}
    */
   async execute(input) {
     const obj = v.object(input, "AuthenticateUser input");
@@ -97,7 +85,6 @@ export class AuthenticateUser {
       userId: user.id,
       atDate: this.clockService.now(),
     });
-
 
     if (!validUserRoles || validUserRoles.length === 0) {
       throw new NoValidRolesError("User has no valid roles");

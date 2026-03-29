@@ -14,16 +14,12 @@ import { Resource } from "../../domain/authz/authz.types.js";
 
 import { toTenantDto } from "./tenant.mappers.js";
 
-/**
- * @typedef {import("../ports/tenants/tenant.types.js").GetTenantByIdUCInput} GetTenantByIdUCInput
- * @typedef {import("../ports/tenants/tenant.types.js").TenantDto} TenantDto
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
- */
 
 export class GetTenantById {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, authorizeAction: AuthorizeAction }} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
   constructor({ tenantRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
@@ -32,8 +28,8 @@ export class GetTenantById {
   }
 
   /**
-   * @param {GetTenantByIdUCInput} input
-   * @returns {Promise<TenantDto>}
+   * @param {import("../ports/tenants/tenant.types.js").GetTenantByIdUCInput} input
+   * @returns {Promise<import("../ports/tenants/tenant.types.js").TenantDto>}
    */
   async execute(input) {
     const obj = v.object(input, "GetTenantById input");

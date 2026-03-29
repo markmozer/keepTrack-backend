@@ -35,75 +35,54 @@ import {
 // mapper imports
 import { toTenantDto } from "../tenants/tenant.mappers.js";
 import { toRoleDto } from "../roles/role.mappers.js";
-import { toUserDtoPublic } from "../users/user.mappers.js";
+import { toUserAdminDto } from "../users/user.mappers.js";
 import { toUserRoleDto } from "../userRoles/userRole.mappers.js";
 
 // other imports
 import { randomUUID } from "node:crypto";
 
 /**
- * @typedef {import("../ports/provisioning/provisioning.types.js").ProvisionBaseTenantUCInput} ProvisionBaseTenantUCInput
- * @typedef {import("../ports/provisioning/provisioning.types.js").ProvisionBaseTenantDto} ProvisionBaseTenantDto
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
- * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
- * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
- * @typedef {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
- * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
- *
- */
-
-/**
- * @typedef {import("../ports/tenants/tenant.types.js").TenantRow} TenantRow
- * @typedef {import("../ports/roles/role.types.js").RoleRow} RoleRow
- * @typedef {import("../ports/users/user.types.js").UserRowPublic} UserRowPublic
- * @typedef {import("../ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
- */
-
-/**
  * @typedef {Object} EnsureTenantResult
  * @property {"create" | "read"} tenantAction
- * @property {TenantRow} provisionedTenant
+ * @property {import("../ports/tenants/tenant.types.js").TenantRow} provisionedTenant
  */
 
 /**
  * @typedef {Object} EnsureSuperAdminRoleResult
  * @property {"create" | "read"} roleAction
- * @property {RoleRow} provisionedRole
+ * @property {import("../ports/roles/role.types.js").RoleRow} provisionedRole
  */
 
 /**
  * @typedef {Object} EnsureUserResult
  * @property {"create" | "read"} userAction
- * @property {UserRowPublic} provisionedUser
+ * @property {import("../ports/users/user.types.js").UserAdminRow} provisionedUser
  */
 
 /**
  * @typedef {Object} EnsureUserRoleResult
  * @property {"create" | "read"} userRoleAction
- * @property {UserRoleRow} provisionedUserRole
+ * @property {import("../ports/userRoles/userRole.types.js").UserRoleRow} provisionedUserRole
  */
 
 /**
  * @typedef {Object} IssueInviteResult
  * @property {"create" | "update"} inviteUserAction
- * @property {UserRowPublic} invitedUser
+ * @property {import("../ports/users/user.types.js").UserAdminRow} invitedUser
  * @property {string} tokenPlaintext
  */
 
 export class ProvisionBaseTenant {
   /**
-   * @param {{
-   * tenantRepository: TenantRepositoryPort,
-   * userRepository: UserRepositoryPort,
-   * roleRepository: RoleRepositoryPort,
-   * userRoleRepository: UserRoleRepositoryPort,
-   * tokenService: TokenServicePort,
-   * clockService: ClockServicePort,
-   * tenantLinkBuilderService: TenantLinkBuilderServicePort,
-   * emailService: EmailServicePort,}} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} deps.roleRepository
+   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
+   * @param {import("../ports/security/TokenServicePort.js").TokenServicePort} deps.tokenService
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
+   * @param {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} deps.tenantLinkBuilderService
+   * @param {import("../ports/email/EmailServicePort.js").EmailServicePort} deps.emailService
    */
   constructor({
     tenantRepository,
@@ -293,7 +272,7 @@ export class ProvisionBaseTenant {
   }
 
   /**
-   * @param {{user: UserRowPublic, slug: string, now: Date}} params
+   * @param {{user: import("../ports/users/user.types.js").UserAdminRow, slug: string, now: Date}} params
    * @returns{Promise<IssueInviteResult>}
    */
   async issueInviteUser({ user, slug, now }) {
@@ -328,6 +307,7 @@ export class ProvisionBaseTenant {
       to: updated.email,
       link: inviteLink,
       expiresAt: returnedExpiresAt,
+      validityPeriod: `${ttlDays} days`,
     });
 
     return {
@@ -338,8 +318,8 @@ export class ProvisionBaseTenant {
   }
 
   /**
-   * @param {ProvisionBaseTenantUCInput} input
-   * @returns {Promise<ProvisionBaseTenantDto>}
+   * @param {import("../ports/provisioning/provisioning.types.js").ProvisionBaseTenantUCInput} input
+   * @returns {Promise<import("../ports/provisioning/provisioning.types.js").ProvisionBaseTenantDto>}
    */
   async execute(input) {
     const obj = v.object(input, "ProvisionBaseTenantUCInput");
@@ -393,11 +373,11 @@ export class ProvisionBaseTenant {
       roleAction,
       provisionedRole: toRoleDto(provisionedRole),
       userAction,
-      provisionedUser: toUserDtoPublic(provisionedUser),
+      provisionedUser: toUserAdminDto(provisionedUser),
       userRoleAction,
       provisionedUserRole: toUserRoleDto(provisionedUserRole),
       inviteUserAction,
-      invitedUser: toUserDtoPublic(invitedUser),
+      invitedUser: toUserAdminDto(invitedUser),
       tokenPlaintext,
     };
   }

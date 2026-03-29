@@ -7,21 +7,19 @@ import { AppResponse } from "../AppResponse.js";
 import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
- * @typedef {Object} Deps
- * @property {import("../../../application/users/CreateUser.js").CreateUser} createUserUseCase
- * @property {import("../../../application/users/InviteUser.js").InviteUser} inviteUserUseCase
- * @property {import("../../../application/users/AcceptInvite.js").AcceptInvite} acceptInviteUseCase
- * @property {import("../../../application/users/RequestPasswordReset.js").RequestPasswordReset} requestPasswordResetUseCase
- */
-
-/**
- * @param {Deps} deps
+ * @param {Object} deps
+ * @param {import("../../../application/users/CreateUser.js").CreateUser} deps.createUserUseCase
+ * @param {import("../../../application/users/InviteUser.js").InviteUser} deps.inviteUserUseCase
+ * @param {import("../../../application/users/AcceptInvite.js").AcceptInvite} deps.acceptInviteUseCase
+ * @param {import("../../../application/users/RequestPasswordReset.js").RequestPasswordReset} deps.requestPasswordResetUseCase
+ * @param {import("../../../application/users/GetUsers.js").GetUsers} deps.getUsersUseCase
  */
 export function createUserController({
   createUserUseCase,
   inviteUserUseCase,
   acceptInviteUseCase,
   requestPasswordResetUseCase,
+  getUsersUseCase,
 }) {
   return {
     /**
@@ -112,6 +110,59 @@ export function createUserController({
           payload: {
             tenantId: reqWithContext.context?.tenant?.id,
             email: body.email,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+        return;
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * GET /api/users/
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async getUsers(req, res, next) {
+      try {
+        const reqWithContext = asRequestWithContext(req);
+        //const body = v.object(reqWithContext.body, "body");
+
+        const result = await getUsersUseCase.execute({
+          principal: reqWithContext.principal,
+          payload: {
+            pagination: {
+              page: req.query.page ? Number(req.query.page) : undefined,
+              pageSize: req.query.pageSize
+                ? Number(req.query.pageSize)
+                : undefined,
+            },
+            filters: {
+              email:
+                typeof req.query.email === "string"
+                  ? req.query.email
+                  : undefined,
+              status:
+                typeof req.query.status === "string"
+                  ? /** @type {any} */ (req.query.status)
+                  : undefined,
+              roleName:
+                typeof req.query.roleName === "string"
+                  ? req.query.roleName
+                  : undefined,
+            },
+            sort: {
+              field:
+                typeof req.query.sortField === "string"
+                  ? req.query.sortField
+                  : undefined,
+              direction:
+                typeof req.query.sortDirection === "string"
+                  ? /** @type {"asc"|"desc"} */ (req.query.sortDirection)
+                  : undefined,
+            },
           },
         });
 

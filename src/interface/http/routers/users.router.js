@@ -3,8 +3,8 @@
  */
 
 import express from "express";
-import {requireAuth} from "../middleware/requireAuth.middleware.js";
-import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js";
+import { requireAuth } from "../middleware/requireAuth.middleware.js";
+import { requireTenantMiddleware } from "../middleware/requireTenant.middleware.js";
 
 /**
  * @param {{ userController: any }} deps
@@ -12,10 +12,34 @@ import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js
 export function createUsersRouter({ userController }) {
   const router = express.Router();
 
-  router.post("/",requireTenantMiddleware, requireAuth, userController.createUser);
-  router.post("/:userId/invite", requireTenantMiddleware, requireAuth, userController.inviteUser);
-  router.post("/accept-invite", requireTenantMiddleware, userController.acceptInvite);
-  router.post("/request-pwd-reset", requireTenantMiddleware, userController.requestPasswordReset);
+  router.post(
+    "/",
+    requireTenantMiddleware,
+    requireAuth,
+    userController.createUser,
+  );
+  router.post(
+    "/:userId/invite",
+    requireTenantMiddleware,
+    requireAuth,
+    userController.inviteUser,
+  );
+  router.post(
+    "/accept-invite",
+    requireTenantMiddleware,
+    userController.acceptInvite,
+  );
+  router.post(
+    "/request-pwd-reset",
+    requireTenantMiddleware,
+    userController.requestPasswordReset,
+  );
+  router.get(
+    "/",
+    requireTenantMiddleware,
+    requireAuth,
+    userController.getUsers,
+  );
 
   return router;
 }

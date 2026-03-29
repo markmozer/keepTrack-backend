@@ -16,18 +16,13 @@ import { Resource } from "../../domain/authz/authz.types.js";
 import { randomUUID } from "node:crypto";
 import { toRoleDto } from "./role.mappers.js";
 
-/**
- * @typedef {import("../ports/roles/role.types.js").CreateRoleUCInput} CreateRoleUCInput
- * @typedef {import("../ports/roles/role.types.js").RoleDto} RoleDto
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
- * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
- */
-
 
 export class CreateRole {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, roleRepository: RoleRepositoryPort, authorizeAction: AuthorizeAction }} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} deps.roleRepository
+   * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
   constructor({ tenantRepository, roleRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
@@ -38,8 +33,8 @@ export class CreateRole {
   }
 
   /**
-   * @param {CreateRoleUCInput} input
-   * @returns {Promise<RoleDto>}
+   * @param {import("../ports/roles/role.types.js").CreateRoleUCInput} input
+   * @returns {Promise<import("../ports/roles/role.types.js").RoleDto>}
    */
   async execute(input) {
     const obj = v.object(input, "CreateUser input");

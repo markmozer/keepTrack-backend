@@ -16,16 +16,12 @@ import { Resource } from "../../domain/authz/authz.types.js";
 import { randomUUID } from "node:crypto";
 import { toTenantDto } from "./tenant.mappers.js";
 
-/**
- * @typedef {import("../ports/tenants/tenant.types.js").CreateTenantUCInput} CreateTenantUCInput
- * @typedef {import("../ports/tenants/tenant.types.js").TenantDto} TenantDto
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../authz/AuthorizeAction.js").AuthorizeAction} AuthorizeAction
- */
 
 export class CreateTenant {
   /**
-   * @param {{ tenantRepository: TenantRepositoryPort, authorizeAction: AuthorizeAction}} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
   constructor({ tenantRepository, authorizeAction }) {
     assertTenantRepositoryPort(tenantRepository);
@@ -34,8 +30,8 @@ export class CreateTenant {
   }
 
   /**
-   * @param {CreateTenantUCInput} input
-   * @returns {Promise<TenantDto>}
+   * @param {import("../ports/tenants/tenant.types.js").CreateTenantUCInput} input
+   * @returns {Promise<import("../ports/tenants/tenant.types.js").TenantDto>}
    */
   async execute(input) {
     const obj = v.object(input, "CreateTenant input");

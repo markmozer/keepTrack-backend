@@ -16,25 +16,15 @@ import {
   isStatusForAcceptInvite,
 } from "../../domain/users/UserStatus.js";
 
-import { toUserDtoPublic } from "./user.mappers.js";
-
-/**
- * @typedef {import("../ports/users/user.types.js").AcceptInviteUCInput} AcceptInviteUCInput
- * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
- * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
- * @typedef {import("../ports/security/PasswordServicePort.js").PasswordServicePort} PasswordServicePort
- */
+import { toUserAdminDto } from "./user.mappers.js";
 
 export class AcceptInvite {
   /**
-   * @param {{
-   *    userRepository: UserRepositoryPort,
-   *    tokenService: TokenServicePort,
-   *    clockService: ClockServicePort,
-   *    passwordService: PasswordServicePort
-   *  }} deps
+   * @param {Object} deps
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/security/TokenServicePort.js").TokenServicePort} deps.tokenService
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
+   * @param {import("../ports/security/PasswordServicePort.js").PasswordServicePort} deps.passwordService
    */
   constructor({ userRepository, tokenService, clockService, passwordService }) {
     assertUserRepositoryPort(userRepository);
@@ -48,8 +38,8 @@ export class AcceptInvite {
   }
 
   /**
-   * @param {AcceptInviteUCInput} input
-   * @returns {Promise<UserDtoPublic>}
+   * @param {import("../ports/users/user.types.js").AcceptInviteUCInput} input
+   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
    */
   async execute(input) {
     const obj = v.object(input, "AcceptInvite input");
@@ -59,9 +49,8 @@ export class AcceptInvite {
 
     const inviteTokenHash = this.tokenService.hash(payload.tokenPlain);
 
-    const targetUser = await this.userRepository.findByInviteTokenHash(
-      inviteTokenHash
-    );
+    const targetUser =
+      await this.userRepository.findByInviteTokenHash(inviteTokenHash);
 
     if (!targetUser) throw new ValidationError("Invite token is invalid.");
 
@@ -94,6 +83,6 @@ export class AcceptInvite {
       updatedAt: now,
     });
 
-    return toUserDtoPublic(activatedUser);
+    return toUserAdminDto(activatedUser);
   }
 }

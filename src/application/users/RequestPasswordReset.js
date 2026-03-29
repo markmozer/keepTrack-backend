@@ -15,18 +15,6 @@ import { validateRequestPasswordResetPayload } from "./requestPasswordReset.vali
 
 import { isStatusForRequestPasswordReset } from "../../domain/users/UserStatus.js";
 
-/**
- * @typedef {import("../ports/users/user.types.js").RequestPasswordResetUCInput} RequestPasswordResetUCInput
- * @typedef {import("../ports/users/user.types.js").UserDtoPublic} UserDtoPublic
- *
- * @typedef {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
- * @typedef {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../ports/security/TokenServicePort.js").TokenServicePort} TokenServicePort
- * @typedef {import("../ports/clock/ClockServicePort.js").ClockServicePort} ClockServicePort
- * @typedef {import("../ports/email/EmailServicePort.js").EmailServicePort} EmailServicePort
- * @typedef {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
- */
 
 /**
  * @typedef {Object} Config
@@ -47,15 +35,15 @@ function genericAuthResponse() {
 
 export class RequestPasswordReset {
   /**
-   * @param {{
-   * tenantRepository: TenantRepositoryPort,
-   * userRepository: UserRepositoryPort,
-   * userRoleRepository: UserRoleRepositoryPort,
-   * tokenService: TokenServicePort,
-   * emailService: EmailServicePort,
-   * clockService: ClockServicePort,
-   * tenantLinkBuilderService: TenantLinkBuilderServicePort,
-   * config: Config }} deps
+   * @param {Object} deps
+   * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
+   * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
+   * @param {import("../ports/security/TokenServicePort.js").TokenServicePort} deps.tokenService
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
+   * @param {import("../ports/email/EmailServicePort.js").EmailServicePort} deps.emailService
+   * @param {import("../ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} deps.tenantLinkBuilderService
+   * @param {Config} deps.config
    */
   constructor({
     tenantRepository,
@@ -86,7 +74,7 @@ export class RequestPasswordReset {
 
   /**
    *
-   * @param {RequestPasswordResetUCInput} input
+   * @param {import("../ports/users/user.types.js").RequestPasswordResetUCInput} input
    * @returns {Promise<GenericAuthResponseDto>}
    */
   async execute(input) {
@@ -131,7 +119,7 @@ export class RequestPasswordReset {
       const { tokenPlaintext, tokenHash } = this.tokenService.generate();
       const ttlMinutes = this.config?.resetTtlMinutes ?? 15;
       const expiresAt = this.clockService.addMinutes(now, ttlMinutes);
-      const validityPeriod = `${ttlMinutes} minutes`
+      const validityPeriod = `${ttlMinutes} minutes`;
 
       const updated = await this.userRepository.markAsPwdResetRequested({
         userId: existingUser.id,
