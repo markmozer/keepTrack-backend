@@ -4,7 +4,7 @@
 import cors from "cors";
 
 /**
- * @typedef {import("../../../shared/config/appConfig.js").AppConfig} AppConfig
+ * @typedef {import("../../../app/config/appConfig.js").AppConfig} AppConfig
  */
 
 /**

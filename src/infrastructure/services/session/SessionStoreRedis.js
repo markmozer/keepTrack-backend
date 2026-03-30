@@ -11,7 +11,7 @@ export class SessionStoreRedis {
   /**
    * @param {Object} params
    * @param {import("ioredis").Redis} params.redisClient
-   * @param {import("../../../shared/config/appConfig.js").SessionConfig} params.config
+   * @param {import("../../../app/config/appConfig.js").SessionConfig} params.config
    */
   constructor({ redisClient, config }) {
     this.redis = redisClient;

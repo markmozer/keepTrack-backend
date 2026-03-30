@@ -2,14 +2,16 @@
  * File: src/tests/helpers/seedUser.js
  */
 
-import { getPrisma } from "../../infrastructure/persistence/prisma/prismaClient.js";
-
-const prisma = getPrisma();
+/**
+ * @typedef {Object} SeedRolePayload
+ * @property {string} tenantId
+ * @property {string} name
+ */
 
 /**
  * @typedef {Object} SeedRoleInput
- * @property {string} tenantId
- * @property {string} name
+ * @property {import("@prisma/client").PrismaClient} prisma
+ * @property {SeedRolePayload} payload
  */
 
 /**
@@ -17,14 +19,11 @@ const prisma = getPrisma();
  *
  * @param {SeedRoleInput} input
  */
-export async function seedRole({
-  tenantId,
-  name,
-}) {
-  const role = await prisma.role.create({
+export async function seedRole(input) {
+  const role = await input.prisma.role.create({
     data: {
-      tenantId,
-      name,
+      tenantId: input.payload.tenantId,
+      name: input.payload.name,
     },
   });
 

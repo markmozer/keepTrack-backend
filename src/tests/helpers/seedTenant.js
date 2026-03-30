@@ -2,26 +2,31 @@
  * File: src/tests/helpers/seedTenant.js
  */
 
-import { getPrisma } from "../../infrastructure/persistence/prisma/prismaClient.js";
-
-const prisma = getPrisma();
+/**
+ * @typedef {Object} SeedTenantPayload
+ * @property {string} slug
+ * @property {string} name
+ * @property {string} type
+ */
 
 /**
  * @typedef {Object} SeedTenantInput
- * @property {string} slug
- * @property {string} name
+ * @property {import("@prisma/client").PrismaClient} prisma
+ * @property {SeedTenantPayload} payload
  */
+
 
 /**
  * Seeds a tenant.
  *
  * @param {SeedTenantInput} input
  */
-export async function seedTenant({ slug, name }) {
-  return prisma.tenant.create({
+export async function seedTenant(input) {
+  return input.prisma.tenant.create({
     data: {
-      slug,
-      name,
+      slug: input.payload.slug,
+      name: input.payload.name,
+      type: input.payload.type,
     },
   });
 }

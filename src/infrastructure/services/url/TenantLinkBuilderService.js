@@ -4,7 +4,7 @@
 
 /**
  * @typedef {import("../../../application/ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
- * @typedef {import("../../../shared/config/appConfig.js").FrontendConfig} FrontendConfig
+ * @typedef {import("../../../app/config/appConfig.js").FrontendConfig} FrontendConfig
  * @typedef {import("../../../application/ports/urls/TenantLinkBuilderServicePort.js").BuildInviteLinkInput} BuildInviteLinkInput
  * @typedef {import("../../../application/ports/urls/TenantLinkBuilderServicePort.js").BuildPasswordResetLinkInput} BuildPasswordResetLinkInput
  */

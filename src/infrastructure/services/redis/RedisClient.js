@@ -4,7 +4,7 @@
 import Redis from "ioredis";
 
 /**
- * @typedef {import("../../../shared/config/appConfig.js").SessionConfig} SessionConfig
+ * @typedef {import("../../../app/config/appConfig.js").SessionConfig} SessionConfig
  */
 
 export class RedisClient {

@@ -1,25 +1,24 @@
 /**
- * File: keepTrack-backend/app.js
+ * File: app.js
  */
+
 import "dotenv/config";
+import { loadAppConfig } from "./src/app/config/appConfig.js";
 import { createApp } from "./src/app/createApp.js";
-import { getEnv } from "./src/shared/config/env.js";
 
-const PORT = Number(process.env.PORT ?? 3000);
+const appConfig = loadAppConfig();
 
-if (Number.isNaN(PORT)) {
-  throw new Error("PORT must be a valid number.");
-}
+const port = appConfig.express.port;
 
-const nodeEnv = getEnv("NODE_ENV", "development");
+const { app, container } = await createApp({appConfig});
 
-const { app, shutdown } = createApp();
+const shutdown = container.shutdown;
 
 let server = null;
 
-if (nodeEnv !== "test") {
-  server = app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+if (!appConfig.runtime.isTest) {
+  server = app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
   });
 }
 

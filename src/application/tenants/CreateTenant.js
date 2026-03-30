@@ -10,12 +10,12 @@ import { validateCreateTenantPayload } from "./createTenant.validation.js";
 import { ConflictError } from "../../domain/shared/errors/index.js";
 
 import { TenantStatus } from "../../domain/tenants/TenantStatus.js";
+import { tenantTypeRules } from "../../domain/tenants/TenantType.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
 import { randomUUID } from "node:crypto";
 import { toTenantDto } from "./tenant.mappers.js";
-
 
 export class CreateTenant {
   /**
@@ -43,16 +43,20 @@ export class CreateTenant {
       action: CrudAction.create,
       resource: Resource.tenant,
       context: { useCase: "CreateTenant" },
-    });    
-
+    });
 
     const payload = validateCreateTenantPayload(obj.payload);
 
     const existing = await this.tenantRepository.findBySlug(payload.slug);
     if (existing) {
-      throw new ConflictError(
-        `Tenant slug '${payload.slug}' already exists.`,
-      );
+      throw new ConflictError(`Tenant slug '${payload.slug}' already exists.`);
+    }
+
+    if (tenantTypeRules[payload.type].maxCount === 1) {
+      const existing = await this.tenantRepository.findByType(payload.type);
+      if (existing) {
+        throw new ConflictError(`A tenant of type ${payload.type} already exists.`);
+      }
     }
 
     const date = new Date();

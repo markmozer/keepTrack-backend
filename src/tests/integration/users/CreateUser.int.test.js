@@ -6,9 +6,7 @@ import request from "supertest";
 import { describe, it, expect, beforeEach, afterAll } from "vitest";
 
 import { createApp } from "../../../app/createApp.js";
-import { Role } from "../../../domain/authz/authz.types.js";
 
-// Pas deze imports aan naar jouw echte test helpers / seed helpers
 import { resetDatabase } from "../../../tests/helpers/resetDatabase.js";
 import { seedTenant } from "../../../tests/helpers/seedTenant.js";
 import { seedUser } from "../../../tests/helpers/seedUser.js";
@@ -34,7 +32,7 @@ describe("CreateUser (integration)", () => {
   beforeEach(async () => {
     await resetDatabase();
 
-     ({ app, shutdown } = createApp());
+    ({ app, shutdown } = createApp());
     shutdown = app.shutdown;
 
     tenant = await seedTenant({
@@ -43,18 +41,18 @@ describe("CreateUser (integration)", () => {
     });
 
     const adminRole = await seedRole({
-        tenantId: tenant.id,
-        name: "ADMIN",
+      tenantId: tenant.id,
+      name: "ADMIN",
     });
 
     const user_adminRole = await seedRole({
-        tenantId: tenant.id,
-        name: "USER_ADMIN",
+      tenantId: tenant.id,
+      name: "USER_ADMIN",
     });
 
-     const user_viewerRole = await seedRole({
-        tenantId: tenant.id,
-        name: "USER_VIEWER",
+    const user_viewerRole = await seedRole({
+      tenantId: tenant.id,
+      name: "USER_VIEWER",
     });
 
     adminUser = await seedUser({
@@ -89,11 +87,9 @@ describe("CreateUser (integration)", () => {
   });
 
   it("returns 401 when principal is missing", async () => {
-    const res = await request(app)
-      .post("/api/users")
-      .send({
-        email: "new.user@example.com",
-      });
+    const res = await request(app).post("/api/users").send({
+      email: "new.user@example.com",
+    });
 
     expect(res.status).toBe(401);
     expect(res.body.success).toBe(false);

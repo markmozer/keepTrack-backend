@@ -19,11 +19,12 @@ import { buildContainer } from "./buildContainer.js";
 import { registerRoutes } from "./registerRoutes.js";
 
 /**
- * @returns {{ app: import("express").Express, shutdown: () => Promise<void> }}
+ * @param {{appConfig: import("./config/appConfig.js").AppConfig}} params
+ * @returns {Promise<{ app: import("express").Express, container: import("./buildContainer.js").Container }>}
  */
-export function createApp() {
-  const container = buildContainer();
-  const { appConfig } = container;
+export async function createApp({appConfig}) {
+
+  const container = buildContainer({appConfig});
 
   const app = express();
 
@@ -66,5 +67,5 @@ export function createApp() {
   app.use(notFoundMiddleware);
   app.use(errorMiddleware);
 
-  return { app, shutdown: container.shutdown };
+  return { app, container };
 }

@@ -6,6 +6,7 @@ export default defineConfig({
     name: "integration",
     include: ["src/tests/integration/**/*.int.test.js"],
     environment: "node",
+    setupFiles: ["./src/tests/setup/setupEnv.js"],
 
     // ⛔ ZEER BELANGRIJK voor Prisma
     pool: "forks",

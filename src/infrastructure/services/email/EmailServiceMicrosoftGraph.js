@@ -11,7 +11,7 @@ import { buildPasswordResetEmail } from "./templates/passwordResetEmail.js";
 
 
 /**
- * @typedef {import("../../../shared/config/appConfig.js").MsGraphEmailConfig} MsGraphEmailConfig
+ * @typedef {import("../../../app/config/appConfig.js").MsGraphEmailConfig} MsGraphEmailConfig
  */
 
 /**

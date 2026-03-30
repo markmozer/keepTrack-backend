@@ -2,7 +2,6 @@
  * File: src/app/buildContainer.js
  */
 
-import { loadAppConfig } from "../shared/config/appConfig.js";
 import { createPrisma } from "../infrastructure/persistence/prisma/prismaClient.js";
 import { RedisClient } from "../infrastructure/services/redis/RedisClient.js";
 import { SessionStoreRedis } from "../infrastructure/services/session/SessionStoreRedis.js";
@@ -44,8 +43,66 @@ import { GetSessionHealth } from "../application/system/GetSessionHealth.js";
 import { GetSystemHealth } from "../application/system/GetSystemHealth.js";
 import { GetUsers } from "../application/users/GetUsers.js";
 
-export function buildContainer() {
-  const appConfig = loadAppConfig();
+/**
+ * @typedef {Object} Repositories
+ * @property {import("../infrastructure/persistence/prisma/repositories/TenantRepositoryPrisma.js").TenantRepositoryPrisma} tenantRepository
+ * @property {import("../infrastructure/persistence/prisma/repositories/RoleRepositoryPrisma.js").RoleRepositoryPrisma} roleRepository
+ * @property {import("../infrastructure/persistence/prisma/repositories/UserRepositoryPrisma.js").UserRepositoryPrisma} userRepository
+ * @property {import("../infrastructure/persistence/prisma/repositories/UserRoleRepositoryPrisma.js").UserRoleRepositoryPrisma} userRoleRepository
+ */
+
+/**
+ * @typedef {Object} Services
+ * @property {import("../infrastructure/services/session/SessionServiceRedis.js").SessionServiceRedis} sessionService
+ * @property {import("../infrastructure/services/clock/SystemClock.js").SystemClock} clockService
+ * @property {import("../infrastructure/services/security/TokenServiceCrypto.js").TokenServiceCrypto} tokenService
+ * @property {import("../infrastructure/services/security/PasswordHasherBcrypt.js").PasswordHasherBcrypt} passwordService
+ * @property {import("../infrastructure/services/email/EmailServiceMock.js").EmailServiceMock | import("../infrastructure/services/email/EmailServiceMicrosoftGraph.js").EmailServiceMicrosoftGraph} emailService
+ * @property {import("../infrastructure/services/url/TenantLinkBuilderService.js").TenantLinkBuilderService} tenantLinkBuilderService
+ * @property {import("../infrastructure/services/db/DbHealthServicePrisma.js").DbHealthServicePrisma} dbHealthService
+ * @property {import("../infrastructure/services/session/SessionHealthServiceRedis.js").SessionHealthServiceRedis} sessionHealthService
+ */
+
+/**
+ * @typedef {Object} UseCases
+ * @property {import("../application/auth/AuthenticateUser.js").AuthenticateUser} authenticateUser
+ * @property {import("../application/authz/AuthorizeAction.js").AuthorizeAction} authorizeAction
+ * @property {import("../application/tenants/CreateTenant.js").CreateTenant} createTenant
+ * @property {import("../application/tenants/GetTenantById.js").GetTenantById} getTenantById
+ * @property {import("../application/roles/CreateRole.js").CreateRole} createRole
+ * @property {import("../application/users/CreateUser.js").CreateUser} createUser
+ * @property {import("../application/userRoles/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUser
+ * @property {import("../application/users/InviteUser.js").InviteUser} inviteUser
+ * @property {import("../application/users/AcceptInvite.js").AcceptInvite} acceptInvite
+ * @property {import("../application/users/RequestPasswordReset.js").RequestPasswordReset} requestPasswordReset
+ * @property {import("../application/system/GetAppHealth.js").GetAppHealth} getAppHealth
+ * @property {import("../application/system/GetDbHealth.js").GetDbHealth} getDbHealth
+ * @property {import("../application/system/GetSessionHealth.js").GetSessionHealth} getSessionHealth
+ * @property {import("../application/system/GetSystemHealth.js").GetSystemHealth} getSystemHealth
+ * @property {import("../application/users/GetUsers.js").GetUsers} getUsers
+ */
+
+/**
+ * @typedef {Object} Provisioning
+ * @property {import("../application/provisioning/ProvisionBaseTenant.js").ProvisionBaseTenant} provisionBaseTenant
+ */
+
+/**
+ * @typedef {Object} Container
+ * @property {import("./config/appConfig.js").AppConfig} appConfig
+ * @property {import("@prisma/client").PrismaClient} prisma
+ * @property {Repositories} repositories
+ * @property {Services} services
+ * @property {UseCases} useCases
+ * @property {Provisioning} provisioning
+ * @property {() => Promise<void>} shutdown
+ */
+
+/**
+ * @param {{appConfig: import("./config/appConfig.js").AppConfig}} params
+ * @returns {Container}
+ */
+export function buildContainer({appConfig}) {
 
   // --- Infrastructure ---
   const prisma = createPrisma({

@@ -11,3 +11,18 @@ export const TenantType = Object.freeze({
   CLIENT: "CLIENT",
   DEMO: "DEMO"
 });
+
+export const tenantTypeRules = Object.freeze({
+  [TenantType.BASE]: { maxCount: 1 },
+  [TenantType.DEMO]: { maxCount: 1 },
+  [TenantType.CLIENT]: { maxCount: Infinity },
+});
+
+/**
+ * 
+ * @param {TenantTypeValue} type 
+ * @returns {boolean}
+ */
+export function isSingletonTenantType(type) {
+  return tenantTypeRules[type]?.maxCount === 1;
+}

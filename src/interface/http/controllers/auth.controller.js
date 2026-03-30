@@ -10,7 +10,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 /**
  * @typedef {import("../../../application/auth/AuthenticateUser.js").AuthenticateUser} AuthenticateUser
  * @typedef {import("../../../application/ports/session/SessionServicePort.js").SessionServicePort} SessionServicePort
- * @typedef {import("../../../shared/config/appConfig.js").CookieConfig} CookieConfig
+ * @typedef {import("../../../app/config/appConfig.js").CookieConfig} CookieConfig
  */
 
 /**

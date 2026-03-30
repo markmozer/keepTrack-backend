@@ -1,7 +1,8 @@
 /**
  * File: src/interface/cli/provisionBaseTenant.cli.js
  */
-import { getEnv } from "../../shared/config/env.js";
+import { getEnv } from "../../app/config/env.js";
+import { loadAppConfig } from "../../app/config/appConfig.js";
 import { buildContainer } from "../../app/buildContainer.js";
 import { createProvisioningPrincipal } from "../../application/auth/createProvisioningPrincipal.js";
 
@@ -44,7 +45,7 @@ function parseNodeEnv(value) {
 async function main() {
   const nodeEnv = parseNodeEnv(getEnv("NODE_ENV", "development"));
 
-  if (getEnv("NODE_ENV", "development") !== "production") {
+  if (nodeEnv !== "production") {
   try {
     await import("dotenv/config");
   } catch (e) {
@@ -68,7 +69,8 @@ async function main() {
       "adminEmail",
     );
 
-    const container = buildContainer();
+    const appConfig = loadAppConfig();
+    const container = buildContainer({appConfig});
     shutdown = container.shutdown;
 
     const principal = createProvisioningPrincipal();

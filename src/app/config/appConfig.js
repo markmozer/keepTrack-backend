@@ -1,5 +1,5 @@
 /**
- * File: keepTrack-backend/src/shared/config/appConfig.js
+ * File: src/app/config/appConfig.js
  */
 
 import { getEnv, requireEnv } from "./env.js";
@@ -71,8 +71,15 @@ import { getEnv, requireEnv } from "./env.js";
  */
 
 /**
+ * @typedef {Object} ExpressConfig
+ * @property {number} port
+ */
+
+
+/**
  * @typedef {Object} AppConfig
  * @property {RuntimeConfig} runtime
+ * @property {ExpressConfig} express
  * @property {DatabaseConfig} database
  * @property {FrontendConfig} frontend
  * @property {CookieConfig} cookie
@@ -137,7 +144,7 @@ function parseEmailProvider(value) {
 function parsePositiveInt(name, value) {
   const num = Number(value);
 
-  if (!Number.isInteger(num) || num <= 0) {
+  if (Number.isNaN(num) || !Number.isInteger(num) || num <= 0) {
     throw new Error(`${name} must be a positive integer.`);
   }
 
@@ -174,6 +181,9 @@ export function loadAppConfig() {
       isDevelopment: nodeEnv === "development",
       isTest: nodeEnv === "test",
       isProduction: nodeEnv === "production",
+    },
+    express: {
+      port: parsePositiveInt("PORT", requireEnv("PORT"))
     },
     database: {
       url: requireEnv("DATABASE_URL"),

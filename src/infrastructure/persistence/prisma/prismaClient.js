@@ -7,7 +7,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import pg from "pg";
 
 /**
- * @typedef {import("../../../shared/config/appConfig.js").DatabaseConfig} DatabaseConfig
+ * @typedef {import("../../../app/config/appConfig.js").DatabaseConfig} DatabaseConfig
  */
 
 /**

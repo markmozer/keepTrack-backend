@@ -54,7 +54,6 @@ export function createUserController({
     async inviteUser(req, res, next) {
       try {
         const reqWithContext = asRequestWithContext(req);
-        const body = v.object(reqWithContext.body, "body");
         const targetUserId = reqWithContext.params.userId;
 
         const result = await inviteUserUseCase.execute({
