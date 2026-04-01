@@ -61,6 +61,11 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
     });
   }
 
+  function expectValidDate(value) {
+    expect(typeof value).toBe("string");
+    expect(new Date(value).toString()).not.toBe("Invalid Date");
+  }
+
   describe("authorization", () => {
     it("returns 201 when user has SUPER_ADMIN role", async () => {
       const { api } = await setupSuperAdmin();
@@ -80,9 +85,14 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
           slug: "mozer-consulting",
           status: "ACTIVE",
           type: "CLIENT",
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         },
         error: null,
       });
+
+      expectValidDate(response.body.payload.createdAt);
+      expectValidDate(response.body.payload.updatedAt);
 
       const row = await container.prisma.tenant.findUnique({
         where: { slug: "mozer-consulting" },
@@ -280,8 +290,6 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
       });
 
       expectAppError(second, 422);
-
-
     });
   });
 });

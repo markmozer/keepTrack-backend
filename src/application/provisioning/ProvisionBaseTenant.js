@@ -2,7 +2,9 @@
  * File: src/application/provisioning/ProvisionBaseTenant.js
  */
 
-// imports for port assertion
+import { randomUUID } from "node:crypto";
+
+// port assertions
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
 import { assertRoleRepositoryPort } from "../ports/roles/RoleRepositoryPort.js";
@@ -12,18 +14,15 @@ import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
 import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
 import { assertTenantLinkBuilderServicePort } from "../ports/urls/TenantLinkBuilderServicePort.js";
 
-// imports for validation
+// validation
 import { v } from "../../domain/shared/validation/validators.js";
 import { validateProvisioningPrincipal } from "../auth/validateProvisioningPrincipal.js";
 import { validateProvisionBaseTenantPayload } from "./provisionBaseTenant.validation.js";
 
-// error imports
-import {
-  ConflictError,
-  ValidationError,
-} from "../../domain/shared/errors/index.js";
+// errors
+import { ConflictError } from "../../domain/shared/errors/index.js";
 
-// other domain imports
+// domain
 import { TenantType } from "../../domain/tenants/TenantType.js";
 import { TenantStatus } from "../../domain/tenants/TenantStatus.js";
 import { Role } from "../../domain/authz/authz.types.js";
@@ -31,15 +30,16 @@ import {
   UserStatus,
   isStatusForInviteUser,
 } from "../../domain/users/UserStatus.js";
+import { getSystemRoles } from "../../domain/authz/getSystemRoles.js";
 
-// mapper imports
+// mappers
 import { toTenantDto } from "../tenants/tenant.mappers.js";
-import { toRoleDto } from "../roles/role.mappers.js";
+import { toRoleAdminDto } from "../roles/role.mappers.js";
 import { toUserAdminDto } from "../users/user.mappers.js";
 import { toUserRoleDto } from "../userRoles/userRole.mappers.js";
 
-// other imports
-import { randomUUID } from "node:crypto";
+// use cases
+import { SeedTenantRoles } from "./SeedTenantRoles.js";
 
 /**
  * @typedef {Object} EnsureTenantResult
@@ -48,9 +48,9 @@ import { randomUUID } from "node:crypto";
  */
 
 /**
- * @typedef {Object} EnsureSuperAdminRoleResult
- * @property {"create" | "read"} roleAction
- * @property {import("../ports/roles/role.types.js").RoleRow} provisionedRole
+ * @typedef {Object} EnsureRolesResult
+ * @property {"ensure"} roleAction
+ * @property {import("../ports/roles/role.types.js").RoleAdminRow[]} ensuredRoles
  */
 
 /**
@@ -66,7 +66,7 @@ import { randomUUID } from "node:crypto";
  */
 
 /**
- * @typedef {Object} IssueInviteResult
+ * @typedef {Object} InviteUserResult
  * @property {"create" | "update"} inviteUserAction
  * @property {import("../ports/users/user.types.js").UserAdminRow} invitedUser
  * @property {string} tokenPlaintext
@@ -102,6 +102,7 @@ export class ProvisionBaseTenant {
     assertClockServicePort(clockService);
     assertTenantLinkBuilderServicePort(tenantLinkBuilderService);
     assertEmailServicePort(emailService);
+
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
@@ -110,11 +111,16 @@ export class ProvisionBaseTenant {
     this.clockService = clockService;
     this.tenantLinkBuilderService = tenantLinkBuilderService;
     this.emailService = emailService;
+
+    this.seedTenantRoles = new SeedTenantRoles({
+      roleRepository: this.roleRepository,
+      getSystemRoles,
+    });
   }
 
   /**
    * @param {{name: string, slug: string, now: Date}} params
-   * @returns{Promise<EnsureTenantResult>}
+   * @returns {Promise<EnsureTenantResult>}
    */
   async ensureBaseTenant({ name, slug, now }) {
     const existing = await this.tenantRepository.findByType(TenantType.BASE);
@@ -122,7 +128,7 @@ export class ProvisionBaseTenant {
     if (existing) {
       if (existing.name !== name || existing.slug !== slug) {
         throw new ConflictError(
-          "A BASE tenant already exists with other details",
+          "A BASE tenant already exists with other details.",
           { name: existing.name, slug: existing.slug },
         );
       }
@@ -151,37 +157,25 @@ export class ProvisionBaseTenant {
 
   /**
    * @param {{tenantId: string, now: Date}} params
-   * @returns{Promise<EnsureSuperAdminRoleResult>}
+   * @returns {Promise<EnsureRolesResult>}
    */
-  async ensureSuperAdminRole({ tenantId, now }) {
-    const existing = await this.roleRepository.findByName({
+  async ensureRoles({ tenantId, now }) {
+    const { roles } = await this.seedTenantRoles.execute({
       tenantId,
-      name: Role.SUPER_ADMIN,
-    });
-
-    if (existing) {
-      return {
-        roleAction: "read",
-        provisionedRole: existing,
-      };
-    }
-    const created = await this.roleRepository.create({
-      id: randomUUID(),
-      tenantId,
-      name: Role.SUPER_ADMIN,
+      type: "BASE",
       createdAt: now,
       updatedAt: now,
     });
 
     return {
-      roleAction: "create",
-      provisionedRole: created,
+      roleAction: "ensure",
+      ensuredRoles: roles,
     };
   }
 
   /**
    * @param {{tenantId: string, email: string, now: Date}} params
-   * @returns{Promise<EnsureUserResult>}
+   * @returns {Promise<EnsureUserResult>}
    */
   async ensureUser({ tenantId, email, now }) {
     const existing = await this.userRepository.findByEmail({
@@ -189,14 +183,8 @@ export class ProvisionBaseTenant {
       email,
     });
 
-    if (existing && existing.status === UserStatus.INACTIVE) {
+    if (existing?.status === UserStatus.INACTIVE) {
       throw new ConflictError("Base tenant admin user exists but is inactive.");
-    }
-
-    if (existing && existing.status === UserStatus.ACTIVE) {
-      throw new ConflictError(
-        "Base tenant admin user exists and is already active.",
-      );
     }
 
     if (existing) {
@@ -223,7 +211,7 @@ export class ProvisionBaseTenant {
 
   /**
    * @param {{tenantId: string, userId: string, roleId: string, now: Date}} params
-   * @returns{Promise<EnsureUserRoleResult>}
+   * @returns {Promise<EnsureUserRoleResult>}
    */
   async ensureUserRole({ tenantId, userId, roleId, now }) {
     const existing = await this.userRoleRepository.findByUserAndRole({
@@ -233,21 +221,19 @@ export class ProvisionBaseTenant {
     });
 
     if (existing) {
-      if (
-        existing.validFrom >= now ||
-        (existing.validTo !== null && existing.validTo < now)
-      ) {
+      const isNotYetValid = existing.validFrom > now;
+      const isExpired = existing.validTo !== null && existing.validTo < now;
+
+      if (isNotYetValid || isExpired) {
         throw new ConflictError(
-          "UserRole already assigned to user, but outside of validity",
+          "UserRole already assigned to user, but outside of validity.",
           {
             validFrom: existing.validFrom.toISOString(),
             validTo: existing.validTo ? existing.validTo.toISOString() : null,
           },
         );
       }
-    }
 
-    if (existing) {
       return {
         userRoleAction: "read",
         provisionedUserRole: existing,
@@ -273,9 +259,9 @@ export class ProvisionBaseTenant {
 
   /**
    * @param {{user: import("../ports/users/user.types.js").UserAdminRow, slug: string, now: Date}} params
-   * @returns{Promise<IssueInviteResult>}
+   * @returns {Promise<InviteUserResult>}
    */
-  async issueInviteUser({ user, slug, now }) {
+  async inviteUser({ user, slug, now }) {
     const inviteUserAction =
       user.status === UserStatus.NEW ? "create" : "update";
 
@@ -292,10 +278,8 @@ export class ProvisionBaseTenant {
       updatedAt: now,
     });
 
-    // make sure that expiresAt is a valid date
-    const returnedExpiresAt = updated.inviteTokenExpiresAt;
-    if (!(returnedExpiresAt instanceof Date)) {
-      throw new Error("Invite token expiration not set correctly");
+    if (!(updated.inviteTokenExpiresAt instanceof Date)) {
+      throw new Error("Invite token expiration not set correctly.");
     }
 
     const inviteLink = this.tenantLinkBuilderService.buildInviteLink({
@@ -306,7 +290,7 @@ export class ProvisionBaseTenant {
     await this.emailService.sendInviteUserEmail({
       to: updated.email,
       link: inviteLink,
-      expiresAt: returnedExpiresAt,
+      expiresAt: updated.inviteTokenExpiresAt,
       validityPeriod: `${ttlDays} days`,
     });
 
@@ -325,7 +309,6 @@ export class ProvisionBaseTenant {
     const obj = v.object(input, "ProvisionBaseTenantUCInput");
 
     validateProvisioningPrincipal(obj.principal);
-
     const payload = validateProvisionBaseTenantPayload(obj.payload);
 
     const now = this.clockService.now();
@@ -336,10 +319,18 @@ export class ProvisionBaseTenant {
       now,
     });
 
-    const { roleAction, provisionedRole } = await this.ensureSuperAdminRole({
+    const { roleAction, ensuredRoles } = await this.ensureRoles({
       tenantId: provisionedTenant.id,
       now,
     });
+
+    const superAdminRole = ensuredRoles.find(
+      (role) => role.name === Role.SUPER_ADMIN,
+    );
+
+    if (!superAdminRole) {
+      throw new Error("SUPER_ADMIN role not found after seeding base tenant roles.");
+    }
 
     const { userAction, provisionedUser } = await this.ensureUser({
       tenantId: provisionedTenant.id,
@@ -350,28 +341,31 @@ export class ProvisionBaseTenant {
     const { userRoleAction, provisionedUserRole } = await this.ensureUserRole({
       tenantId: provisionedTenant.id,
       userId: provisionedUser.id,
-      roleId: provisionedRole.id,
+      roleId: superAdminRole.id,
       now,
     });
 
-    if (!isStatusForInviteUser(provisionedUser.status)) {
-      throw new ValidationError("user status must be NEW or INVITED", {
-        status: provisionedUser.status,
-      });
-    }
+    let inviteUserAction = "not sent";
+    let invitedUser = provisionedUser;
+    let tokenPlaintext = "no token generated";
 
-    const { inviteUserAction, invitedUser, tokenPlaintext } =
-      await this.issueInviteUser({
+    if (isStatusForInviteUser(provisionedUser.status)) {
+      ({
+        inviteUserAction,
+        invitedUser,
+        tokenPlaintext,
+      } = await this.inviteUser({
         user: provisionedUser,
         slug: payload.slug,
         now,
-      });
+      }));
+    }
 
     return {
       tenantAction,
       provisionedTenant: toTenantDto(provisionedTenant),
       roleAction,
-      provisionedRole: toRoleDto(provisionedRole),
+      provisionedRoles: ensuredRoles.map(toRoleAdminDto),
       userAction,
       provisionedUser: toUserAdminDto(provisionedUser),
       userRoleAction,

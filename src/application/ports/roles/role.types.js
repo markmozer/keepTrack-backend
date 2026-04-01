@@ -139,4 +139,14 @@
  * @property {string} name
  */
 
+/**
+ * Input for ensureRole
+ * 
+ * @typedef {Object} EnsureRoleRepoInput
+ * @property {string} tenantId
+ * @property {string} name
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
+ */
+
 export {};

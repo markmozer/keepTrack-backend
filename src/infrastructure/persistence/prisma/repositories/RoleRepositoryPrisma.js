@@ -74,43 +74,60 @@ export class RoleRepositoryPrisma {
     return row;
   }
 
-   /**
-     * @param {import("../../../../application/ports/roles/role.types.js").FindRolesPageRepoInput} input
-     * @returns {Promise<import("../../../../application/ports/roles/role.types.js").FindRolesPageRepoResult>}
-     */
-    async findPage(input) {
-      const { tenantId, skip, take, filters, sort } = input;
-  
-      const where = {
-        tenantId,
-        ...(filters.roleName
-          ? {
-              name: {
-                contains: filters.roleName,
-                mode: "insensitive",
-              },
-            }
-          : {}),
-      };
-  
-      const orderBy = {
-        [sort.field]: sort.direction,
-      };
-  
-      const [items, totalItems] = await this.prisma.$transaction([
-        this.prisma.role.findMany({
-          where,
-          skip,
-          take,
-          orderBy,
-          select: roleRowSelect,
-        }),
-        this.prisma.role.count({ where }),
-      ]);
-  
-      return {
-        items,
-        totalItems,
-      };
-    }
+  /**
+   * @param {import("../../../../application/ports/roles/role.types.js").EnsureRoleRepoInput} input
+   * @returns {Promise<import("../../../../application/ports/roles/role.types.js").RoleAdminRow>}
+   */
+  async ensure(input) {
+    const createdAt = input.createdAt ? input.createdAt : undefined;
+    const updatedAt = input.updatedAt ? input.updatedAt : undefined;
+    
+    const row = await this.prisma.role.upsert({
+      where: { tenantId_name: { tenantId: input.tenantId, name: input.name } },
+      update: {},
+      create: { tenantId: input.tenantId, name: input.name, createdAt, updatedAt },
+    });
+
+    return row;
+  }
+
+  /**
+   * @param {import("../../../../application/ports/roles/role.types.js").FindRolesPageRepoInput} input
+   * @returns {Promise<import("../../../../application/ports/roles/role.types.js").FindRolesPageRepoResult>}
+   */
+  async findPage(input) {
+    const { tenantId, skip, take, filters, sort } = input;
+
+    const where = {
+      tenantId,
+      ...(filters.roleName
+        ? {
+            name: {
+              contains: filters.roleName,
+              mode: "insensitive",
+            },
+          }
+        : {}),
+    };
+
+    const orderBy = {
+      [sort.field]: sort.direction,
+    };
+
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.role.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: roleRowSelect,
+      }),
+      this.prisma.role.count({ where }),
+    ]);
+
+    return {
+      items,
+      totalItems,
+    };
+  }
 }

@@ -8,6 +8,7 @@
  * @typedef {import("./role.types.js").FindRoleByIdRepoInput} FindRoleByIdRepoInput
  * @typedef {import("./role.types.js").FindRoleByNameRepoInput} FindRoleByNameRepoInput
  * @typedef {import("./role.types.js").FindRolesPageRepoInput} FindRolesPageRepoInput
+ * @typedef {import("./role.types.js").EnsureRoleRepoInput} EnsureRoleRepoInput
  */
 
 /**
@@ -23,6 +24,7 @@
  * @property {(input: FindRoleByNameRepoInput) => Promise<RoleAdminRow | null>} findByName
  * @property {(input: CreateRoleRepoInput) => Promise<RoleAdminRow>} create
  * @property {(input: FindRolesPageRepoInput) => Promise<FindRolesPageRepoResult>} findPage
+ * @property {(input: EnsureRoleRepoInput) => Promise<RoleAdminRow>} ensure
  */
 
 
@@ -46,4 +48,5 @@ export function assertRoleRepositoryPort(repo) {
   if (typeof (/** @type {any} */ (repo).findById) !== "function") throw new Error(errorMsg("findById(...)"));
   if (typeof (/** @type {any} */ (repo).findByName) !== "function") throw new Error(errorMsg("findByName(...)"));  
   if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
+  if (typeof (/** @type {any} */ (repo).ensure) !== "function") throw new Error(errorMsg("ensureRole(...)"));
 }

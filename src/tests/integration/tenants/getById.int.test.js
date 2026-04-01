@@ -2,7 +2,6 @@
  * File: src/tests/integration/tenants/getById.int.test.js
  */
 
-
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
@@ -72,6 +71,10 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
     });
   }
 
+  function expectValidDate(value) {
+    expect(typeof value).toBe("string");
+    expect(new Date(value).toString()).not.toBe("Invalid Date");
+  }
 
   describe("authorization", () => {
     it("returns 200 when user has SUPER_ADMIN role and reads any tenant", async () => {
@@ -88,9 +91,14 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
           slug: baseTenant.slug,
           status: baseTenant.status,
           type: baseTenant.type,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         },
         error: null,
       });
+
+      expectValidDate(response_own.body.payload.createdAt);
+      expectValidDate(response_own.body.payload.updatedAt);
 
       const response_other = await api.get(`/api/tenants/${clientTenant.id}`);
 
@@ -103,10 +111,13 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
           slug: clientTenant.slug,
           status: clientTenant.status,
           type: clientTenant.type,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         },
         error: null,
       });
-
+      expectValidDate(response_other.body.payload.createdAt);
+      expectValidDate(response_other.body.payload.updatedAt);
     });
     it("returns 200 when non-SUPER_ADMIN user reads own tenant", async () => {
       const { api } = await setupAdmin(clientTenant);
@@ -122,9 +133,13 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
           slug: clientTenant.slug,
           status: clientTenant.status,
           type: clientTenant.type,
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         },
         error: null,
       });
+      expectValidDate(response.body.payload.createdAt);
+      expectValidDate(response.body.payload.updatedAt);
     });
 
     it("returns 403 when non-SUPER_ADMIN user reads another tenant", async () => {
