@@ -43,6 +43,7 @@ import { GetSessionHealth } from "../application/system/GetSessionHealth.js";
 import { GetSystemHealth } from "../application/system/GetSystemHealth.js";
 import { GetUsers } from "../application/users/GetUsers.js";
 import { GetRoles } from "../application/roles/GetRoles.js";
+import { GetTenants } from "../application/tenants/GetTenants.js";
 
 /**
  * @typedef {Object} Repositories
@@ -82,6 +83,7 @@ import { GetRoles } from "../application/roles/GetRoles.js";
  * @property {import("../application/system/GetSystemHealth.js").GetSystemHealth} getSystemHealth
  * @property {import("../application/users/GetUsers.js").GetUsers} getUsers
  * @property {import("../application/roles/GetRoles.js").GetRoles} getRoles
+ * @property {import("../application/tenants/GetTenants.js").GetTenants} getTenants
  */
 
 /**
@@ -104,8 +106,7 @@ import { GetRoles } from "../application/roles/GetRoles.js";
  * @param {{appConfig: import("./config/appConfig.js").AppConfig}} params
  * @returns {Container}
  */
-export function buildContainer({appConfig}) {
-
+export function buildContainer({ appConfig }) {
   // --- Infrastructure ---
   const prisma = createPrisma({
     config: appConfig.database,
@@ -273,10 +274,14 @@ export function buildContainer({appConfig}) {
     userRepository,
     authorizeAction,
   });
-    const getRoles = new GetRoles({
+  const getRoles = new GetRoles({
     roleRepository,
     authorizeAction,
   });
+  const getTenants = new GetTenants({
+    tenantRepository,
+    authorizeAction,
+  })
 
   const useCases = {
     authenticateUser,
@@ -295,6 +300,7 @@ export function buildContainer({appConfig}) {
     getSystemHealth,
     getUsers,
     getRoles,
+    getTenants,
   };
 
   const provisioning = {

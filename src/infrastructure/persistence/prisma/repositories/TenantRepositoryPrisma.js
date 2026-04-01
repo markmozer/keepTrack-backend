@@ -4,17 +4,18 @@
 
 /**
  * @typedef {import("../../../../application/ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
- * @typedef {import("../../../../application/ports/tenants/tenant.types.js").TenantRow} TenantRow
- * @typedef {import("../../../../application/ports/tenants/tenant.types.js").CreateTenantRepoInput} CreateTenantRepoInput
- * @typedef {import("../../../../domain/tenants/TenantType.js").TenantTypeValue} TenantType
  */
 
-const tenantSelect = {
+const tenantRowSelect = {
   id: true,
   name: true,
   slug: true,
   type: true,
   status: true,
+};
+
+const tenantAdminRowSelect = {
+  ...tenantRowSelect,
   createdAt: true,
   updatedAt: true,
 };
@@ -33,25 +34,25 @@ export class TenantRepositoryPrisma {
 
   /**
    * @param {string} id
-   * @returns {Promise<TenantRow | null>}
+   * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").TenantAdminRow | null>}
    */
   async findById(id) {
     const row = await this.prisma.tenant.findUnique({
       where: { id },
-      select: tenantSelect,
+      select: tenantAdminRowSelect,
     });
 
     return row ? row : null;
   }
 
   /**
-   * @param {TenantType} type
-   * @returns {Promise<TenantRow| null>}
+   * @param {import("../../../../domain/tenants/TenantType.js").TenantTypeValue} type
+   * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").TenantAdminRow| null>}
    */
   async findByType(type) {
     const row = await this.prisma.tenant.findFirst({
       where: { type },
-      select: tenantSelect,
+      select: tenantAdminRowSelect,
     });
 
     return row ? row : null;
@@ -59,20 +60,20 @@ export class TenantRepositoryPrisma {
 
   /**
    * @param {string} slug
-   * @returns {Promise<TenantRow| null>}
+   * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").TenantAdminRow | null>}
    */
   async findBySlug(slug) {
     const row = await this.prisma.tenant.findUnique({
       where: { slug },
-      select: tenantSelect,
+      select: tenantAdminRowSelect,
     });
 
     return row ? row : null;
   }
 
   /**
-   * @param {CreateTenantRepoInput} input
-   * @returns {Promise<TenantRow>}
+   * @param {import("../../../../application/ports/tenants/tenant.types.js").CreateTenantRepoInput} input
+   * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").TenantAdminRow>}
    */
   async create(input) {
     const row = await this.prisma.tenant.create({
@@ -85,9 +86,66 @@ export class TenantRepositoryPrisma {
         createdAt: input.createdAt,
         updatedAt: input.updatedAt,
       },
-      select: tenantSelect,
+      select: tenantAdminRowSelect,
     });
 
     return row;
   }
+
+  /**
+     * @param {import("../../../../application/ports/tenants/tenant.types.js").FindTenantsPageRepoInput} input
+     * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").FindTenantsPageRepoResult>}
+     */
+    async findPage(input) {
+      const { skip, take, filters, sort } = input;
+  
+      const where = {
+        ...(filters.name
+          ? {
+              name: {
+                contains: filters.name,
+                mode: "insensitive",
+              },
+            }
+          : {}),
+        ...(filters.slug
+          ? {
+              slug: {
+                contains: filters.slug,
+                mode: "insensitive",
+              },
+            }
+          : {}),
+        ...(filters.type
+          ? {
+              type: filters.type,
+            }
+          : {}),    
+        ...(filters.status
+          ? {
+              status: filters.status,
+            }
+          : {}),
+      };
+  
+      const orderBy = {
+        [sort.field]: sort.direction,
+      };
+  
+      const [items, totalItems] = await this.prisma.$transaction([
+        this.prisma.tenant.findMany({
+          where,
+          skip,
+          take,
+          orderBy,
+          select: tenantRowSelect,
+        }),
+        this.prisma.tenant.count({ where }),
+      ]);
+  
+      return {
+        items,
+        totalItems,
+      };
+    }
 }

@@ -12,7 +12,7 @@ import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toTenantDto } from "./tenant.mappers.js";
+import { toTenantAdminDto } from "./tenant.mappers.js";
 
 
 export class GetTenantById {
@@ -56,6 +56,6 @@ export class GetTenantById {
       throw new ResourceNotFoundError("tenant", { tenantId: tenantId });
     }
 
-    return toTenantDto(tenantRow);
+    return toTenantAdminDto(tenantRow);
   }
 }

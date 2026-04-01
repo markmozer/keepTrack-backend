@@ -15,7 +15,7 @@ import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
 import { randomUUID } from "node:crypto";
-import { toTenantDto } from "./tenant.mappers.js";
+import { toTenantAdminDto } from "./tenant.mappers.js";
 
 export class CreateTenant {
   /**
@@ -71,6 +71,6 @@ export class CreateTenant {
       updatedAt: date,
     });
 
-    return toTenantDto(row);
+    return toTenantAdminDto(row);
   }
 }

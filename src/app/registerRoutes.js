@@ -36,6 +36,7 @@ export function registerRoutes(app, container) {
   const tenantController = createTenantController({
     createTenantUseCase: container.useCases.createTenant,
     getTenantByIdUseCase: container.useCases.getTenantById,
+    getTenantsUseCase: container.useCases.getTenants,
   });
 
   const roleController = createRoleController({
