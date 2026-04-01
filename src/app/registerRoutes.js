@@ -40,6 +40,7 @@ export function registerRoutes(app, container) {
 
   const roleController = createRoleController({
     createRoleUseCase: container.useCases.createRole,
+    getRolesUseCase: container.useCases.getRoles,
   });
 
   const userController = createUserController({

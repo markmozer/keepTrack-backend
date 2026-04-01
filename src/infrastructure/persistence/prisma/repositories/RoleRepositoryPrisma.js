@@ -4,16 +4,16 @@
 
 /**
  * @typedef {import("../../../../application/ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} RoleRepositoryPort
- * @typedef {import("../../../../application/ports/roles/role.types.js").RoleRow} RoleRow
- * @typedef {import("../../../../application/ports/roles/role.types.js").CreateRoleRepoInput} CreateRoleRepoInput
- * @typedef {import("../../../../application/ports/roles/role.types.js").FindRoleByIdRepoInput} FindRoleByIdRepoInput
- * @typedef {import("../../../../application/ports/roles/role.types.js").FindRoleByNameRepoInput} FindRoleByNameRepoInput
  */
 
-const roleSelect = {
+const roleRowSelect = {
   id: true,
   tenantId: true,
   name: true,
+};
+
+const roleAdminRowSelect = {
+  ...roleRowSelect,
   createdAt: true,
   updatedAt: true,
 };
@@ -30,34 +30,34 @@ export class RoleRepositoryPrisma {
   }
 
   /**
-   * @param {FindRoleByIdRepoInput} params
-   * @returns {Promise<RoleRow | null>}
+   * @param {import("../../../../application/ports/roles/role.types.js").FindRoleByIdRepoInput} params
+   * @returns {Promise<import("../../../../application/ports/roles/role.types.js").RoleAdminRow | null>}
    */
   async findById({ tenantId, roleId }) {
     const row = await this.prisma.role.findFirst({
       where: { id: roleId, tenantId },
-      select: roleSelect,
+      select: roleAdminRowSelect,
     });
 
     return row ? row : null;
   }
 
   /**
-   * @param {FindRoleByNameRepoInput} params
-   * @returns {Promise<RoleRow| null>}
+   * @param {import("../../../../application/ports/roles/role.types.js").FindRoleByNameRepoInput} params
+   * @returns {Promise<import("../../../../application/ports/roles/role.types.js").RoleAdminRow| null>}
    */
   async findByName({ tenantId, name }) {
     const row = await this.prisma.role.findUnique({
       where: { tenantId_name: { tenantId, name } },
-      select: roleSelect,
+      select: roleAdminRowSelect,
     });
 
     return row ? row : null;
   }
 
   /**
-   * @param {CreateRoleRepoInput} input
-   * @returns {Promise<RoleRow>}
+   * @param {import("../../../../application/ports/roles/role.types.js").CreateRoleRepoInput} input
+   * @returns {Promise<import("../../../../application/ports/roles/role.types.js").RoleAdminRow>}
    */
   async create(input) {
     const row = await this.prisma.role.create({
@@ -68,9 +68,49 @@ export class RoleRepositoryPrisma {
         createdAt: input.createdAt,
         updatedAt: input.updatedAt,
       },
-      select: roleSelect,
+      select: roleAdminRowSelect,
     });
 
     return row;
   }
+
+   /**
+     * @param {import("../../../../application/ports/roles/role.types.js").FindRolesPageRepoInput} input
+     * @returns {Promise<import("../../../../application/ports/roles/role.types.js").FindRolesPageRepoResult>}
+     */
+    async findPage(input) {
+      const { tenantId, skip, take, filters, sort } = input;
+  
+      const where = {
+        tenantId,
+        ...(filters.roleName
+          ? {
+              name: {
+                contains: filters.roleName,
+                mode: "insensitive",
+              },
+            }
+          : {}),
+      };
+  
+      const orderBy = {
+        [sort.field]: sort.direction,
+      };
+  
+      const [items, totalItems] = await this.prisma.$transaction([
+        this.prisma.role.findMany({
+          where,
+          skip,
+          take,
+          orderBy,
+          select: roleRowSelect,
+        }),
+        this.prisma.role.count({ where }),
+      ]);
+  
+      return {
+        items,
+        totalItems,
+      };
+    }
 }

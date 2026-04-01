@@ -2,13 +2,32 @@
  * File: src/application/ports/roles/role.types.js
  */
 
-// =====================================================
-// Repository models returned by persistance layer.
-// =====================================================
+// ============================================================
+// Infrastructure layer     select              roleRowSelect
+// Infrastructure layer     return model        roleRow
+// Application layer        return model        roleDto
+// ============================================================
 /**
- * matches roleSelect
- *
  * @typedef {Object} RoleRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} name
+ */
+
+/**
+ * @typedef {Object} RoleDto
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} name
+ */
+
+// ============================================================
+// Infrastructure layer     select              roleAdminRowSelect
+// Infrastructure layer     return model        roleAdminRow
+// Application layer        return model        roleAdminDto
+// ============================================================
+/**
+ * @typedef {Object} RoleAdminRow
  * @property {string} id
  * @property {string} tenantId
  * @property {string} name
@@ -16,23 +35,13 @@
  * @property {Date} updatedAt
  */
 
-// =====================================================
-// DTOs returned by application layer.
-// =====================================================
 /**
- * mapped from RoleRow
- *
- * @typedef {Object} RoleDto
+ * @typedef {Object} RoleAdminDto
  * @property {string} id
  * @property {string} tenantId
  * @property {string} name
- */
-
-/**
- * For auth
- *
- * @typedef {Object} RoleNameDto
- * @property {string} name
+ * @property {string} createdAt
+ * @property {string} updatedAt
  */
 
 // =====================================================
@@ -61,6 +70,52 @@
  * @property {string} name
  * @property {Date} createdAt
  * @property {Date} updatedAt
+ */
+
+// --- GetRoles ---
+
+/**
+ * @typedef {Object} GetRolesFilters
+ * @property {string} [roleName]
+ */
+
+/**
+ * @typedef {Object} GetRolesUCPayload
+ * @property {import("../../shared/pagination/pagination.types.js").PaginationInput} [pagination]
+ * @property {GetRolesFilters} [filters]
+ * @property {import("../../shared/pagination/pagination.types.js").SortInput} [sort]
+ */
+
+/**
+ * @typedef {Object} GetRolesUCInput
+ * @property {unknown} principal
+ * @property {GetRolesUCPayload} payload
+ */
+
+/**
+ * Repository filter input after normalization.
+ *
+ * @typedef {Object} GetRolesFiltersRepo
+ * @property {string | undefined} roleName
+ */
+
+/**
+ * @typedef {Object} FindRolesPageRepoInput
+ * @property {string} tenantId
+ * @property {number} skip
+ * @property {number} take
+ * @property {GetRolesFiltersRepo} filters
+ * @property {import("../../shared/pagination/pagination.types.js").SortNormalized} sort
+ */
+
+/**
+ * @typedef {Object} FindRolesPageRepoResult
+ * @property {RoleRow[]} items
+ * @property {number} totalItems
+ */
+
+/**
+ * @typedef {import("../../shared/pagination/pagination.types.js").PagedResult<RoleDto>} GetRolesUCOutput
  */
 
 

@@ -11,13 +11,15 @@
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  * @typedef {import("./user.types.js").MarkAsPwdResetRequestedRepoInput} MarkAsPwdResetRequestedRepoInput
  * @typedef {import("./user.types.js").FindUsersPageRepoInput} FindUsersPageRepoInput
- * @typedef {import("./user.types.js").FindUsersPageRepoResult} FindUsersPageRepoResult
  * @typedef {import("../auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
- *
+ */
+
+ /**
  * Repo Output
  * @typedef {import("./user.types.js").UserRow} UserRow
  * @typedef {import("./user.types.js").UserAdminRow} UserAdminRow
  * @typedef {import("./user.types.js").UserAuthRow} UserAuthRow
+ * @typedef {import("./user.types.js").FindUsersPageRepoResult} FindUsersPageRepoResult
  */
 
 /**

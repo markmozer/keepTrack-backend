@@ -42,6 +42,7 @@ import { GetDbHealth } from "../application/system/GetDbHealth.js";
 import { GetSessionHealth } from "../application/system/GetSessionHealth.js";
 import { GetSystemHealth } from "../application/system/GetSystemHealth.js";
 import { GetUsers } from "../application/users/GetUsers.js";
+import { GetRoles } from "../application/roles/GetRoles.js";
 
 /**
  * @typedef {Object} Repositories
@@ -80,6 +81,7 @@ import { GetUsers } from "../application/users/GetUsers.js";
  * @property {import("../application/system/GetSessionHealth.js").GetSessionHealth} getSessionHealth
  * @property {import("../application/system/GetSystemHealth.js").GetSystemHealth} getSystemHealth
  * @property {import("../application/users/GetUsers.js").GetUsers} getUsers
+ * @property {import("../application/roles/GetRoles.js").GetRoles} getRoles
  */
 
 /**
@@ -271,6 +273,10 @@ export function buildContainer({appConfig}) {
     userRepository,
     authorizeAction,
   });
+    const getRoles = new GetRoles({
+    roleRepository,
+    authorizeAction,
+  });
 
   const useCases = {
     authenticateUser,
@@ -288,6 +294,7 @@ export function buildContainer({appConfig}) {
     getSessionHealth,
     getSystemHealth,
     getUsers,
+    getRoles,
   };
 
   const provisioning = {

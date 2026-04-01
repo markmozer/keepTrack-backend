@@ -3,8 +3,8 @@
  */
 
 import express from "express";
-import {requireAuth} from "../middleware/requireAuth.middleware.js";
-import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js";
+import { requireAuth } from "../middleware/requireAuth.middleware.js";
+import { requireTenantMiddleware } from "../middleware/requireTenant.middleware.js";
 
 /**
  * @param {{ roleController: any }} deps
@@ -12,8 +12,18 @@ import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js
 export function createRolesRouter({ roleController }) {
   const router = express.Router();
 
-  router.post("/",requireTenantMiddleware ,requireAuth, roleController.createRole);
-
+  router.post(
+    "/",
+    requireTenantMiddleware,
+    requireAuth,
+    roleController.createRole,
+  );
+  router.get(
+    "/",
+    requireTenantMiddleware,
+    requireAuth,
+    roleController.getRoles,
+  );
 
   return router;
 }
