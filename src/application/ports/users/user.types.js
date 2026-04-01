@@ -79,40 +79,6 @@
  * @property {{ role: { name: string } }[]} userRoles
  */
 
-
-// =====================================================
-// DTOs returned by application layer.
-// =====================================================
-/**
- * mapped from UserRowPublic
- *
- * @typedef {Object} UserDtoPublic
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {string | null} inviteTokenExpiresAt
- * @property {string | null} resetTokenExpiresAt
- * @property {UserStatus} status
- */
-
-
-/**
- * DTO returned by application layer
- * (user + roles flattened)
- *
- * @typedef {Object} UserDtoPublicWithRoles
- * @property {string} tenantId
- * @property {string} id
- * @property {string} email
- * @property {string | null} inviteTokenExpiresAt
- * @property {string | null} resetTokenExpiresAt
- * @property {UserStatus} status
- * @property {string} createdAt
- * @property {string} updatedAt
- * @property {string[]} roleNames
- */
-
-
 // =====================================================
 // Use Case related
 // =====================================================

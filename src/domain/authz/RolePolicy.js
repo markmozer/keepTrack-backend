@@ -54,11 +54,19 @@ export class RolePolicy {
       }
     }
 
-    // 2) optionele instance-level exceptions (voorbeeld: USER mag zichzelf updaten)
+    // 2) optionele instance-level exceptions 
+    // (USER mag zichzelf updaten)
     if (resource === "user" && (action === "read" || action === "update")) {
       // context.ownerId = de userId van de user die je probeert te lezen/updaten
       if (context.ownerId && context.ownerId === principal.userId) return true;
     }
+    // (USER mag zijn eigen tenant lezen)
+    if (resource === "tenant" && action === "read") {
+      // context.ownerId = de tenantId van de tenant die je probeert te lezen
+      if (context.ownerId && context.ownerId === principal.tenantId) return true;
+    }
+
+
 
     return false;
   }

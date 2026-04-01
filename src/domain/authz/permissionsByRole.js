@@ -62,7 +62,6 @@ export const permissionsByRole = Object.freeze({
     ...resourceAdmin("roleAssignment"),
   ],
   ADMIN: [
-    ...resourceViewer("tenant"),
     ...resourceAdmin("user"),
     ...resourceViewer("role"),
     ...resourceAdmin("roleAssignment"),

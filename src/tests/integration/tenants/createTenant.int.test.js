@@ -2,35 +2,35 @@
  * File: src/tests/integration/tenants/createTenant.int.test.js
  */
 
-import { loadAppConfig } from "../../../app/config/appConfig.js";
-import { createApp } from "../../../app/createApp.js";
-
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
-import { resetDatabase } from "../../helpers/resetDatabase.js";
-import { setupBaseTenantWithSuperAdmin } from "../../helpers/fixtures/setupBaseTenantWithSuperAdmin.js";
+
+import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
+import { resetDatabase } from "../../helpers/db/resetDatabase.js";
+import { seedTenant } from "../../helpers/seed/seedTenant.js";
+import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
+import { createApiClient } from "../../helpers/http/apiClient.js";
+import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
 describe("CreateTenant (integration) POST /api/tenants", () => {
-  let appConfig;
   let container;
   let app;
-  let tenant;
-  let superAdminUser;
-  let api;
+  let baseTenant;
 
   beforeAll(async () => {
-    appConfig = loadAppConfig();
-    ({ app, container } = await createApp({ appConfig }));
+    ({ app, container } = await createTestApp());
   });
 
   beforeEach(async () => {
     await resetDatabase({ prisma: container.prisma });
 
-    ({ tenant, superAdminUser, api } =
-      await setupBaseTenantWithSuperAdmin({
-        app,
-        prisma: container.prisma,
-        container,
-      }));
+    baseTenant = await seedTenant({
+      prisma: container.prisma,
+      payload: {
+        name: "Base Tenant",
+        slug: "base",
+        type: "BASE",
+      },
+    });
   });
 
   afterAll(async () => {
@@ -39,144 +39,249 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
     }
   });
 
-  it("creates a tenant", async () => {
-    const name = "Mozer Consulting";
-    const slug = "mozer-consulting";
-    const type = "CLIENT";
+  async function setupSuperAdmin() {
+    return setupAuthenticatedPrincipal({
+      app,
+      prisma: container.prisma,
+      container,
+      tenant: baseTenant,
+      email: "superadmin@example.com",
+      roleNames: ["SUPER_ADMIN"],
+    });
+  }
 
-    const response = await api.post("/api/tenants").send({
-      name,
-      slug,
-      type,
+  async function setupAdmin() {
+    return setupAuthenticatedPrincipal({
+      app,
+      prisma: container.prisma,
+      container,
+      tenant: baseTenant,
+      email: "admin@example.com",
+      roleNames: ["ADMIN"],
+    });
+  }
+
+  describe("authorization", () => {
+    it("returns 201 when user has SUPER_ADMIN role", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const response = await api.post("/api/tenants").send({
+        name: "Mozer Consulting",
+        slug: "mozer-consulting",
+        type: "CLIENT",
+      });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toEqual({
+        success: true,
+        payload: {
+          id: expect.any(String),
+          name: "Mozer Consulting",
+          slug: "mozer-consulting",
+          status: "ACTIVE",
+          type: "CLIENT",
+        },
+        error: null,
+      });
+
+      const row = await container.prisma.tenant.findUnique({
+        where: { slug: "mozer-consulting" },
+      });
+
+      expect(row).toBeTruthy();
+      expect(row?.name).toBe("Mozer Consulting");
+      expect(row?.slug).toBe("mozer-consulting");
+      expect(row?.status).toBe("ACTIVE");
+      expect(row?.type).toBe("CLIENT");
     });
 
-    expect(response.status).toBe(201);
+    it("returns 403 when user has ADMIN role", async () => {
+      const { api } = await setupAdmin();
 
-    expect(response.body).toEqual({
-      success: true,
-      payload: {
-        id: expect.any(String),
-        name,
-        slug,
-        status: "ACTIVE",
-        type,
-      },
-      error: null,
+      const response = await api.post("/api/tenants").send({
+        name: "Mozer Consulting",
+        slug: "mozer-consulting",
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 403);
     });
 
-    const row = await container.prisma.tenant.findUnique({
-      where: { slug },
+    it("returns 401 when principal is missing", async () => {
+      const api = createApiClient(app, baseTenant.slug);
+
+      const response = await api.post("/api/tenants").send({
+        name: "Mozer Consulting",
+        slug: "mozer-consulting",
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 401);
     });
-
-    expect(row).toBeTruthy();
-    expect(row?.name).toBe(name);
-    expect(row?.slug).toBe(slug);
-    expect(row?.status).toBe("ACTIVE");
-    expect(row?.type).toBe(type);
-  });
-  it("supports multiple tenants of type CLIENT", async () => {
-    const tenant1 = {
-      name: "Mozer Consulting", 
-      slug: "mozer-consulting", 
-      type: "CLIENT"
-    };
-
-    const tenant2 = {
-      name: "Acme Ltd.", 
-      slug: "acme", 
-      type: "CLIENT"
-    };
-
-    await api.post("/api/tenants").send({
-      name: tenant1.name,
-      slug: tenant1.slug,
-      type: tenant1.type,
-    });
-
-    const response = await api.post("/api/tenants").send({
-      name: tenant2.name,
-      slug: tenant2.slug,
-      type: tenant2.type,
-    })
-
-    expect(response.status).toBe(201);
-
-    expect(response.body).toEqual({
-      success: true,
-      payload: {
-        id: expect.any(String),
-        name: tenant2.name,
-        slug: tenant2.slug,
-        status: "ACTIVE",
-        type: tenant2.type,
-      },
-      error: null,
-    });
-
-    const row = await container.prisma.tenant.findUnique({
-      where: { slug: tenant2.slug },
-    });
-
-    expect(row).toBeTruthy();
-    expect(row?.name).toBe(tenant2.name);
-    expect(row?.slug).toBe(tenant2.slug);
-    expect(row?.status).toBe("ACTIVE");
-    expect(row?.type).toBe(tenant2.type);
-  });
-  it("returns 409 when slug already exists", async () => {
-    const tenant1 = {
-      name: "Mozer Consulting", 
-      slug: "mozer-consulting", 
-      type: "CLIENT"
-    };
-
-    const tenant2 = {
-      name: "Another Name", 
-      slug: tenant1.slug, 
-      type: "CLIENT"
-    };
-    
-
-    await api.post("/api/tenants").send({
-      name: tenant1.name,
-      slug: tenant1.slug,
-      type: tenant1.type,
-    });
-
-    const response = await api.post("/api/tenants").send({
-      name: tenant2.name,
-      slug: tenant2.slug,
-      type: tenant2.type,
-    });
-
-    expect(response.status).toBe(409);
-    expect(response.body.success).toBe(false);
   });
 
-  it("returns 422 when slug is invalid", async () => {
-    const name = "Mozer Consulting";
-    const slug = "mozer consulting";
-    const type = "CLIENT";
-    const response = await api.post("/api/tenants").send({
-      name,
-      slug,
-      type,
+  describe("business rules", () => {
+    it("returns 409 when a second BASE tenant is created", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const response = await api.post("/api/tenants").send({
+        name: "Second Base",
+        slug: "second-base",
+        type: "BASE",
+      });
+
+      expectAppError(response, 409);
     });
 
-    expect(response.status).toBe(422);
-    expect(response.body.success).toBe(false);
+    it("returns 409 when a second DEMO tenant is created", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const first = await api.post("/api/tenants").send({
+        name: "First Demo",
+        slug: "first-demo",
+        type: "DEMO",
+      });
+
+      expect(first.status).toBe(201);
+
+      const second = await api.post("/api/tenants").send({
+        name: "Second Demo",
+        slug: "second-demo",
+        type: "DEMO",
+      });
+
+      expectAppError(second, 409);
+    });
+
+    it("creates multiple CLIENT tenants", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const first = await api.post("/api/tenants").send({
+        name: "First Client",
+        slug: "first-client",
+        type: "CLIENT",
+      });
+
+      const second = await api.post("/api/tenants").send({
+        name: "Second Client",
+        slug: "second-client",
+        type: "CLIENT",
+      });
+
+      expect(first.status).toBe(201);
+      expect(second.status).toBe(201);
+
+      const rows = await container.prisma.tenant.findMany({
+        where: {
+          slug: {
+            in: ["first-client", "second-client"],
+          },
+        },
+        orderBy: {
+          slug: "asc",
+        },
+      });
+
+      expect(rows).toHaveLength(2);
+      expect(rows.map((row) => row.slug)).toEqual([
+        "first-client",
+        "second-client",
+      ]);
+      expect(rows.every((row) => row.type === "CLIENT")).toBe(true);
+    });
   });
-  it("returns 409 when a second BASE tenant is created", async () => {
-    const name = "KeepTrack Online";
-    const slug = "second-base";
-    const type = "BASE";
-    const response = await api.post("/api/tenants").send({
-      name,
-      slug,
-      type,
+
+  describe("validation", () => {
+    it("returns 409 when slug already exists", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const testSlug = "test-slug";
+
+      const first = await api.post("/api/tenants").send({
+        name: "Client",
+        slug: testSlug,
+        type: "CLIENT",
+      });
+
+      expect(first.status).toBe(201);
+
+      const response = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: testSlug,
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 409);
     });
 
-    expect(response.status).toBe(409);
-    expect(response.body.success).toBe(false);
+    it("returns 422 when slug contains spaces", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const response = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: "another client",
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 422);
+    });
+
+    it("returns 422 when slug contains double hyphen", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const response = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: "another--client",
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 422);
+    });
+
+    it("returns 422 when slug starts with hyphen", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const response = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: "-anotherclient",
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 422);
+    });
+
+    it("returns 422 when slug ends with hyphen", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const response = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: "anotherclient-",
+        type: "CLIENT",
+      });
+
+      expectAppError(response, 422);
+    });
+
+    it("returns 422 when slug contains not only [a-z], [0-9], [-] ", async () => {
+      const { api } = await setupSuperAdmin();
+
+      const first = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: "Slug",
+        type: "CLIENT",
+      });
+
+      expectAppError(first, 422);
+
+      const second = await api.post("/api/tenants").send({
+        name: "Another Client",
+        slug: "$lug",
+        type: "CLIENT",
+      });
+
+      expectAppError(second, 422);
+
+
+    });
   });
 });

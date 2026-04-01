@@ -34,16 +34,19 @@ export class GetTenantById {
   async execute(input) {
     const obj = v.object(input, "GetTenantById input");
 
-    const principal = validatePrincipal(obj.principal);
-    
+    const principal = validatePrincipal(obj.principal); 
+
+    const targetTenantIdforAuthz = input.payload.targetTenantId ? /**@type {string} */(input.payload.targetTenantId) : undefined;
+
     this.authorizeAction.execute({
       principal,
       action: CrudAction.read,
       resource: Resource.tenant,
-      context: { useCase: "GetTenantById" },
+      context: { useCase: "GetTenantById", ownerId: targetTenantIdforAuthz },
     });
 
     const payload = validateGetTenantByIdPayload(obj.payload);
+
 
     const tenantId = principal.tenantId;
     const targetTenantId = payload.targetTenantId;
