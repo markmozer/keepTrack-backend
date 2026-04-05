@@ -23,8 +23,15 @@ import { TenantLinkBuilderService } from "../infrastructure/services/url/TenantL
 import { DbHealthServicePrisma } from "../infrastructure/services/db/DbHealthServicePrisma.js";
 import { SessionHealthServiceRedis } from "../infrastructure/services/session/SessionHealthServiceRedis.js";
 
-// Use-Cases
+// Provisioning
 import { ProvisionBaseTenant } from "../application/provisioning/ProvisionBaseTenant.js";
+import { ProvisionTenant } from "../application/provisioning/ProvisionTenant.js";
+import { ProvisionTenantRoles } from "../application/provisioning/ProvisionTenantRoles.js";
+import { ProvisionTenantAdminUser } from "../application/provisioning/ProvisionTenantAdminUser.js";
+import { ProvisionTenantAdminUserRole } from "../application/provisioning/ProvisionTenantAdminUserRole.js";
+import { ProvisionTenantInviteAdminUser } from "../application/provisioning/ProvisionTenantInviteAdminUser.js";
+
+// Use-Cases
 import { CreateTenant } from "../application/tenants/CreateTenant.js";
 import { GetTenantById } from "../application/tenants/GetTenantById.js";
 import { CreateRole } from "../application/roles/CreateRole.js";
@@ -89,6 +96,11 @@ import { GetTenants } from "../application/tenants/GetTenants.js";
 /**
  * @typedef {Object} Provisioning
  * @property {import("../application/provisioning/ProvisionBaseTenant.js").ProvisionBaseTenant} provisionBaseTenant
+ * @property {import("../application/provisioning/ProvisionTenant.js").ProvisionTenant} provisionTenant
+ * @property {import("../application/provisioning/ProvisionTenantRoles.js").ProvisionTenantRoles} provisionTenantRoles
+ * @property {import("../application/provisioning/ProvisionTenantAdminUser.js").ProvisionTenantAdminUser} provisionTenantAdminUser
+ * @property {import("../application/provisioning/ProvisionTenantAdminUserRole.js").ProvisionTenantAdminUserRole} provisionTenantAdminUserRole
+ * @property {import("../application/provisioning/ProvisionTenantInviteAdminUser.js").ProvisionTenantInviteAdminUser} provisionTenantInviteAdminUser
  */
 
 /**
@@ -187,8 +199,36 @@ export function buildContainer({ appConfig }) {
     sessionHealthService,
   };
 
-  // --- Use cases ---
-  const policy = new RolePolicy({ permissionsByRole });
+  // --- Provisioning ---
+  const provisionTenant = new ProvisionTenant({
+    tenantRepository,
+  });
+
+  const provisionTenantRoles = new ProvisionTenantRoles({
+    tenantRepository,
+    roleRepository,
+  });
+
+  const provisionTenantAdminUser = new ProvisionTenantAdminUser({
+    tenantRepository,
+    userRepository
+  });
+
+  const provisionTenantAdminUserRole = new ProvisionTenantAdminUserRole({
+    tenantRepository,
+    roleRepository,
+    userRepository,
+    userRoleRepository,
+  });
+
+  const provisionTenantInviteAdminUser = new ProvisionTenantInviteAdminUser({
+    tenantRepository,
+    userRepository,
+    tokenService,
+    clockService,
+    emailService,
+    tenantLinkBuilderService,
+  })
 
   const provisionBaseTenant = new ProvisionBaseTenant({
     tenantRepository,
@@ -200,6 +240,18 @@ export function buildContainer({ appConfig }) {
     tenantLinkBuilderService,
     emailService,
   });
+
+    const provisioning = {
+    provisionTenant,
+    provisionTenantRoles,
+    provisionBaseTenant,
+    provisionTenantAdminUser,
+    provisionTenantAdminUserRole,
+    provisionTenantInviteAdminUser,
+  };
+
+  // --- Use cases ---
+  const policy = new RolePolicy({ permissionsByRole });
 
   const authenticateUser = new AuthenticateUser({
     userRepository,
@@ -281,7 +333,7 @@ export function buildContainer({ appConfig }) {
   const getTenants = new GetTenants({
     tenantRepository,
     authorizeAction,
-  })
+  });
 
   const useCases = {
     authenticateUser,
@@ -301,10 +353,6 @@ export function buildContainer({ appConfig }) {
     getUsers,
     getRoles,
     getTenants,
-  };
-
-  const provisioning = {
-    provisionBaseTenant,
   };
 
   // --- Other ---

@@ -62,11 +62,10 @@ export class RoleRepositoryPrisma {
   async create(input) {
     const row = await this.prisma.role.create({
       data: {
-        id: input.id,
         tenantId: input.tenantId,
         name: input.name,
-        createdAt: input.createdAt,
-        updatedAt: input.updatedAt,
+        createdAt: input.createdAt ? input.createdAt : undefined,
+        updatedAt: input.updatedAt ? input.updatedAt : undefined,
       },
       select: roleAdminRowSelect,
     });

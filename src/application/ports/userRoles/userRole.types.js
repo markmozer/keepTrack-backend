@@ -2,12 +2,13 @@
  * File: src/application/ports/userRoles/userRole.types.js
  */
 
-// =====================================================
-// Repository models returned by persistance layer.
-// =====================================================
+// ============================================================
+// Infrastructure layer     select              userRoleRowSelect
+// Infrastructure layer     return model        userRoleRow
+// Application layer        return model        userRoleDto
+// ============================================================
+
 /**
- * matches userRoleRowPublicSelect
- *
  * @typedef {Object} UserRoleRow
  * @property {string} id
  * @property {string} tenantId
@@ -15,17 +16,10 @@
  * @property {string} roleId
  * @property {Date} validFrom
  * @property {Date | null} validTo
- * @property {Date} createdAt
- * @property {Date} updatedAt
  * @property {{name: string}} role
  */
 
-// =====================================================
-// DTOs returned by application layer.
-// =====================================================
 /**
- * mapped from UserRoleRow
- *
  * @typedef {Object} UserRoleDto
  * @property {string} id
  * @property {string} tenantId
@@ -43,6 +37,37 @@
  * @typedef {Object} AssignRoleToUserDto
  * @property {boolean} created
  * @property {UserRoleDto} payload
+ */
+
+// ============================================================
+// Infrastructure layer     select              userRoleAdminRowSelect
+// Infrastructure layer     return model        userRoleAdminRow
+// Application layer        return model        userRoleAdminDto
+// ============================================================
+/**
+ * @typedef {Object} UserRoleAdminRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {string} roleId
+ * @property {Date} validFrom
+ * @property {Date | null} validTo
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ * @property {{name: string}} role
+ */
+
+/**
+ * @typedef {Object} UserRoleAdminDto
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {string} roleId
+ * @property {string} validFrom
+ * @property {string | null} validTo
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {string} roleName
  */
 
 // =====================================================
@@ -69,14 +94,13 @@
 /** 
  * RepoInput
  * @typedef {Object} AssignRoleToUserRepoInput
- * @property {string} id
  * @property {string} tenantId
  * @property {string} userId
  * @property {string} roleId
  * @property {Date} validFrom
  * @property {Date | null} validTo
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
  */
 
 

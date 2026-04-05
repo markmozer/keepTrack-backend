@@ -82,13 +82,12 @@
 /**
  * RepoInput
  * @typedef {Object} CreateTenantRepoInput
- * @property {string} id
  * @property {string} name
  * @property {string} slug
  * @property {TenantType} type
- * @property {TenantStatus} status
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {TenantStatus} [status]
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
  */
 
 // --- GetTenantById ---
@@ -159,5 +158,16 @@
 // =====================================================
 // repo only types
 // =====================================================
+
+/**
+ * Input for ensureTenant
+ * 
+ * @typedef {Object} EnsureTenantRepoInput
+ * @property {string} name
+ * @property {string} slug
+ * @property {TenantType} type
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
+ */
 
 export {};

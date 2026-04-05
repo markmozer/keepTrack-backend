@@ -14,7 +14,6 @@ import { tenantTypeRules } from "../../domain/tenants/TenantType.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { randomUUID } from "node:crypto";
 import { toTenantAdminDto } from "./tenant.mappers.js";
 
 export class CreateTenant {
@@ -59,16 +58,10 @@ export class CreateTenant {
       }
     }
 
-    const date = new Date();
-
     const row = await this.tenantRepository.create({
-      id: randomUUID(),
       name: payload.name,
       slug: payload.slug,
       type: payload.type,
-      status: TenantStatus.ACTIVE,
-      createdAt: date,
-      updatedAt: date,
     });
 
     return toTenantAdminDto(row);

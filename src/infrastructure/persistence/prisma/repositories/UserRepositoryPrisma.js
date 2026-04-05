@@ -92,12 +92,10 @@ export class UserRepositoryPrisma {
   async create(input) {
     const row = await this.prisma.user.create({
       data: {
-        id: input.id,
         tenantId: input.tenantId,
         email: input.email,
-        status: input.status,
-        createdAt: input.createdAt,
-        updatedAt: input.updatedAt,
+        createdAt: input.createdAt ? input.createdAt : undefined,
+        updatedAt: input.updatedAt ? input.updatedAt : undefined,
       },
       select: userAdminRowSelect,
     });

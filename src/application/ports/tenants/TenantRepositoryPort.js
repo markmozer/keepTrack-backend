@@ -7,6 +7,7 @@
  * @typedef {import("./tenant.types.js").CreateTenantRepoInput} CreateTenantRepoInput
  * @typedef {import("../../../domain/tenants/TenantType.js").TenantTypeValue} TenantType
  * @typedef {import("./tenant.types.js").FindTenantsPageRepoInput} FindTenantsPageRepoInput
+ * @typedef {import("./tenant.types.js").EnsureTenantRepoInput} EnsureTenantRepoInput
  */
 
 /**
@@ -23,6 +24,7 @@
  * @property {(type: TenantType) => Promise<TenantAdminRow | null>} findByType
  * @property {(input: CreateTenantRepoInput) => Promise<TenantAdminRow>} create
  * @property {(input: FindTenantsPageRepoInput) => Promise<FindTenantsPageRepoResult>} findPage
+ * @property {(input: EnsureTenantRepoInput) => Promise<TenantAdminRow>} ensure
  */
 
 
@@ -47,4 +49,5 @@ export function assertTenantRepositoryPort(repo) {
   if (typeof (/** @type {any} */ (repo).findBySlug) !== "function") throw new Error(errorMsg("findBySlug(...)"));  
   if (typeof (/** @type {any} */ (repo).findByType) !== "function") throw new Error(errorMsg("findByType(...)")); 
   if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
+  if (typeof (/** @type {any} */ (repo).ensure) !== "function") throw new Error(errorMsg("ensure(...)"));
 }

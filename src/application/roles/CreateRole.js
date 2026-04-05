@@ -13,7 +13,6 @@ import { ResourceNotFoundError, ConflictError } from "../../domain/shared/errors
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { randomUUID } from "node:crypto";
 import { toRoleDto } from "./role.mappers.js";
 
 
@@ -68,14 +67,9 @@ export class CreateRole {
       throw new ConflictError(`Role '${payload.name}' already exists.`);
     }
 
-    const date = new Date();
-
     const row = await this.roleRepository.create({
-      id: randomUUID(),
       tenantId: tenantId,
       name: payload.name,
-      createdAt: date,
-      updatedAt: date,
     });
 
     return toRoleDto(row);

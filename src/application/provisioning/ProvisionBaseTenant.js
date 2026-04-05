@@ -140,11 +140,9 @@ export class ProvisionBaseTenant {
     }
 
     const created = await this.tenantRepository.create({
-      id: randomUUID(),
       name,
       slug,
       type: TenantType.BASE,
-      status: TenantStatus.ACTIVE,
       createdAt: now,
       updatedAt: now,
     });
@@ -195,10 +193,8 @@ export class ProvisionBaseTenant {
     }
 
     const created = await this.userRepository.create({
-      id: randomUUID(),
       tenantId,
       email,
-      status: UserStatus.NEW,
       createdAt: now,
       updatedAt: now,
     });
@@ -241,7 +237,6 @@ export class ProvisionBaseTenant {
     }
 
     const created = await this.userRoleRepository.create({
-      id: randomUUID(),
       tenantId,
       userId,
       roleId,

@@ -101,11 +101,9 @@
  * RepoInput
  * @typedef {Object} CreateUserRepoInput
  * @property {string} tenantId
- * @property {string} id
  * @property {string} email
- * @property {UserStatus} status
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
  */
 
 // --- GetUsers ---
@@ -237,6 +235,17 @@
 // =====================================================
 // repo only types
 // =====================================================
+
+/**
+ * Input for ensureUser
+ * 
+ * @typedef {Object} EnsureUserRepoInput
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {string} name
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
+ */
 
 /**
  * Input used for findById

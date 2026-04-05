@@ -5,23 +5,28 @@
 /**
  * @typedef {import("../../../../application/ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
  * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
+ * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleAdminRow} UserRoleAdminRow
  * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").AssignRoleToUserRepoInput} AssignRoleToUserRepoInput
  */
 
-const userRoleSelect = {
+const userRoleRowSelect = {
   id: true,
   tenantId: true,
   userId: true,
   roleId: true,
   validFrom: true,
   validTo: true,
-  createdAt: true,
-  updatedAt: true,
   role: {
     select: {
       name: true,
     },
   },
+};
+
+const userRoleAdminRowSelect = {
+  ...userRoleRowSelect,
+  createdAt: true,
+  updatedAt: true,
 };
 
 /**
@@ -37,14 +42,14 @@ export class UserRoleRepositoryPrisma {
 
   /**
    * @param {{tenantId: string, userId: string, roleId: string}} params
-   * @returns {Promise<UserRoleRow | null>}
+   * @returns {Promise<UserRoleAdminRow | null>}
    */
   async findByUserAndRole({ tenantId, userId, roleId }) {
     const row = await this.prisma.userRole.findUnique({
       where: {
         tenantId_userId_roleId: { tenantId, userId, roleId },
       },
-      select: userRoleSelect,
+      select: userRoleAdminRowSelect,
     });
 
     return row ? row : null;
@@ -62,7 +67,7 @@ export class UserRoleRepositoryPrisma {
         validFrom: { lte: atDate },
         OR: [{ validTo: null }, { validTo: { gte: atDate } }],
       },
-      select: userRoleSelect,
+      select: userRoleRowSelect,
     });
   }
 
@@ -76,7 +81,7 @@ export class UserRoleRepositoryPrisma {
         tenantId,
         userId,
       },
-      select: userRoleSelect,
+      select: userRoleRowSelect,
     });
   }
 
@@ -84,21 +89,20 @@ export class UserRoleRepositoryPrisma {
 
   /**
    * @param {AssignRoleToUserRepoInput} input
-   * @returns {Promise<UserRoleRow>}
+   * @returns {Promise<UserRoleAdminRow>}
    */
   async create(input) {
     const row = await this.prisma.userRole.create({
       data: {
-        id: input.id,
         tenantId: input.tenantId,
         userId: input.userId,
         roleId: input.roleId,
         validFrom: input.validFrom,
         validTo: input.validTo,
-        createdAt: input.createdAt,
-        updatedAt: input.updatedAt,
+        createdAt: input.createdAt ? input.createdAt : undefined,
+        updatedAt: input.updatedAt ? input.updatedAt : undefined,
       },
-      select: userRoleSelect,
+      select: userRoleAdminRowSelect,
     });
 
     return row;

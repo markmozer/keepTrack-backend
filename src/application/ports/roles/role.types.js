@@ -65,11 +65,10 @@
 /**
  * RepoInput
  * @typedef {Object} CreateRoleRepoInput
- * @property {string} id
  * @property {string} tenantId
  * @property {string} name
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {Date} [createdAt]
+ * @property {Date} [updatedAt]
  */
 
 // --- GetRoles ---

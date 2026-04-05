@@ -5,6 +5,7 @@
 
 /**
  * @typedef {import("./userRole.types.js").UserRoleRow} UserRoleRow
+ * @typedef {import("./userRole.types.js").UserRoleAdminRow} UserRoleAdminRow
  * @typedef {import("./userRole.types.js").AssignRoleToUserRepoInput} AssignRoleToUserRepoInput
  * @typedef {import("./userRole.types.js").FindUserRoleByUserAndRoleRepoInput} FindUserRoleByUserAndRoleRepoInput
  * @typedef {import("./userRole.types.js").FindUserRolesByUserRepoInput} FindUserRolesByUserRepoInput
@@ -13,8 +14,8 @@
 
 /**
  * @typedef {Object} UserRoleRepositoryPort
- * @property {(input: FindUserRoleByUserAndRoleRepoInput) => Promise<UserRoleRow | null>} findByUserAndRole
- * @property {(input: AssignRoleToUserRepoInput) => Promise<UserRoleRow>} create
+ * @property {(input: FindUserRoleByUserAndRoleRepoInput) => Promise<UserRoleAdminRow | null>} findByUserAndRole
+ * @property {(input: AssignRoleToUserRepoInput) => Promise<UserRoleAdminRow>} create
  * @property {(input: FindUserRolesByUserRepoInput) => Promise<UserRoleRow[] | null>} findByUser
  * @property {(input: FindValidUserRolesByUserRepoInput) => Promise<UserRoleRow[] | null>} findValidByUser
  */

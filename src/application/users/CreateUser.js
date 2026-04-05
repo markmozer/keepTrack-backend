@@ -13,12 +13,9 @@ import {
   ConflictError,
 } from "../../domain/shared/errors/index.js";
 
-
-import { UserStatus } from "../../domain/users/UserStatus.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { randomUUID } from "node:crypto";
 import { toUserAdminDto } from "./user.mappers.js";
 
 export class CreateUser {
@@ -73,15 +70,9 @@ export class CreateUser {
       throw new ConflictError(`User '${payload.email}' already exists.`);
     }
 
-    const date = new Date();
-
     const row = await this.userRepository.create({
-      id: randomUUID(),
       tenantId: tenantId,
       email: payload.email,
-      status: UserStatus.NEW,
-      createdAt: date,
-      updatedAt: date,
     });
 
     return toUserAdminDto(row);

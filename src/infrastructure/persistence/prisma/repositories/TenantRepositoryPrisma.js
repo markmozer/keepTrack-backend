@@ -20,7 +20,6 @@ const tenantAdminRowSelect = {
   updatedAt: true,
 };
 
-
 /**
  * @implements {TenantRepositoryPort}
  */
@@ -78,13 +77,12 @@ export class TenantRepositoryPrisma {
   async create(input) {
     const row = await this.prisma.tenant.create({
       data: {
-        id: input.id,
         name: input.name,
         slug: input.slug,
         type: input.type,
-        status: input.status,
-        createdAt: input.createdAt,
-        updatedAt: input.updatedAt,
+        status: input.status ? input.status : undefined,
+        createdAt: input.createdAt ? input.createdAt : undefined,
+        updatedAt: input.updatedAt ? input.updatedAt : undefined, 
       },
       select: tenantAdminRowSelect,
     });
@@ -93,59 +91,82 @@ export class TenantRepositoryPrisma {
   }
 
   /**
-     * @param {import("../../../../application/ports/tenants/tenant.types.js").FindTenantsPageRepoInput} input
-     * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").FindTenantsPageRepoResult>}
-     */
-    async findPage(input) {
-      const { skip, take, filters, sort } = input;
-  
-      const where = {
-        ...(filters.name
-          ? {
-              name: {
-                contains: filters.name,
-                mode: "insensitive",
-              },
-            }
-          : {}),
-        ...(filters.slug
-          ? {
-              slug: {
-                contains: filters.slug,
-                mode: "insensitive",
-              },
-            }
-          : {}),
-        ...(filters.type
-          ? {
-              type: filters.type,
-            }
-          : {}),    
-        ...(filters.status
-          ? {
-              status: filters.status,
-            }
-          : {}),
-      };
-  
-      const orderBy = {
-        [sort.field]: sort.direction,
-      };
-  
-      const [items, totalItems] = await this.prisma.$transaction([
-        this.prisma.tenant.findMany({
-          where,
-          skip,
-          take,
-          orderBy,
-          select: tenantRowSelect,
-        }),
-        this.prisma.tenant.count({ where }),
-      ]);
-  
-      return {
-        items,
-        totalItems,
-      };
-    }
+   * @param {import("../../../../application/ports/tenants/tenant.types.js").FindTenantsPageRepoInput} input
+   * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").FindTenantsPageRepoResult>}
+   */
+  async findPage(input) {
+    const { skip, take, filters, sort } = input;
+
+    const where = {
+      ...(filters.name
+        ? {
+            name: {
+              contains: filters.name,
+              mode: "insensitive",
+            },
+          }
+        : {}),
+      ...(filters.slug
+        ? {
+            slug: {
+              contains: filters.slug,
+              mode: "insensitive",
+            },
+          }
+        : {}),
+      ...(filters.type
+        ? {
+            type: filters.type,
+          }
+        : {}),
+      ...(filters.status
+        ? {
+            status: filters.status,
+          }
+        : {}),
+    };
+
+    const orderBy = {
+      [sort.field]: sort.direction,
+    };
+
+    const [items, totalItems] = await this.prisma.$transaction([
+      this.prisma.tenant.findMany({
+        where,
+        skip,
+        take,
+        orderBy,
+        select: tenantRowSelect,
+      }),
+      this.prisma.tenant.count({ where }),
+    ]);
+
+    return {
+      items,
+      totalItems,
+    };
+  }
+
+  /**
+   * @param {import("../../../../application/ports/tenants/tenant.types.js").EnsureTenantRepoInput} input
+   * @returns {Promise<import("../../../../application/ports/tenants/tenant.types.js").TenantAdminRow>}
+   */
+  async ensure(input) {
+    const createdAt = input.createdAt ? input.createdAt : undefined;
+    const updatedAt = input.updatedAt ? input.updatedAt : undefined;
+
+    const row = await this.prisma.tenant.upsert({
+      where: { slug: input.slug },
+      update: {},
+      create: {
+        name: input.name,
+        slug: input.slug,
+        type: input.type,
+        createdAt,
+        updatedAt,
+      },
+    });
+
+    return row;
+  }
 }

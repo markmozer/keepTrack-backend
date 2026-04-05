@@ -15,7 +15,6 @@ import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { randomUUID } from "node:crypto";
 import { toUserRoleDto } from "../userRoles/userRole.mappers.js";
 
 
@@ -101,17 +100,12 @@ export class AssignRoleToUser {
       return { created: false, payload: toUserRoleDto(existingUserRole) };
     }
 
-    const date = new Date();
-
     const row = await this.userRoleRepository.create({
-      id: randomUUID(),
       tenantId,
       userId: payload.targetUserId,
       roleId: payload.roleId,
       validFrom: payload.validFrom,
       validTo: payload.validTo,
-      createdAt: date,
-      updatedAt: date,
     });
 
     return { created: true, payload: toUserRoleDto(row) };
