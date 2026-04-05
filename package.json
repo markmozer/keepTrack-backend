@@ -15,7 +15,7 @@
     "test:int": "dotenv -e .env.test -- vitest run -c vitest.int.config.js",
     "test:watch": "vitest -c vitest.unit.config.js",
     "db:migrate:test": "dotenv -e .env.test -- prisma migrate deploy",
-    "provision:base-tenant": "node src/interface/cli/provisionTenant.cli.js",
+    "provision:base-tenant": "node src/interface/cli/provisionTenant.cli.js"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
