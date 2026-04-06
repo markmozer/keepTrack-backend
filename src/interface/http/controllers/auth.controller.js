@@ -99,7 +99,7 @@ export function createAuthController({
       }
     },
     /**
-     * POST /api/auth/logout
+     * POST /api/auth/me
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
@@ -109,9 +109,11 @@ export function createAuthController({
       try {
         const request = asRequestWithContext(req);
 
+        const payload = {principal: request.principal, session: request.session, cookie: request.cookies}
+
         res.status(200).json({
           success: true,
-          payload: request.principal,
+          payload,
           error: null,
         });
       } catch (e) {

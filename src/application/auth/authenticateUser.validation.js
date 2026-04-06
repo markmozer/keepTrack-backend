@@ -17,7 +17,7 @@ export function validateAuthenticateUserPayload(input) {
 
   const tenantId = v.uuid(input?.tenantId, "tenantId");
   const email = validateUserEmail(input?.email);
-  const passwordPlain = v.required(input?.passwordPlain,"password");
+  const passwordPlain = v.string(input?.passwordPlain,"password", {trim: false, min:1});
 
 
   return { tenantId, email, passwordPlain };

@@ -9,8 +9,9 @@ import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
+import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { randomUUID } from "node:crypto";
+import { expectTenantList } from "../../helpers/assertions/expectTenantList.js";
 
 describe("GetTenants (integration) GET /api/tenants", () => {
   let container;
@@ -112,9 +113,8 @@ describe("GetTenants (integration) GET /api/tenants", () => {
 
       const response = await api.get("/api/tenants");
 
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
-      expect(response.body.payload.items).toBeInstanceOf(Array);
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 25});
     });
 
     it("returns 403 when user has ADMIN role", async () => {
@@ -122,7 +122,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
 
       const response = await api.get("/api/tenants");
 
-      expectAppError(response, 403);
+      expectAppError(response, 403, "FORBIDDEN");
     });
 
     it("returns 401 when principal is missing", async () => {
@@ -130,7 +130,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
 
       const response = await api.get("/api/tenants");
 
-      expectAppError(response, 401);
+      expectAppError(response, 401, "UNAUTHORIZED");
     });
   });
 
@@ -140,13 +140,13 @@ describe("GetTenants (integration) GET /api/tenants", () => {
 
       const response = await api.get("/api/tenants");
 
-      expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 25});
 
-      expect(response.body.payload.items).toHaveLength(5);
-      expect(response.body.payload.totalItems).toBe(5);
+      expect(payload.items).toHaveLength(5);
+      expect(payload.totalItems).toBe(5);
 
-      expect(response.body.payload.items.map((item) => item.slug)).toEqual(
+      expect(payload.items.map((item) => item.slug)).toEqual(
         expect.arrayContaining([
           "base",
           "demo",
@@ -166,11 +166,12 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "type": "CLIENT",
       });
 
-      expect(response.status).toBe(200);
-      expect(response.body.payload.totalItems).toBe(3);
-      expect(response.body.payload.items).toHaveLength(3);
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 25});
+      expect(payload.totalItems).toBe(3);
+      expect(payload.items).toHaveLength(3);
       expect(
-        response.body.payload.items.every((item) => item.type === "CLIENT"),
+        payload.items.every((item) => item.type === "CLIENT"),
       ).toBe(true);
     });
 
@@ -181,10 +182,11 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "status": "INACTIVE",
       });
 
-      expect(response.status).toBe(200);
-      expect(response.body.payload.totalItems).toBe(1);
-      expect(response.body.payload.items).toHaveLength(1);
-      expect(response.body.payload.items[0].slug).toBe("gamma-client");
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 25});
+      expect(payload.totalItems).toBe(1);
+      expect(payload.items).toHaveLength(1);
+      expect(payload.items[0].slug).toBe("gamma-client");
     });
   });
 
@@ -197,9 +199,10 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "sortDirection": "asc",
       });
 
-      expect(response.status).toBe(200);
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 25});
 
-      expect(response.body.payload.items.map((item) => item.name)).toEqual([
+      expect(payload.items.map((item) => item.name)).toEqual([
         "Alpha Client",
         "Base Tenant",
         "Beta Client",
@@ -216,9 +219,10 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "sortDirection": "desc",
       });
 
-      expect(response.status).toBe(200);
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 25});
 
-      expect(response.body.payload.items.map((item) => item.name)).toEqual([
+      expect(payload.items.map((item) => item.name)).toEqual([
         "Gamma Client",
         "Demo Tenant",
         "Beta Client",
@@ -239,10 +243,11 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "sortDirection": "asc",
       });
 
-      expect(response.status).toBe(200);
-      expect(response.body.payload.totalItems).toBe(5);
-      expect(response.body.payload.items).toHaveLength(2);
-      expect(response.body.payload.items.map((item) => item.name)).toEqual([
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 1, pageSize: 2});
+      expect(payload.totalItems).toBe(5);
+      expect(payload.items).toHaveLength(2);
+      expect(payload.items.map((item) => item.name)).toEqual([
         "Alpha Client",
         "Base Tenant",
       ]);
@@ -258,10 +263,11 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "sortDirection": "asc",
       });
 
-      expect(response.status).toBe(200);
-      expect(response.body.payload.totalItems).toBe(5);
-      expect(response.body.payload.items).toHaveLength(2);
-      expect(response.body.payload.items.map((item) => item.name)).toEqual([
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantList(payload, {page: 2, pageSize: 2});
+      expect(payload.totalItems).toBe(5);
+      expect(payload.items).toHaveLength(2);
+      expect(payload.items.map((item) => item.name)).toEqual([
         "Beta Client",
         "Demo Tenant",
       ]);
@@ -276,7 +282,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "page": 0,
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when pageSize is invalid", async () => {
@@ -286,7 +292,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "pageSize": -1,
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when sort direction is invalid", async () => {
@@ -297,7 +303,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
         "sortDirection": "sideways",
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
   });
 });

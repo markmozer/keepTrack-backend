@@ -10,6 +10,11 @@ import { seedTenant } from "../../helpers/seed/seedTenant.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
+import {
+  expectAppSuccess,
+  expectAppSuccessWithPayload,
+} from "../../helpers/assertions/expectAppSuccess.js";
+import { expectTenantAdminDto } from "../../helpers/assertions/expectTenantAdminDto.js";
 
 describe("CreateTenant (integration) POST /api/tenants", () => {
   let container;
@@ -61,11 +66,6 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
     });
   }
 
-  function expectValidDate(value) {
-    expect(typeof value).toBe("string");
-    expect(new Date(value).toString()).not.toBe("Invalid Date");
-  }
-
   describe("authorization", () => {
     it("returns 201 when user has SUPER_ADMIN role", async () => {
       const { api } = await setupSuperAdmin();
@@ -76,23 +76,14 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expect(response.status).toBe(201);
-      expect(response.body).toEqual({
-        success: true,
-        payload: {
-          id: expect.any(String),
-          name: "Mozer Consulting",
-          slug: "mozer-consulting",
-          status: "ACTIVE",
-          type: "CLIENT",
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
-        error: null,
-      });
+      const payload = expectAppSuccessWithPayload(response, { status: 201 });
 
-      expectValidDate(response.body.payload.createdAt);
-      expectValidDate(response.body.payload.updatedAt);
+      expectTenantAdminDto(payload, {
+        name: "Mozer Consulting",
+        slug: "mozer-consulting",
+        status: "ACTIVE",
+        type: "CLIENT",
+      });
 
       const row = await container.prisma.tenant.findUnique({
         where: { slug: "mozer-consulting" },
@@ -114,7 +105,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 403);
+      expectAppError(response, 403, "FORBIDDEN");
     });
 
     it("returns 401 when principal is missing", async () => {
@@ -126,7 +117,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 401);
+      expectAppError(response, 401, "UNAUTHORIZED");
     });
   });
 
@@ -140,7 +131,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "BASE",
       });
 
-      expectAppError(response, 409);
+      expectAppError(response, 409, "CONFLICT");
     });
 
     it("returns 409 when a second DEMO tenant is created", async () => {
@@ -152,7 +143,12 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "DEMO",
       });
 
-      expect(first.status).toBe(201);
+      const payload = expectAppSuccessWithPayload(first, { status: 201 });
+      expectTenantAdminDto(payload, {
+        name: "First Demo",
+        slug: "first-demo",
+        type: "DEMO",
+      });
 
       const second = await api.post("/api/tenants").send({
         name: "Second Demo",
@@ -160,7 +156,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "DEMO",
       });
 
-      expectAppError(second, 409);
+      expectAppError(second, 409, "CONFLICT");
     });
 
     it("creates multiple CLIENT tenants", async () => {
@@ -172,14 +168,29 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
+      const payload_first = expectAppSuccessWithPayload(first, { status: 201 });
+      expectTenantAdminDto(payload_first, {
+        name: "First Client",
+        slug: "first-client",
+        status: "ACTIVE",
+        type: "CLIENT",
+      });
+
       const second = await api.post("/api/tenants").send({
         name: "Second Client",
         slug: "second-client",
         type: "CLIENT",
       });
 
-      expect(first.status).toBe(201);
-      expect(second.status).toBe(201);
+      const payload_second = expectAppSuccessWithPayload(second, {
+        status: 201,
+      });
+      expectTenantAdminDto(payload_second, {
+        name: "Second Client",
+        slug: "second-client",
+        status: "ACTIVE",
+        type: "CLIENT",
+      });
 
       const rows = await container.prisma.tenant.findMany({
         where: {
@@ -213,7 +224,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expect(first.status).toBe(201);
+      expectAppSuccess(first, { status: 201 });
 
       const response = await api.post("/api/tenants").send({
         name: "Another Client",
@@ -221,7 +232,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 409);
+      expectAppError(response, 409, "CONFLICT");
     });
 
     it("returns 422 when slug contains spaces", async () => {
@@ -233,7 +244,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when slug contains double hyphen", async () => {
@@ -245,7 +256,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when slug starts with hyphen", async () => {
@@ -257,7 +268,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when slug ends with hyphen", async () => {
@@ -269,7 +280,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when slug contains not only [a-z], [0-9], [-] ", async () => {
@@ -281,7 +292,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(first, 422);
+      expectAppError(first, 422, "VALIDATION_ERROR");
 
       const second = await api.post("/api/tenants").send({
         name: "Another Client",
@@ -289,7 +300,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
         type: "CLIENT",
       });
 
-      expectAppError(second, 422);
+      expectAppError(second, 422, "VALIDATION_ERROR");
     });
   });
 });

@@ -9,7 +9,9 @@ import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
+import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js"
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
+import { expectTenantAdminDto } from "../../helpers/assertions/expectTenantAdminDto.js";
 import { randomUUID } from "node:crypto";
 
 describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
@@ -71,75 +73,45 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
     });
   }
 
-  function expectValidDate(value) {
-    expect(typeof value).toBe("string");
-    expect(new Date(value).toString()).not.toBe("Invalid Date");
-  }
-
   describe("authorization", () => {
     it("returns 200 when user has SUPER_ADMIN role and reads any tenant", async () => {
       const { api } = await setupSuperAdmin(baseTenant);
 
       const response_own = await api.get(`/api/tenants/${baseTenant.id}`);
 
-      expect(response_own.status).toBe(200);
-      expect(response_own.body).toEqual({
-        success: true,
-        payload: {
-          id: baseTenant.id,
-          name: baseTenant.name,
-          slug: baseTenant.slug,
-          status: baseTenant.status,
-          type: baseTenant.type,
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
-        error: null,
+      const payload_own = expectAppSuccessWithPayload(response_own, {status: 200});
+      expectTenantAdminDto(payload_own, {
+        id: baseTenant.id,
+        name: baseTenant.name,
+        slug: baseTenant.slug,
+        status: baseTenant.status,
+        type: baseTenant.type,
       });
-
-      expectValidDate(response_own.body.payload.createdAt);
-      expectValidDate(response_own.body.payload.updatedAt);
 
       const response_other = await api.get(`/api/tenants/${clientTenant.id}`);
 
-      expect(response_other.status).toBe(200);
-      expect(response_other.body).toEqual({
-        success: true,
-        payload: {
-          id: clientTenant.id,
-          name: clientTenant.name,
-          slug: clientTenant.slug,
-          status: clientTenant.status,
-          type: clientTenant.type,
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
-        error: null,
+      const payload_other = expectAppSuccessWithPayload(response_other, {status: 200});
+      expectTenantAdminDto(payload_other, {
+        id: clientTenant.id,
+        name: clientTenant.name,
+        slug: clientTenant.slug,
+        status: clientTenant.status,
+        type: clientTenant.type,
       });
-      expectValidDate(response_other.body.payload.createdAt);
-      expectValidDate(response_other.body.payload.updatedAt);
     });
     it("returns 200 when non-SUPER_ADMIN user reads own tenant", async () => {
       const { api } = await setupAdmin(clientTenant);
 
       const response = await api.get(`/api/tenants/${clientTenant.id}`);
 
-      expect(response.status).toBe(200);
-      expect(response.body).toEqual({
-        success: true,
-        payload: {
-          id: clientTenant.id,
-          name: clientTenant.name,
-          slug: clientTenant.slug,
-          status: clientTenant.status,
-          type: clientTenant.type,
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
-        error: null,
+      const payload = expectAppSuccessWithPayload(response, {status: 200});
+      expectTenantAdminDto(payload, {
+        id: clientTenant.id,
+        name: clientTenant.name,
+        slug: clientTenant.slug,
+        status: clientTenant.status,
+        type: clientTenant.type,
       });
-      expectValidDate(response.body.payload.createdAt);
-      expectValidDate(response.body.payload.updatedAt);
     });
 
     it("returns 403 when non-SUPER_ADMIN user reads another tenant", async () => {
@@ -147,7 +119,7 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
 
       const response = await api.get(`/api/tenants/${baseTenant.id}`);
 
-      expectAppError(response, 403);
+      expectAppError(response, 403, "FORBIDDEN");
     });
 
     it("returns 401 when principal is missing", async () => {
@@ -155,7 +127,7 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
 
       const response = await api.get(`/api/tenants/${clientTenant.id}`);
 
-      expectAppError(response, 401);
+      expectAppError(response, 401, "UNAUTHORIZED");
     });
   });
 
@@ -165,7 +137,7 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
 
       const response = await api.get(`/api/tenants/${randomUUID()}`);
 
-      expectAppError(response, 404);
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
   });
 
@@ -175,7 +147,7 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
 
       const response = await api.get(`/api/tenants/abcd`);
 
-      expectAppError(response, 422);
+      expectAppError(response, 422, "VALIDATION_ERROR");
     });
   });
 });

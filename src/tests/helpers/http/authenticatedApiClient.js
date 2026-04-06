@@ -3,13 +3,26 @@
  */
 import request from "supertest";
 
+/**
+ * @param {import("express").Express} app
+ * @param {{
+ *   tenantSlug?: string,
+ *   cookie?: string | string[],
+ * }} [options]
+ */
 export function createAuthenticatedApiClient(
   app,
   { tenantSlug = "base", cookie } = {},
 ) {
   function withDefaults(req) {
-    req.set("X-Tenant-Slug", tenantSlug);
-    if (cookie) req.set("Cookie", cookie);
+    if (tenantSlug !== undefined) {
+      req.set("X-Tenant-Slug", tenantSlug);
+    }
+
+    if (cookie) {
+      req.set("Cookie", cookie);
+    }
+
     return req;
   }
 
