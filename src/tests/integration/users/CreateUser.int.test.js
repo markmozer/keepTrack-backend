@@ -1,160 +1,275 @@
 /**
- * File: src/application/users/__tests__/CreateUser.int.test.js
+ * File: src/tests/integration/users/CreateUser.int.test.js
  */
 
-import request from "supertest";
-import { describe, it, expect, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 
-import { createApp } from "../../../app/createApp.js";
+import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
+import { resetDatabase } from "../../helpers/db/resetDatabase.js";
+import { seedTenant } from "../../helpers/seed/seedTenant.js";
+import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
+import { createApiClient } from "../../helpers/http/apiClient.js";
+import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
+import { expectUserAdminDto } from "../../helpers/assertions/expectUserAdminDto.js";
+import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
-import { resetDatabase } from "../../../tests/helpers/resetDatabase.js";
-import { seedTenant } from "../../../tests/helpers/seedTenant.js";
-import { seedUser } from "../../../tests/helpers/seedUser.js";
-import { seedRole } from "../../../tests/helpers/seedRole.js";
-import { loginAs } from "../../../tests/helpers/loginAs.js";
-
-describe("CreateUser (integration)", () => {
+describe("CreateUser (integration) POST /api/users", () => {
+  let container;
   let app;
-  let shutdown;
+  let clientTenant;
 
-  /** @type {{ id: string, slug: string, name: string }} */
-  let tenant;
-
-  /** @type {{ id: string, email: string }} */
-  let adminUser;
-
-  /** @type {{ id: string, email: string }} */
-  let userAdminUser;
-
-  /** @type {{ id: string, email: string }} */
-  let userViewerUser;
+  beforeAll(async () => {
+    ({ app, container } = await createTestApp());
+  });
 
   beforeEach(async () => {
-    await resetDatabase();
+    await resetDatabase({ prisma: container.prisma });
 
-    ({ app, shutdown } = createApp());
-    shutdown = app.shutdown;
-
-    tenant = await seedTenant({
-      slug: "mozer-consulting",
-      name: "Mozer Consulting",
-    });
-
-    const adminRole = await seedRole({
-      tenantId: tenant.id,
-      name: "ADMIN",
-    });
-
-    const user_adminRole = await seedRole({
-      tenantId: tenant.id,
-      name: "USER_ADMIN",
-    });
-
-    const user_viewerRole = await seedRole({
-      tenantId: tenant.id,
-      name: "USER_VIEWER",
-    });
-
-    adminUser = await seedUser({
-      tenantId: tenant.id,
-      email: "admin@example.com",
-      roleNames: ["ADMIN"],
-      status: "ACTIVE",
-      passwordPlain: "Test123!123",
-    });
-
-    userAdminUser = await seedUser({
-      tenantId: tenant.id,
-      email: "useradmin@example.com",
-      roleNames: ["USER_ADMIN"],
-      status: "ACTIVE",
-      passwordPlain: "Test123!123",
-    });
-
-    userViewerUser = await seedUser({
-      tenantId: tenant.id,
-      email: "userviewer@example.com",
-      roleNames: ["USER_VIEWER"],
-      status: "ACTIVE",
-      passwordPlain: "Test123!123",
-    });
-  });
-
-  afterAll(async () => {
-    if (shutdown) {
-      await shutdown();
-    }
-  });
-
-  it("returns 401 when principal is missing", async () => {
-    const res = await request(app).post("/api/users").send({
-      email: "new.user@example.com",
-    });
-
-    expect(res.status).toBe(401);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe("UNAUTHORIZED");
-  });
-
-  it("returns 403 when principal has USER_VIEWER role", async () => {
-    const agent = await loginAs(app, {
-      tenantSlug: tenant.slug,
-      email: userViewerUser.email,
-    });
-
-    const res = await agent.post("/api/users").send({
-      email: "new.user@example.com",
-    });
-
-    expect(res.status).toBe(403);
-    expect(res.body.success).toBe(false);
-    expect(res.body.error.code).toBe("FORBIDDEN");
-    expect(res.body.error.message).toBe("Action not allowed");
-    expect(res.body.error.details).toEqual({
-      action: "create",
-      resource: "user",
-      context: {
-        useCase: "CreateUser",
+    clientTenant = await seedTenant({
+      prisma: container.prisma,
+      payload: {
+        name: "Client Tenant",
+        slug: "client-tenant",
+        type: "CLIENT",
       },
     });
   });
 
-  it("returns 201 when principal has USER_ADMIN role", async () => {
-    const agent = await loginAs(app, {
-      tenantSlug: tenant.slug,
-      email: userAdminUser.email,
-    });
-
-    const res = await agent.post("/api/users").send({
-      email: "created.by.useradmin@example.com",
-    });
-
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.payload).toBeTruthy();
-
-    expect(res.body.payload.email).toBe("created.by.useradmin@example.com");
-
-    // pas aan aan jouw echte DTO
-    expect(res.body.payload.id).toBeTruthy();
+  afterAll(async () => {
+    if (container) {
+      await container.shutdown();
+    }
   });
 
-  it("returns 201 when principal has ADMIN role", async () => {
-    const agent = await loginAs(app, {
-      tenantSlug: tenant.slug,
-      email: adminUser.email,
+  async function setupUserAdmin() {
+    return setupAuthenticatedPrincipal({
+      app,
+      prisma: container.prisma,
+      container,
+      tenant: clientTenant,
+      email: `user_admin@${clientTenant.slug}.nl`,
+      roleNames: ["USER_ADMIN"],
+    });
+  }
+
+  async function setupUserEditor() {
+    return setupAuthenticatedPrincipal({
+      app,
+      prisma: container.prisma,
+      container,
+      tenant: clientTenant,
+      email: `user_editor@${clientTenant.slug}.nl`,
+      roleNames: ["USER_EDITOR"],
+    });
+  }
+
+  describe("authorization", () => {
+    it("returns 201 when principal has USER_ADMIN role", async () => {
+      const { api } = await setupUserAdmin();
+
+      const email_new = `new_user@${clientTenant.slug}.nl`;
+
+      const response = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      const payload = expectAppSuccessWithPayload(response, {
+        status: 201,
+      });
+
+      expectUserAdminDto(payload, {
+        tenantId: clientTenant.id,
+        email: email_new,
+        status: "NEW",
+        roleNames: [],
+        inviteTokenExpiresAt: null,
+        resetTokenExpiresAt: null,
+      });
+
+      const row = await container.prisma.user.findUnique({
+        where: {
+          tenantId_email: {
+            tenantId: clientTenant.id,
+            email: email_new,
+          },
+        },
+        include: {
+          userRoles: {
+            include: {
+              role: true,
+            },
+          },
+        },
+      });
+
+      expect(row).toBeTruthy();
+      expect(row?.tenantId).toBe(clientTenant.id);
+      expect(row?.email).toBe(email_new);
+      expect(row?.status).toBe("NEW");
+      expect(row?.inviteTokenExpiresAt).toBeNull();
+      expect(row?.resetTokenExpiresAt).toBeNull();
+      expect(row?.createdAt).toBeInstanceOf(Date);
+      expect(row?.updatedAt).toBeInstanceOf(Date);
+
+      const roleNames =
+        row?.userRoles.map((userRole) => userRole.role.name) ?? [];
+      expect(roleNames).toEqual([]);
+    });
+    it("returns 403 when principal has USER_EDITOR role", async () => {
+      const { api } = await setupUserEditor();
+
+      const email_new = `new_user@${clientTenant.slug}.nl`;
+
+      const response = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      expectAppError(response, 403, "FORBIDDEN");
     });
 
-    const res = await agent.post("/api/users").send({
-      email: "created.by.admin@example.com",
+    it("returns 401 when principal is missing", async () => {
+      const api = createApiClient(app, clientTenant.slug);
+
+      const email_new = `new_user@${clientTenant.slug}.nl`;
+
+      const response = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      expectAppError(response, 401, "UNAUTHORIZED");
+    });
+  });
+
+  describe("tenant resolution", () => {
+    it("returns 400 when X-Tenant-Slug header is missing", async () => {
+      const api = createApiClient(app, undefined);
+
+      const email_new = `new_user@${clientTenant.slug}.nl`;
+
+      const response = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      expectAppError(response, 400, "BAD_REQUEST");
     });
 
-    expect(res.status).toBe(201);
-    expect(res.body.success).toBe(true);
-    expect(res.body.payload).toBeTruthy();
-    expect(res.body.payload.email).toBe("created.by.admin@example.com");
+    it("returns 400 when X-Tenant-Slug header is empty", async () => {
+      const api = createApiClient(app, "");
 
-    // pas aan aan jouw echte DTO
-    expect(res.body.payload.id).toBeTruthy();
+      const email_new = `new_user@${clientTenant.slug}.nl`;
+
+      const response = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      expectAppError(response, 400, "BAD_REQUEST");
+    });
+  });
+
+  describe("business rules", () => {
+    it("returns 409 when email already exists in tenant", async () => {
+      const { api } = await setupUserAdmin();
+
+      const email_new = `new_user@${clientTenant.slug}.nl`;
+
+      const first = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      const payload = expectAppSuccessWithPayload(first, {
+        status: 201,
+      });
+
+      expectUserAdminDto(payload, {
+        tenantId: clientTenant.id,
+        email: email_new,
+        status: "NEW",
+        roleNames: [],
+        inviteTokenExpiresAt: null,
+        resetTokenExpiresAt: null,
+      });
+
+      const second = await api.post("/api/users").send({
+        email: email_new,
+      });
+
+      expectAppError(second, 409, "CONFLICT");
+    });
+    it("returns 201 when email already exists in another tenant", async () => {
+      const otherTenant = await seedTenant({
+        prisma: container.prisma,
+        payload: {
+          name: "Other Tenant",
+          slug: "other-tenant",
+          type: "CLIENT",
+        },
+      });
+
+      const duplicateEmail = "shared@example.com";
+
+      await container.prisma.user.create({
+        data: {
+          tenantId: otherTenant.id,
+          email: duplicateEmail,
+          status: "NEW",
+        },
+      });
+
+      const { api } = await setupUserAdmin();
+
+      const response = await api.post("/api/users").send({
+        email: duplicateEmail,
+      });
+
+      const payload = expectAppSuccessWithPayload(response, {
+        status: 201,
+      });
+
+      expectUserAdminDto(payload, {
+        tenantId: clientTenant.id,
+        email: duplicateEmail,
+        status: "NEW",
+        roleNames: [],
+        inviteTokenExpiresAt: null,
+        resetTokenExpiresAt: null,
+      });
+    });
+  });
+
+  describe("validation", () => {
+    it("returns 422 when email is missing", async () => {
+      const { api } = await setupUserAdmin();
+
+      const first = await api.post("/api/users").send({});
+
+      expectAppError(first, 422, "VALIDATION_ERROR");
+
+      const second = await api.post("/api/users").send({
+        email: null,
+      });
+
+      expectAppError(second, 422, "VALIDATION_ERROR");
+
+      const third = await api.post("/api/users").send({
+        email: "",
+      });
+
+      expectAppError(third, 422, "VALIDATION_ERROR");
+    });
+    it("returns 422 when email is not valid", async () => {
+      const { api } = await setupUserAdmin();
+
+      const first = await api.post("/api/users").send({
+        email: "mark mozer",
+      });
+
+      expectAppError(first, 422, "VALIDATION_ERROR");
+
+      const second = await api.post("/api/users").send({
+        email: "mark$mozer-consulting.com",
+      });
+
+      expectAppError(second, 422, "VALIDATION_ERROR");
+    });
   });
 });

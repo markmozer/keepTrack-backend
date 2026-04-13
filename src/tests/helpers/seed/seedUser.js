@@ -23,6 +23,10 @@ export async function seedUser({ prisma, passwordService, payload = {} }) {
       email: data.email,
       status: data.status,
       passwordHash,
+      inviteTokenHash: data.inviteTokenHash,
+      inviteTokenExpiresAt: data.inviteTokenExpiresAt,
+      resetTokenHash: data.resetTokenHash,
+      resetTokenExpiresAt: data.resetTokenExpiresAt,
     },
   });
 

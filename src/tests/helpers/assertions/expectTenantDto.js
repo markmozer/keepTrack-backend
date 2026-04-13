@@ -3,7 +3,6 @@
  */
 
 import { expect } from "vitest";
-import { expectValidDate } from "./expectValidDate.js";
 
 export function expectTenantDto(actual, expected = {}) {
   expect(actual).toEqual({

@@ -1,5 +1,5 @@
 /**
- * File: src/application/provisioning/ProvisionTenantAdmin.js
+ * File: src/application/provisioning/ProvisionTenantAdminUser.js
  */
 
 // port assertions

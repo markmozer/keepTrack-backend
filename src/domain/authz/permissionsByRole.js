@@ -68,15 +68,21 @@ export const permissionsByRole = Object.freeze({
   ],
   USER_ADMIN: [
     ...resourceAdmin("user"),
+    ...resourceViewer("role"),
     ...resourceAdmin("roleAssignment"),
   ],
   USER_EDITOR: [
     ...resourceEditor("user"),
+    ...resourceViewer("role"),
     ...resourceEditor("roleAssignment"),
   ],
   USER_VIEWER: [
     ...resourceViewer("user"),
+    ...resourceViewer("role"),
     ...resourceViewer("roleAssignment"),
+  ],
+  CONTRACT_ADMIN: [
+    ...resourceAdmin("contract"),
   ]
 });
 

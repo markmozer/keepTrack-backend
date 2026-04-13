@@ -39,7 +39,7 @@ export function toUserRoleAdminDto(row) {
     roleId: row.roleId,
     validFrom: row.validFrom.toISOString(),
     validTo: row.validTo ? row.validTo.toISOString(): null,
-    createdAt: row.createdAt.toDateString(),
+    createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     roleName: row.role.name,
   };

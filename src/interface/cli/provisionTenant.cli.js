@@ -101,6 +101,7 @@ async function main() {
         principal,
         payload: {
           tenantId: tenant.id,
+          now,
         },
       });
 
@@ -117,6 +118,7 @@ async function main() {
         payload: {
           tenantId: tenant.id,
           email: adminEmail,
+          now,
         },
       });
 
@@ -157,12 +159,30 @@ async function main() {
         },
       });
 
+    if (!inviteAdminUserResult.success) {
+      console.log(inviteAdminUserResult);
+      throw new Error(inviteAdminUserResult.error.message);
+    }
+
     const result = {
-      tenant,
-      roles,
-      user,
-      userRole,
-      inviteAdminUserResult,
+      tenantResult: {
+        created: tenantResult.created,
+        tenant: tenantResult.payload,
+      },
+      rolesResult: rolesResult.payload,
+      userResult: {
+        created: userResult.created,
+        user: userResult.payload,
+      },
+      userRoleResult: {
+        created: userRoleResult.created,
+        userRole: userRoleResult.payload,
+      },
+      inviteAdminUserResult: {
+        invited: inviteAdminUserResult.invited,
+        updatedUser: inviteAdminUserResult.payload,
+        token: inviteAdminUserResult.token,
+      },
     };
 
     console.log("✅ ProvisionTenant completed successfully.");

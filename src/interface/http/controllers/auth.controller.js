@@ -109,7 +109,7 @@ export function createAuthController({
       try {
         const request = asRequestWithContext(req);
 
-        const payload = {principal: request.principal, session: request.session, cookie: request.cookies}
+        const payload = {principal: request.principal}
 
         res.status(200).json({
           success: true,

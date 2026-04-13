@@ -1,6 +1,7 @@
 /**
- * File: src/application/provisioning/ProvisionRoles.js
+ * File: src/application/provisioning/ProvisionTenantRoles.js
  */
+
 
 // port assertions
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";

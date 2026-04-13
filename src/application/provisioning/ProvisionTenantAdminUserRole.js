@@ -1,5 +1,5 @@
 /**
- * File: src/application/provisioning/ProvisionTenantAdmin.js
+ * File: src/application/provisioning/ProvisionTenantAdminUserRole.js
  */
 
 // port assertions
@@ -152,6 +152,8 @@ export class ProvisionTenantAdminUserRole {
       roleId: role.id,
       validFrom: payload.now,
       validTo: null,
+      createdAt: payload.now,
+      updatedAt: payload.now,
     });
 
     return {

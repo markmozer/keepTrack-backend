@@ -24,7 +24,6 @@ import { DbHealthServicePrisma } from "../infrastructure/services/db/DbHealthSer
 import { SessionHealthServiceRedis } from "../infrastructure/services/session/SessionHealthServiceRedis.js";
 
 // Provisioning
-import { ProvisionBaseTenant } from "../application/provisioning/ProvisionBaseTenant.js";
 import { ProvisionTenant } from "../application/provisioning/ProvisionTenant.js";
 import { ProvisionTenantRoles } from "../application/provisioning/ProvisionTenantRoles.js";
 import { ProvisionTenantAdminUser } from "../application/provisioning/ProvisionTenantAdminUser.js";
@@ -95,7 +94,6 @@ import { GetTenants } from "../application/tenants/GetTenants.js";
 
 /**
  * @typedef {Object} Provisioning
- * @property {import("../application/provisioning/ProvisionBaseTenant.js").ProvisionBaseTenant} provisionBaseTenant
  * @property {import("../application/provisioning/ProvisionTenant.js").ProvisionTenant} provisionTenant
  * @property {import("../application/provisioning/ProvisionTenantRoles.js").ProvisionTenantRoles} provisionTenantRoles
  * @property {import("../application/provisioning/ProvisionTenantAdminUser.js").ProvisionTenantAdminUser} provisionTenantAdminUser
@@ -211,7 +209,7 @@ export function buildContainer({ appConfig }) {
 
   const provisionTenantAdminUser = new ProvisionTenantAdminUser({
     tenantRepository,
-    userRepository
+    userRepository,
   });
 
   const provisionTenantAdminUserRole = new ProvisionTenantAdminUserRole({
@@ -228,23 +226,11 @@ export function buildContainer({ appConfig }) {
     clockService,
     emailService,
     tenantLinkBuilderService,
-  })
-
-  const provisionBaseTenant = new ProvisionBaseTenant({
-    tenantRepository,
-    roleRepository,
-    userRepository,
-    userRoleRepository,
-    tokenService,
-    clockService,
-    tenantLinkBuilderService,
-    emailService,
   });
 
-    const provisioning = {
+  const provisioning = {
     provisionTenant,
     provisionTenantRoles,
-    provisionBaseTenant,
     provisionTenantAdminUser,
     provisionTenantAdminUserRole,
     provisionTenantInviteAdminUser,
