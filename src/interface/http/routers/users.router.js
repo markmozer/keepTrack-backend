@@ -34,6 +34,11 @@ export function createUsersRouter({ userController }) {
     requireTenantMiddleware,
     userController.requestPasswordReset,
   );
+  router.post(
+    "/reset-password",
+    requireTenantMiddleware,
+    userController.resetPassword,
+  );
   router.get(
     "/",
     requireTenantMiddleware,

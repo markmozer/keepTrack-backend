@@ -39,6 +39,7 @@ import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
 import { InviteUser } from "../application/users/InviteUser.js";
 import { AcceptInvite } from "../application/users/AcceptInvite.js";
 import { RequestPasswordReset } from "../application/users/RequestPasswordReset.js";
+import { ResetPassword } from "../application/users/ResetPassword.js";
 import { AuthenticateUser } from "../application/auth/AuthenticateUser.js";
 import { AuthorizeAction } from "../application/authz/AuthorizeAction.js";
 import { RolePolicy } from "../domain/authz/RolePolicy.js";
@@ -83,6 +84,7 @@ import { GetTenants } from "../application/tenants/GetTenants.js";
  * @property {import("../application/users/InviteUser.js").InviteUser} inviteUser
  * @property {import("../application/users/AcceptInvite.js").AcceptInvite} acceptInvite
  * @property {import("../application/users/RequestPasswordReset.js").RequestPasswordReset} requestPasswordReset
+ * @property {import("../application/users/ResetPassword.js").ResetPassword} resetPassword
  * @property {import("../application/system/GetAppHealth.js").GetAppHealth} getAppHealth
  * @property {import("../application/system/GetDbHealth.js").GetDbHealth} getDbHealth
  * @property {import("../application/system/GetSessionHealth.js").GetSessionHealth} getSessionHealth
@@ -296,6 +298,12 @@ export function buildContainer({ appConfig }) {
     tenantLinkBuilderService,
     config: appConfig.auth,
   });
+  const resetPassword = new ResetPassword({
+    userRepository,
+    tokenService,
+    clockService,
+    passwordService,
+  });
   const getAppHealth = new GetAppHealth();
   const getDbHealth = new GetDbHealth({
     dbHealthService,
@@ -332,6 +340,7 @@ export function buildContainer({ appConfig }) {
     inviteUser,
     acceptInvite,
     requestPasswordReset,
+    resetPassword,
     getAppHealth,
     getDbHealth,
     getSessionHealth,

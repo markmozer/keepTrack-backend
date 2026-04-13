@@ -67,3 +67,16 @@ export function isStatusForRequestPasswordReset(status) {
     status === UserStatus.ACTIVE
   );
 }
+
+/**
+ * Business rule:
+ * A user can only reset his/her password if status is ACTIVE.
+ *
+ * @param {UserStatusValue} status
+ * @returns {boolean}
+ */
+export function isStatusForResetPassword(status) {
+  return (
+    status === UserStatus.ACTIVE
+  );
+}

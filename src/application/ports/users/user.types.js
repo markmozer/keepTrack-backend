@@ -232,6 +232,32 @@
  * @property {Date} updatedAt
  */
 
+// --- ResetPassword ---
+/**
+ * UCPayload
+ * @typedef {Object} ResetPasswordUCPayload
+ * @property {unknown} tokenPlain
+ * @property {unknown} passwordPlain
+ */
+
+/**
+ * UCInput
+ * @typedef {Object} ResetPasswordUCInput
+ * @property {null} principal
+ * @property {ResetPasswordUCPayload} payload
+ */
+
+/**
+ * RepoInput
+ * @typedef {Object} ResetPasswordRepoInput
+ * @property {string} userId
+ * @property {string} passwordHash
+ * @property {null} resetTokenHash
+ * @property {null} resetTokenExpiresAt
+ * @property {Date} updatedAt
+ */
+
+
 // =====================================================
 // repo only types
 // =====================================================

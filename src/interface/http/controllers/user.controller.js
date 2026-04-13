@@ -12,6 +12,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @param {import("../../../application/users/InviteUser.js").InviteUser} deps.inviteUserUseCase
  * @param {import("../../../application/users/AcceptInvite.js").AcceptInvite} deps.acceptInviteUseCase
  * @param {import("../../../application/users/RequestPasswordReset.js").RequestPasswordReset} deps.requestPasswordResetUseCase
+ * @param {import("../../../application/users/ResetPassword.js").ResetPassword} deps.resetPasswordUseCase
  * @param {import("../../../application/users/GetUsers.js").GetUsers} deps.getUsersUseCase
  */
 export function createUserController({
@@ -19,6 +20,7 @@ export function createUserController({
   inviteUserUseCase,
   acceptInviteUseCase,
   requestPasswordResetUseCase,
+  resetPasswordUseCase,
   getUsersUseCase,
 }) {
   return {
@@ -94,7 +96,7 @@ export function createUserController({
       }
     },
     /**
-     * POST /api/users/accept-invite
+     * POST /api/users/request-pwd-reset
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
@@ -109,6 +111,30 @@ export function createUserController({
           payload: {
             tenantId: reqWithContext.context?.tenant?.id,
             email: body.email,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+        return;
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * POST /api/users/reset-password
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async resetPassword(req, res, next) {
+      try {
+        const body = v.object(req.body, "body");
+
+        const result = await resetPasswordUseCase.execute({
+          principal: null,
+          payload: {
+            tokenPlain: body.token,
+            passwordPlain: body.password,
           },
         });
 

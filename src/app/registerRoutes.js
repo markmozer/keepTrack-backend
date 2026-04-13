@@ -49,6 +49,7 @@ export function registerRoutes(app, container) {
     inviteUserUseCase: container.useCases.inviteUser,
     acceptInviteUseCase: container.useCases.acceptInvite,
     requestPasswordResetUseCase: container.useCases.requestPasswordReset,
+    resetPasswordUseCase: container.useCases.resetPassword,
     getUsersUseCase: container.useCases.getUsers,
   });
 

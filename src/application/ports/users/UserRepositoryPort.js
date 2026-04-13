@@ -10,6 +10,7 @@
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  * @typedef {import("./user.types.js").MarkAsPwdResetRequestedRepoInput} MarkAsPwdResetRequestedRepoInput
+ * @typedef {import("./user.types.js").ResetPasswordRepoInput} ResetPasswordRepoInput
  * @typedef {import("./user.types.js").FindUsersPageRepoInput} FindUsersPageRepoInput
  * @typedef {import("../auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
  */
@@ -29,9 +30,11 @@
  * @property {(input: FindUserByIdRepoInput) => Promise<UserAdminRow | null>} findById
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserAdminRow>} markAsInvited
  * @property {(InviteTokenHash: string) => Promise<UserAdminRow | null>} findByInviteTokenHash
+ * @property {(ResetTokenHash: string) => Promise<UserAdminRow | null>} findByResetTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserAdminRow>} activateFromInvite
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserAuthRow | null>} findByEmailForAuth
  * @property {(input: MarkAsPwdResetRequestedRepoInput) => Promise<UserAdminRow>} markAsPwdResetRequested
+ * @property {(input: ResetPasswordRepoInput) => Promise<UserAdminRow>} resetPassword
  * @property {(input: FindUsersPageRepoInput) => Promise<FindUsersPageRepoResult>} findPage
  */
 
@@ -60,5 +63,7 @@ export function assertUserRepositoryPort(repo) {
   if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
   if (typeof (/** @type {any} */ (repo).markAsInvited) !== "function") throw new Error(errorMsg("markAsInvited(...)"));  
   if (typeof (/** @type {any} */ (repo).markAsPwdResetRequested) !== "function") throw new Error(errorMsg("markAsPwdResetRequested(...)"));
+  if (typeof (/** @type {any} */ (repo).findByResetTokenHash) !== "function") throw new Error(errorMsg("findByResetTokenHash(...)"));
+  if (typeof (/** @type {any} */ (repo).resetPassword) !== "function") throw new Error(errorMsg("resetPassword(...)"));
   
 }
