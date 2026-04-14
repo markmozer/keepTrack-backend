@@ -67,7 +67,7 @@ export class TenantLinkBuilderService {
       throw new Error("Invalid token.");
     }
 
-    const path = `/request-pwd-reset?token=${encodeURIComponent(token)}`;
+    const path = `/reset-password?token=${encodeURIComponent(token)}`;
     
 
     if (tenantMode === "path") {
