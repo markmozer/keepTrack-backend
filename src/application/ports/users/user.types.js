@@ -207,24 +207,24 @@
  * @property {Date} updatedAt
  */
 
-// --- RequestPasswordReset ---
+// --- ForgotPassword ---
 /**
  * UCPayload
- * @typedef {Object} RequestPasswordResetUCPayload
+ * @typedef {Object} ForgotPasswordUCPayload
  * @property {unknown} email
  * @property {unknown} tenantId
  */
 
 /**
  * UCInput
- * @typedef {Object} RequestPasswordResetUCInput
+ * @typedef {Object} ForgotPasswordUCInput
  * @property {null} principal
- * @property {RequestPasswordResetUCPayload} payload
+ * @property {ForgotPasswordUCPayload} payload
  */
 
 /**
  * RepoInput
- * @typedef {Object} MarkAsPwdResetRequestedRepoInput
+ * @typedef {Object} ForgotPasswordRepoInput
  * @property {string} tenantId 
  * @property {string} userId
  * @property {string} resetTokenHash

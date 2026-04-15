@@ -62,7 +62,7 @@ export function isStatusForAuthenticateUser(status) {
  * @param {UserStatusValue} status
  * @returns {boolean}
  */
-export function isStatusForRequestPasswordReset(status) {
+export function isStatusForForgotPassword(status) {
   return (
     status === UserStatus.ACTIVE
   );

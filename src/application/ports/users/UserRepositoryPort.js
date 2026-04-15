@@ -9,7 +9,7 @@
  * @typedef {import("./user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
- * @typedef {import("./user.types.js").MarkAsPwdResetRequestedRepoInput} MarkAsPwdResetRequestedRepoInput
+ * @typedef {import("./user.types.js").ForgotPasswordRepoInput} ForgotPasswordRepoInput
  * @typedef {import("./user.types.js").ResetPasswordRepoInput} ResetPasswordRepoInput
  * @typedef {import("./user.types.js").FindUsersPageRepoInput} FindUsersPageRepoInput
  * @typedef {import("../auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
@@ -33,7 +33,7 @@
  * @property {(ResetTokenHash: string) => Promise<UserAdminRow | null>} findByResetTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserAdminRow>} activateFromInvite
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserAuthRow | null>} findByEmailForAuth
- * @property {(input: MarkAsPwdResetRequestedRepoInput) => Promise<UserAdminRow>} markAsPwdResetRequested
+ * @property {(input: ForgotPasswordRepoInput) => Promise<UserAdminRow>} markAsPwdResetRequested
  * @property {(input: ResetPasswordRepoInput) => Promise<UserAdminRow>} resetPassword
  * @property {(input: FindUsersPageRepoInput) => Promise<FindUsersPageRepoResult>} findPage
  */

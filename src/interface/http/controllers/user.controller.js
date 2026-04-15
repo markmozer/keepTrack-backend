@@ -11,7 +11,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @param {import("../../../application/users/CreateUser.js").CreateUser} deps.createUserUseCase
  * @param {import("../../../application/users/InviteUser.js").InviteUser} deps.inviteUserUseCase
  * @param {import("../../../application/users/AcceptInvite.js").AcceptInvite} deps.acceptInviteUseCase
- * @param {import("../../../application/users/RequestPasswordReset.js").RequestPasswordReset} deps.requestPasswordResetUseCase
+ * @param {import("../../../application/users/ForgotPassword.js").ForgotPassword} deps.requestPasswordResetUseCase
  * @param {import("../../../application/users/ResetPassword.js").ResetPassword} deps.resetPasswordUseCase
  * @param {import("../../../application/users/GetUsers.js").GetUsers} deps.getUsersUseCase
  */
@@ -96,7 +96,7 @@ export function createUserController({
       }
     },
     /**
-     * POST /api/users/request-pwd-reset
+     * POST /api/users/forgot-password
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next

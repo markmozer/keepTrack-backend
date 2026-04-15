@@ -9,7 +9,6 @@
  * @typedef {import("./authz.types.js").AuthzContext} AuthzContext
  */
 
-
 /**
  * @typedef {Object} Deps
  * @property {import("./permissionsByRole.js").PermissionsByRole} permissionsByRole
@@ -54,7 +53,7 @@ export class RolePolicy {
       }
     }
 
-    // 2) optionele instance-level exceptions 
+    // 2) optionele instance-level exceptions
     // (USER mag zichzelf updaten)
     if (resource === "user" && (action === "read" || action === "update")) {
       // context.ownerId = de userId van de user die je probeert te lezen/updaten
@@ -63,10 +62,21 @@ export class RolePolicy {
     // (USER mag zijn eigen tenant lezen)
     if (resource === "tenant" && action === "read") {
       // context.ownerId = de tenantId van de tenant die je probeert te lezen
-      if (context.ownerId && context.ownerId === principal.tenantId) return true;
+      if (context.ownerId && context.ownerId === principal.tenantId)
+        return true;
     }
-
-
+    // (PRINCIPAL mag zijn eigen session lezen)
+    if (resource === "session" && action === "read") {
+      // context.ownerId = de userId van de user die je probeert te lezen
+      // context.tenantId = de tenantId van de user die je probeert te lezen
+      if (
+        context.ownerId &&
+        context.ownerId === principal.userId &&
+        context.tenantId &&
+        context.tenantId=== principal.tenantId
+      )
+        return true;
+    }
 
     return false;
   }

@@ -7,9 +7,9 @@ import { v } from "../../domain/shared/validation/validators.js";
 import { validateUserEmail } from "../../domain/users/createUser.js";
 
 /**
- * @param {import("../ports/users/user.types.js").RequestPasswordResetUCPayload} input
+ * @param {import("../ports/users/user.types.js").ForgotPasswordUCPayload} input
  */
-export function validateRequestPasswordResetPayload(input) {
+export function validateForgotPasswordPayload(input) {
   v.object(input, "input", {
     allowedKeys: ["email", "tenantId"],
     requiredKeys: ["email", "tenantId"],

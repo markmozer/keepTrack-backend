@@ -1,5 +1,5 @@
 /**
- * File: src/application/users/RequestPasswordReset.js
+ * File: src/application/users/ForgotPassword.js
  */
 
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
@@ -11,9 +11,9 @@ import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
 import { assertTenantLinkBuilderServicePort } from "../ports/urls/TenantLinkBuilderServicePort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
-import { validateRequestPasswordResetPayload } from "./requestPasswordReset.validation.js";
+import { validateForgotPasswordPayload } from "./forgotPassword.validation.js";
 
-import { isStatusForRequestPasswordReset } from "../../domain/users/UserStatus.js";
+import { isStatusForForgotPassword } from "../../domain/users/UserStatus.js";
 
 
 /**
@@ -33,7 +33,7 @@ function genericAuthResponse() {
   };
 }
 
-export class RequestPasswordReset {
+export class ForgotPassword {
   /**
    * @param {Object} deps
    * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
@@ -74,15 +74,15 @@ export class RequestPasswordReset {
 
   /**
    *
-   * @param {import("../ports/users/user.types.js").RequestPasswordResetUCInput} input
+   * @param {import("../ports/users/user.types.js").ForgotPasswordUCInput} input
    * @returns {Promise<GenericAuthResponseDto>}
    */
   async execute(input) {
-    const obj = v.object(input, "RequestPasswordReset input");
+    const obj = v.object(input, "ForgotPassword input");
 
     // No principal required for this Use-Case
 
-    const payload = validateRequestPasswordResetPayload(obj.payload);
+    const payload = validateForgotPasswordPayload(obj.payload);
 
     const { tenantId, email } = payload;
 
@@ -97,7 +97,7 @@ export class RequestPasswordReset {
 
       if (!existingUser) return genericAuthResponse();
 
-      if (!isStatusForRequestPasswordReset(existingUser.status))
+      if (!isStatusForForgotPassword(existingUser.status))
         return genericAuthResponse();
 
       const assignedRoles = await this.userRoleRepository.findByUser({
@@ -150,7 +150,7 @@ export class RequestPasswordReset {
 
       return genericAuthResponse();
     } catch (err) {
-      console.error("RequestPasswordReset failed", err);
+      console.error("ForgotPassword failed", err);
       return genericAuthResponse();
     }
   }

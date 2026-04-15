@@ -38,6 +38,7 @@ export const Resource = {
   user: 'user',
   role: 'role',
   roleAssignment: 'roleAssignment',
+  session: 'session',
 };
 
 

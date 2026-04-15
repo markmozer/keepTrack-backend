@@ -9,18 +9,21 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
  * @typedef {import("../../../application/auth/AuthenticateUser.js").AuthenticateUser} AuthenticateUser
+ * @typedef {import("../../../application/sessions/GetCurrentSession.js").GetCurrentSession} GetCurrentSession
  * @typedef {import("../../../application/ports/session/SessionServicePort.js").SessionServicePort} SessionServicePort
  * @typedef {import("../../../app/config/appConfig.js").CookieConfig} CookieConfig
  */
 
 /**
-   * @param {Object} params
-   * @param {AuthenticateUser} params.authenticateUserUseCase
-   * @param {SessionServicePort} params.sessionServicePort
-   * @param {CookieConfig} params.config
-   */
+ * @param {Object} params
+ * @param {AuthenticateUser} params.authenticateUserUseCase
+ * @param {GetCurrentSession} params.getCurrentSessionUseCase
+ * @param {SessionServicePort} params.sessionServicePort
+ * @param {CookieConfig} params.config
+ */
 export function createAuthController({
   authenticateUserUseCase,
+  getCurrentSessionUseCase,
   sessionServicePort,
   config,
 }) {
@@ -109,11 +112,19 @@ export function createAuthController({
       try {
         const request = asRequestWithContext(req);
 
-        const payload = {principal: request.principal}
+        const result = await getCurrentSessionUseCase.execute({
+          principal: request.principal,
+          payload: {
+            userId: request.principal?.userId,
+            tenantId: request.principal?.tenantId,
+          },
+        });
+
+        // const payload = { principal: request.principal };
 
         res.status(200).json({
           success: true,
-          payload,
+          payload: result,
           error: null,
         });
       } catch (e) {

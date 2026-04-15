@@ -12,8 +12,8 @@ import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
-describe("RequestPasswordReset (integration) POST /api/users/request-pwd-reset", () => {
-  const endpoint = "/api/users/request-pwd-reset";
+describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
+  const endpoint = "/api/users/forgot-password";
   const strongPassword = "Strong123!123";
   const standardMessage =
     "Als dit email adres bestaat, ontvangt u een email met een password reset link.";

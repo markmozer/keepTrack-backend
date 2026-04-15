@@ -38,7 +38,7 @@ import { CreateUser } from "../application/users/CreateUser.js";
 import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
 import { InviteUser } from "../application/users/InviteUser.js";
 import { AcceptInvite } from "../application/users/AcceptInvite.js";
-import { RequestPasswordReset } from "../application/users/RequestPasswordReset.js";
+import { ForgotPassword } from "../application/users/ForgotPassword.js";
 import { ResetPassword } from "../application/users/ResetPassword.js";
 import { AuthenticateUser } from "../application/auth/AuthenticateUser.js";
 import { AuthorizeAction } from "../application/authz/AuthorizeAction.js";
@@ -51,6 +51,7 @@ import { GetSystemHealth } from "../application/system/GetSystemHealth.js";
 import { GetUsers } from "../application/users/GetUsers.js";
 import { GetRoles } from "../application/roles/GetRoles.js";
 import { GetTenants } from "../application/tenants/GetTenants.js";
+import { GetCurrentSession } from "../application/sessions/GetCurrentSession.js";
 
 /**
  * @typedef {Object} Repositories
@@ -83,7 +84,7 @@ import { GetTenants } from "../application/tenants/GetTenants.js";
  * @property {import("../application/userRoles/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUser
  * @property {import("../application/users/InviteUser.js").InviteUser} inviteUser
  * @property {import("../application/users/AcceptInvite.js").AcceptInvite} acceptInvite
- * @property {import("../application/users/RequestPasswordReset.js").RequestPasswordReset} requestPasswordReset
+ * @property {import("../application/users/ForgotPassword.js").ForgotPassword} requestPasswordReset
  * @property {import("../application/users/ResetPassword.js").ResetPassword} resetPassword
  * @property {import("../application/system/GetAppHealth.js").GetAppHealth} getAppHealth
  * @property {import("../application/system/GetDbHealth.js").GetDbHealth} getDbHealth
@@ -92,6 +93,7 @@ import { GetTenants } from "../application/tenants/GetTenants.js";
  * @property {import("../application/users/GetUsers.js").GetUsers} getUsers
  * @property {import("../application/roles/GetRoles.js").GetRoles} getRoles
  * @property {import("../application/tenants/GetTenants.js").GetTenants} getTenants
+ * @property {import("../application/sessions/GetCurrentSession.js").GetCurrentSession} getCurrentSession
  */
 
 /**
@@ -288,7 +290,7 @@ export function buildContainer({ appConfig }) {
     clockService,
     passwordService,
   });
-  const requestPasswordReset = new RequestPasswordReset({
+  const requestPasswordReset = new ForgotPassword({
     tenantRepository,
     userRepository,
     userRoleRepository,
@@ -328,6 +330,11 @@ export function buildContainer({ appConfig }) {
     tenantRepository,
     authorizeAction,
   });
+  const getCurrentSession = new GetCurrentSession({
+    tenantRepository,
+    userRepository,
+    authorizeAction,
+  })
 
   const useCases = {
     authenticateUser,
@@ -348,6 +355,7 @@ export function buildContainer({ appConfig }) {
     getUsers,
     getRoles,
     getTenants,
+    getCurrentSession,
   };
 
   // --- Other ---

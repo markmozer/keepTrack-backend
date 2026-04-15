@@ -187,7 +187,7 @@ export class UserRepositoryPrisma {
   }
 
   /**
-   * @param {import("../../../../application/ports/users/user.types.js").MarkAsPwdResetRequestedRepoInput} input
+   * @param {import("../../../../application/ports/users/user.types.js").ForgotPasswordRepoInput} input
    * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
    */
   async markAsPwdResetRequested({

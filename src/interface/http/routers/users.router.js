@@ -30,7 +30,7 @@ export function createUsersRouter({ userController }) {
     userController.acceptInvite,
   );
   router.post(
-    "/request-pwd-reset",
+    "/forgot-password",
     requireTenantMiddleware,
     userController.requestPasswordReset,
   );

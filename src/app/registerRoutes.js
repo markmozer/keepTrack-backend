@@ -59,6 +59,7 @@ export function registerRoutes(app, container) {
 
   const authController = createAuthController({
     authenticateUserUseCase: container.useCases.authenticateUser,
+    getCurrentSessionUseCase: container.useCases.getCurrentSession,
     sessionServicePort: container.services.sessionService,
     config: container.appConfig.cookie,
   });
