@@ -45,6 +45,12 @@ export function createUsersRouter({ userController }) {
     requireAuth,
     userController.getUsers,
   );
+  router.get(
+    "/:userId",
+    requireTenantMiddleware,
+    requireAuth,
+    userController.getUserById,
+  );
 
   return router;
 }

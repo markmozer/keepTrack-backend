@@ -47,6 +47,34 @@ export const userAuthRowSelect = {
   },
 };
 
+export const userDetailRowSelect = {
+  id: true,
+  tenantId: true,
+  email: true,
+  status: true,
+  inviteTokenExpiresAt: true,
+  resetTokenExpiresAt: true,
+  createdAt: true,
+  updatedAt: true,
+  userRoles: {
+    select: {
+      id: true,
+      tenantId: true,
+      userId: true,
+      roleId: true,
+      validFrom: true,
+      validTo: true,
+      createdAt: true,
+      updatedAt: true,
+      role: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ validFrom: "asc" }, { createdAt: "asc" }],
+  },
+};
 
 /**
  * @implements {UserRepositoryPort}
@@ -67,6 +95,19 @@ export class UserRepositoryPrisma {
     const row = await this.prisma.user.findFirst({
       where: { id: userId, tenantId },
       select: userAdminRowSelect,
+    });
+
+    return row ? row : null;
+  }
+
+  /**
+   * @param {import("../../../../application/ports/users/user.types.js").FindUserByIdRepoInput} params
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow | null>}
+   */
+  async findDetailById({ tenantId, userId }) {
+    const row = await this.prisma.user.findFirst({
+      where: { id: userId, tenantId },
+      select: userDetailRowSelect,
     });
 
     return row ? row : null;
@@ -227,7 +268,6 @@ export class UserRepositoryPrisma {
 
     return row;
   }
-
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUsersPageRepoInput} input

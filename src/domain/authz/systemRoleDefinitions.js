@@ -25,10 +25,5 @@ export const systemRoleDefinitions = [
   { name: "USER_EDITOR", scope: "TENANT" },
   { name: "USER_VIEWER", scope: "TENANT" },
 
-  // ===== User =====
-  { name: "ROLE_VIEWER", scope: "TENANT" },
-
-  // ===== Role Assignment =====
-  { name: "ROLE_ASSIGNMENT_ADMIN", scope: "TENANT" },
 
 ];

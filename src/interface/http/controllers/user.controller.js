@@ -14,6 +14,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @param {import("../../../application/users/ForgotPassword.js").ForgotPassword} deps.requestPasswordResetUseCase
  * @param {import("../../../application/users/ResetPassword.js").ResetPassword} deps.resetPasswordUseCase
  * @param {import("../../../application/users/GetUsers.js").GetUsers} deps.getUsersUseCase
+ * @param {import("../../../application/users/GetUserById.js").GetUserById} deps.getUserByIdUseCase
  */
 export function createUserController({
   createUserUseCase,
@@ -22,6 +23,7 @@ export function createUserController({
   requestPasswordResetUseCase,
   resetPasswordUseCase,
   getUsersUseCase,
+  getUserByIdUseCase,
 }) {
   return {
     /**
@@ -188,6 +190,30 @@ export function createUserController({
                   ? /** @type {"asc"|"desc"} */ (req.query.sortDirection)
                   : undefined,
             },
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+        return;
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * GET /api/users/:userId
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async getUserById(req, res, next) {
+      try {
+        const reqWithContext = asRequestWithContext(req);
+        const userId = reqWithContext.params.userId;
+
+        const result = await getUserByIdUseCase.execute({
+          principal: reqWithContext.principal,
+          payload: {
+            userId,
           },
         });
 

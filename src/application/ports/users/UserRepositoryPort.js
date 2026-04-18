@@ -19,6 +19,7 @@
  * Repo Output
  * @typedef {import("./user.types.js").UserRow} UserRow
  * @typedef {import("./user.types.js").UserAdminRow} UserAdminRow
+ * @typedef {import("./user.types.js").UserDetailRow} UserDetailRow
  * @typedef {import("./user.types.js").UserAuthRow} UserAuthRow
  * @typedef {import("./user.types.js").FindUsersPageRepoResult} FindUsersPageRepoResult
  */
@@ -28,6 +29,7 @@
  * @property {(input: CreateUserRepoInput) => Promise<UserAdminRow>} create
  * @property {(input: FindUserByEmailRepoInput) => Promise<UserAdminRow | null>} findByEmail
  * @property {(input: FindUserByIdRepoInput) => Promise<UserAdminRow | null>} findById
+ * @property {(input: FindUserByIdRepoInput) => Promise<UserDetailRow | null>} findDetailById
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserAdminRow>} markAsInvited
  * @property {(InviteTokenHash: string) => Promise<UserAdminRow | null>} findByInviteTokenHash
  * @property {(ResetTokenHash: string) => Promise<UserAdminRow | null>} findByResetTokenHash
@@ -59,6 +61,7 @@ export function assertUserRepositoryPort(repo) {
   if (typeof (/** @type {any} */ (repo).findByEmail) !== "function") throw new Error(errorMsg("findByEmail(...)"));
   if (typeof (/** @type {any} */ (repo).findByEmailForAuth) !== "function") throw new Error(errorMsg("findByEmailForAuth(...)"));
   if (typeof (/** @type {any} */ (repo).findById) !== "function") throw new Error(errorMsg("findById(...)"));
+  if (typeof (/** @type {any} */ (repo).findDetailById) !== "function") throw new Error(errorMsg("findDetailById(...)"));
   if (typeof (/** @type {any} */ (repo).findByInviteTokenHash) !== "function") throw new Error(errorMsg("findByInviteTokenHash(...)"));  
   if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
   if (typeof (/** @type {any} */ (repo).markAsInvited) !== "function") throw new Error(errorMsg("markAsInvited(...)"));  

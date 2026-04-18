@@ -41,6 +41,7 @@
  * @property {SessionData} principal
  * @property {SessionUser} user
  * @property {SessionTenant} tenant
+ * @property {string[]} abilities
  */
 
 

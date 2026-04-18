@@ -52,6 +52,7 @@ import { GetUsers } from "../application/users/GetUsers.js";
 import { GetRoles } from "../application/roles/GetRoles.js";
 import { GetTenants } from "../application/tenants/GetTenants.js";
 import { GetCurrentSession } from "../application/sessions/GetCurrentSession.js";
+import { GetUserById } from "../application/users/GetUserById.js";
 
 /**
  * @typedef {Object} Repositories
@@ -94,6 +95,7 @@ import { GetCurrentSession } from "../application/sessions/GetCurrentSession.js"
  * @property {import("../application/roles/GetRoles.js").GetRoles} getRoles
  * @property {import("../application/tenants/GetTenants.js").GetTenants} getTenants
  * @property {import("../application/sessions/GetCurrentSession.js").GetCurrentSession} getCurrentSession
+ * @property {import("../application/users/GetUserById.js").GetUserById} getUserById
  */
 
 /**
@@ -306,6 +308,11 @@ export function buildContainer({ appConfig }) {
     clockService,
     passwordService,
   });
+  const getUserById = new GetUserById({
+    tenantRepository,
+    userRepository,
+    authorizeAction,
+  });
   const getAppHealth = new GetAppHealth();
   const getDbHealth = new GetDbHealth({
     dbHealthService,
@@ -334,7 +341,7 @@ export function buildContainer({ appConfig }) {
     tenantRepository,
     userRepository,
     authorizeAction,
-  })
+  });
 
   const useCases = {
     authenticateUser,
@@ -353,6 +360,7 @@ export function buildContainer({ appConfig }) {
     getSessionHealth,
     getSystemHealth,
     getUsers,
+    getUserById,
     getRoles,
     getTenants,
     getCurrentSession,

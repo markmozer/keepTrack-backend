@@ -51,6 +51,7 @@ export function registerRoutes(app, container) {
     requestPasswordResetUseCase: container.useCases.requestPasswordReset,
     resetPasswordUseCase: container.useCases.resetPassword,
     getUsersUseCase: container.useCases.getUsers,
+    getUserByIdUseCase: container.useCases.getUserById,
   });
 
   const userRoleController = createUserRoleController({

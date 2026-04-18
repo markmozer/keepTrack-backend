@@ -44,9 +44,6 @@ export const Resource = {
 
 
 /**
- * typedef {"ADMIN"|"USER_ADMIN"|"USER_EDITOR"|"USER_VIEWER"} Role
- * typedef {"create"|"read"|"update"|"delete"|"list"} CrudAction
- * typedef {"tenant"|"user"|"role"|"roleAssignment"} Resource
  * @typedef {import("../auth/Principal").Principal} Principal
  */
 
