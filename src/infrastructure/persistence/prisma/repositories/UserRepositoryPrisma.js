@@ -59,8 +59,6 @@ export const userDetailRowSelect = {
   userRoles: {
     select: {
       id: true,
-      tenantId: true,
-      userId: true,
       roleId: true,
       validFrom: true,
       validTo: true,
@@ -128,7 +126,7 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").CreateUserRepoInput} input
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
    */
   async create(input) {
     const row = await this.prisma.user.create({
@@ -138,14 +136,14 @@ export class UserRepositoryPrisma {
         createdAt: input.createdAt ? input.createdAt : undefined,
         updatedAt: input.updatedAt ? input.updatedAt : undefined,
       },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
     return row;
   }
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} input
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
    */
   async markAsInvited({
     userId,
@@ -157,7 +155,7 @@ export class UserRepositoryPrisma {
     return this.prisma.user.update({
       where: { id: userId },
       data: { status, inviteTokenHash, inviteTokenExpiresAt, updatedAt },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
   }
 

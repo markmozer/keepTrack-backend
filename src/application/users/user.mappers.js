@@ -51,8 +51,6 @@ export function toUserDetailDto(row) {
     status: row.status,
     userRoles: row.userRoles.map((userRole) => ({
       id: userRole.id,
-      tenantId: userRole.tenantId,
-      userId: userRole.userId,
       roleId: userRole.roleId,
       validFrom: userRole.validFrom.toISOString(),
       validTo: userRole.validTo ? userRole.validTo.toISOString() : null,

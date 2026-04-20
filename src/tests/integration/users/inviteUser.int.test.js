@@ -14,14 +14,16 @@ import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthent
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserAdminDto } from "../../helpers/assertions/expectUserAdminDto.js";
+import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
+import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
 
 describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
   const endpoint = "/api/users";
   let app;
   let container;
   let primaryTenant;
+  const defaultUserRole = [{ name: "USER_VIEWER" }];
 
   beforeAll(async () => {
     ({ app, container } = await createTestApp());
@@ -61,6 +63,28 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
     });
   }
 
+  async function seedTestUser({
+    tenant,
+    status,
+    userRoles,
+    passwordPlain = null,
+  } = {}) {
+    const resolvedStatus = status ?? UserStatus.NEW;
+    const resolvedUserRoles = userRoles ?? defaultUserRole;
+
+    const user = await setupTestUser({
+      prisma: container.prisma,
+      container,
+      defaultTenant: primaryTenant,
+      tenant,
+      userRoles: resolvedUserRoles,
+      status: resolvedStatus,
+      passwordPlain,
+    });
+
+    return user;
+  }
+
   async function expectPersistedUser({ tenantId, id, email }) {
     const row = await container.prisma.user.findUnique({
       where: {
@@ -91,27 +115,20 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser();
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       const payload = expectAppSuccessWithPayload(response, {
         status: 200,
       });
 
-      expectUserAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: primaryTenant.id,
-        id: targetUser.id,
-        email: targetUser.email,
+        id: user.id,
+        email: user.email,
         status: UserStatus.INVITED,
-        roleNames: targetRoleNames,
+        roleNames: defaultUserRole,
         resetTokenExpiresAt: null,
       });
 
@@ -119,8 +136,8 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       await expectPersistedUser({
         tenantId: primaryTenant.id,
-        id: targetUser.id,
-        email: targetUser.email,
+        id: user.id,
+        email: user.email,
       });
     });
 
@@ -146,16 +163,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
     it("returns 401 when principal is missing", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser();
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 401, "UNAUTHORIZED");
     });
@@ -165,16 +175,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
     it("returns 400 when X-Tenant-Slug header is missing", async () => {
       const api = createApiClient(app, undefined);
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser();
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 400, "BAD_REQUEST");
     });
@@ -182,16 +185,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
     it("returns 400 when X-Tenant-Slug header is empty", async () => {
       const api = createApiClient(app, "");
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser();
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 400, "BAD_REQUEST");
     });
@@ -217,17 +213,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser({ status: UserStatus.ACTIVE });
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        status: UserStatus.ACTIVE,
-        roleNames: targetRoleNames,
-      });
-
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -236,13 +224,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-      });
+      const user = await seedTestUser({ userRoles: [] });
 
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -251,35 +235,15 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const targetRoleNames = ["USER_VIEWER"];
-
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const userRole = await container.prisma.userRole.findFirst({
-        where: {
-          tenantId: primaryTenant.id,
-          userId: targetUser.id,
-        },
-      });
-
       const now = await container.services.clockService.now();
       const validFrom = await container.services.clockService.addDays(now, -14);
       const validTo = await container.services.clockService.addDays(now, -7);
 
-      await container.prisma.userRole.update({
-        where: { id: userRole.id },
-        data: {
-          validFrom,
-          validTo,
-        },
-      });
+      const userRoles = [{ name: "USER_VIEWER", validFrom, validTo }];
 
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const user = await seedTestUser({ userRoles });
+
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -288,29 +252,20 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser();
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const first_response = await api.post(
-        `${endpoint}/${targetUser.id}/invite`,
-      );
+      const first_response = await api.post(`${endpoint}/${user.id}/invite`);
 
       const first_payload = expectAppSuccessWithPayload(first_response, {
         status: 200,
       });
 
-      expectUserAdminDto(first_payload, {
+      expectUserDetailDto(first_payload, {
         tenantId: primaryTenant.id,
-        id: targetUser.id,
-        email: targetUser.email,
+        id: user.id,
+        email: user.email,
         status: UserStatus.INVITED,
-        roleNames: targetRoleNames,
+        roleNames: defaultUserRole,
         resetTokenExpiresAt: null,
       });
 
@@ -320,27 +275,25 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         where: {
           tenantId_email: {
             tenantId: primaryTenant.id,
-            email: targetUser.email,
+            email: user.email,
           },
         },
       });
 
       const firstInviteTokenHash = rowAfterFirstInvite?.inviteTokenHash;
 
-      const second_response = await api.post(
-        `${endpoint}/${targetUser.id}/invite`,
-      );
+      const second_response = await api.post(`${endpoint}/${user.id}/invite`);
 
       const second_payload = expectAppSuccessWithPayload(second_response, {
         status: 200,
       });
 
-      expectUserAdminDto(second_payload, {
+      expectUserDetailDto(second_payload, {
         tenantId: primaryTenant.id,
-        id: targetUser.id,
-        email: targetUser.email,
+        id: user.id,
+        email: user.email,
         status: UserStatus.INVITED,
-        roleNames: targetRoleNames,
+        roleNames: defaultUserRole,
         resetTokenExpiresAt: null,
       });
 
@@ -350,7 +303,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         where: {
           tenantId_email: {
             tenantId: primaryTenant.id,
-            email: targetUser.email,
+            email: user.email,
           },
         },
       });
@@ -376,17 +329,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         },
       });
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const user = await seedTestUser({ tenant: secondaryTenant });
 
-      const targetUser = await seedTargetUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
-        tenant: secondaryTenant,
-        roleNames: targetRoleNames,
-      });
-
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${endpoint}/${user.id}/invite`);
 
       expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });

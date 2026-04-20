@@ -2,11 +2,26 @@
  * File: src/tests/helpers/seed/seedUserRole.js
  */
 
+import { userRoleFactory } from "../factories/userRoleFactory";
+
 export async function seedUserRole({ prisma, payload }) {
-  return prisma.userRole.create({
+  const data = userRoleFactory(payload);
+
+  const userRole = await prisma.userRole.create({
     data: {
-      userId: payload.userId,
-      roleId: payload.roleId,
+      validFrom: data.validFrom,
+      validTo: data.validTo,
+      tenant: {
+        connect: { id: data.tenantId },
+      },
+      user: {
+        connect: { id: data.userId },
+      },
+      role: {
+        connect: { id: data.roleId },
+      },
     },
   });
+
+  return userRole;
 }

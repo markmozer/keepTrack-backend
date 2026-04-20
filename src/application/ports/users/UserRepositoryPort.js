@@ -26,11 +26,11 @@
 
 /**
  * @typedef {Object} UserRepositoryPort
- * @property {(input: CreateUserRepoInput) => Promise<UserAdminRow>} create
+ * @property {(input: CreateUserRepoInput) => Promise<UserDetailRow>} create
  * @property {(input: FindUserByEmailRepoInput) => Promise<UserAdminRow | null>} findByEmail
  * @property {(input: FindUserByIdRepoInput) => Promise<UserAdminRow | null>} findById
  * @property {(input: FindUserByIdRepoInput) => Promise<UserDetailRow | null>} findDetailById
- * @property {(input: MarkAsInvitedRepoInput) => Promise<UserAdminRow>} markAsInvited
+ * @property {(input: MarkAsInvitedRepoInput) => Promise<UserDetailRow>} markAsInvited
  * @property {(InviteTokenHash: string) => Promise<UserAdminRow | null>} findByInviteTokenHash
  * @property {(ResetTokenHash: string) => Promise<UserAdminRow | null>} findByResetTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserAdminRow>} activateFromInvite

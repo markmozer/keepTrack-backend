@@ -24,7 +24,7 @@ import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserAdminDto } from "./user.mappers.js";
+import { toUserDetailDto } from "./user.mappers.js";
 
 
 /**
@@ -78,7 +78,7 @@ export class InviteUser {
   /**
    *
    * @param {import("../ports/users/user.types.js").InviteUserUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
    */
   async execute(input) {
     const obj = v.object(input, "InviteUser input");
@@ -103,7 +103,11 @@ export class InviteUser {
       });
     }
 
-    const existingUser = await this.userRepository.findById({
+    // const existingUser = await this.userRepository.findById({
+    //   tenantId,
+    //   userId: payload.targetUserId,
+    // });
+    const existingUser = await this.userRepository.findDetailById({
       tenantId,
       userId: payload.targetUserId,
     });
@@ -118,18 +122,25 @@ export class InviteUser {
       });
     }
 
-    const assignedRoles = await this.userRoleRepository.findByUser({
-      tenantId: tenantId,
-      userId: payload.targetUserId,
-    });
+    // const assignedRoles = await this.userRoleRepository.findByUser({
+    //   tenantId: tenantId,
+    //   userId: payload.targetUserId,
+    // });
 
-    if (!assignedRoles || assignedRoles.length === 0)
+    // if (!assignedRoles || assignedRoles.length === 0)
+    //   throw new ValidationError("user has no roles", {
+    //     userId: payload.targetUserId,
+    //   });
+    if (!existingUser.userRoles || existingUser.userRoles.length === 0)
       throw new ValidationError("user has no roles", {
         userId: payload.targetUserId,
       });
 
     const now = this.clockService.now();
-    const hasValidRoleNowOrFuture = assignedRoles.some(
+    // const hasValidRoleNowOrFuture = assignedRoles.some(
+    //   (r) => !r.validTo || new Date(r.validTo) >= now,
+    // );
+    const hasValidRoleNowOrFuture = existingUser.userRoles.some(
       (r) => !r.validTo || new Date(r.validTo) >= now,
     );
     if (!hasValidRoleNowOrFuture) {
@@ -175,6 +186,6 @@ export class InviteUser {
       validityPeriod,
     });
 
-    return toUserAdminDto(updated);
+    return toUserDetailDto(updated);
   }
 }

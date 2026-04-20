@@ -10,7 +10,7 @@ import { seedTenant } from "../../helpers/seed/seedTenant.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
-import { expectUserAdminDto } from "../../helpers/assertions/expectUserAdminDto.js";
+import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
 describe("CreateUser (integration) POST /api/users", () => {
@@ -77,11 +77,11 @@ describe("CreateUser (integration) POST /api/users", () => {
         status: 201,
       });
 
-      expectUserAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: clientTenant.id,
         email: email_new,
         status: "NEW",
-        roleNames: [],
+        userRoles: [],
         inviteTokenExpiresAt: null,
         resetTokenExpiresAt: null,
       });
@@ -180,7 +180,7 @@ describe("CreateUser (integration) POST /api/users", () => {
         status: 201,
       });
 
-      expectUserAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: clientTenant.id,
         email: email_new,
         status: "NEW",
@@ -225,7 +225,7 @@ describe("CreateUser (integration) POST /api/users", () => {
         status: 201,
       });
 
-      expectUserAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: clientTenant.id,
         email: duplicateEmail,
         status: "NEW",

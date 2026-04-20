@@ -16,7 +16,7 @@ import {
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserAdminDto } from "./user.mappers.js";
+import { toUserDetailDto } from "./user.mappers.js";
 
 export class CreateUser {
   /**
@@ -35,7 +35,7 @@ export class CreateUser {
 
   /**
    * @param {import("../ports/users/user.types.js").CreateUserUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
    */
   async execute(input) {
     const obj = v.object(input, "CreateUser input");
@@ -75,6 +75,6 @@ export class CreateUser {
       email: payload.email,
     });
 
-    return toUserAdminDto(row);
+    return toUserDetailDto(row);
   }
 }

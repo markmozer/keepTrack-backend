@@ -98,8 +98,6 @@
 /**
  * @typedef {object} UserRoleDetailDto
  * @property {string} id
- * @property {string} tenantId
- * @property {string} userId
  * @property {string} roleId
  * @property {string} validFrom
  * @property {string|null} validTo
