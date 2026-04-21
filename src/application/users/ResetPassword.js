@@ -13,11 +13,10 @@ import { validateResetPasswordPayload } from "./resetPassword.validation.js";
 import { ValidationError } from "../../domain/shared/errors/index.js";
 
 import {
-  UserStatus,
   isStatusForResetPassword,
 } from "../../domain/users/UserStatus.js";
 
-import { toUserAdminDto } from "./user.mappers.js";
+import { toUserDetailDto } from "./user.mappers.js";
 
 export class ResetPassword {
   /**
@@ -40,7 +39,7 @@ export class ResetPassword {
 
   /**
    * @param {import("../ports/users/user.types.js").ResetPasswordUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
    */
   async execute(input) {
     const obj = v.object(input, "ResetPassword input");
@@ -83,6 +82,6 @@ export class ResetPassword {
       updatedAt: now,
     });
 
-    return toUserAdminDto(resetUser);
+    return toUserDetailDto(resetUser);
   }
 }

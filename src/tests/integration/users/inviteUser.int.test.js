@@ -8,7 +8,6 @@ import { randomUUID } from "node:crypto";
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
-import { seedTargetUser } from "../../helpers/seed/seedTargetUser.js";
 import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
@@ -146,9 +145,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_VIEWER",
       });
 
-      const targetRoleNames = ["USER_VIEWER"];
+      const targetRoleNames = [{name: "USER_VIEWER"}];
 
-      const targetUser = await seedTargetUser({
+      const targetUser = await setupTestUser({
         prisma: container.prisma,
         container,
         defaultTenant: primaryTenant,

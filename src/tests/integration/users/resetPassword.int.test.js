@@ -7,12 +7,12 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
-import { seedTargetUser } from "../../helpers/seed/seedTargetUser.js";
+import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
 import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserAdminDto } from "../../helpers/assertions/expectUserAdminDto.js";
+import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 
 describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
   const endpoint = "/api/users/reset-password";
@@ -48,7 +48,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
 
   async function seedUserWithResetToken({
     passwordPlain = oldPassword,
-    roleNames = ["USER_VIEWER"],
+    userRoles = [{ name: "USER_VIEWER" }],
     expiresAt,
     status = UserStatus.ACTIVE,
     tenant,
@@ -64,7 +64,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         container.appConfig.auth.inviteTtlDays,
       );
 
-    const user = await seedTargetUser({
+    const user = await setupTestUser({
       prisma: container.prisma,
       container,
       defaultTenant: primaryTenant,
@@ -73,7 +73,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
       passwordPlain,
       resetTokenHash: tokenHash,
       resetTokenExpiresAt,
-      roleNames,
+      userRoles,
     });
 
     return {
@@ -135,12 +135,12 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         status: 200,
       });
 
-      expectUserAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
         status: UserStatus.ACTIVE,
-        roleNames: ["USER_VIEWER"],
+        userRoles: [{ name: "USER_VIEWER" }],
         resetTokenExpiresAt: null,
       });
 
@@ -153,8 +153,6 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
       });
 
       expect(userAfter.passwordHash).not.toBe(userBefore.passwordHash);
-
-
     });
 
     it("returns 422 when token is invalid (not found)", async () => {
@@ -339,12 +337,12 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         status: 200,
       });
 
-      expectUserAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
         status: UserStatus.ACTIVE,
-        roleNames: ["USER_VIEWER"],
+        roleNames: [{ name: "USER_VIEWER" }],
         resetTokenExpiresAt: null,
       });
 
@@ -380,8 +378,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
     ])("$test", async ({ status }) => {
       const { tokenPlaintext } = await seedUserWithResetToken({
         status,
-      })
-    
+      });
 
       const api = createApiClient(app, primaryTenant.slug);
 

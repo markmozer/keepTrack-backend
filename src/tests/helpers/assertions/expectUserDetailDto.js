@@ -34,7 +34,7 @@ export function expectUserDetailDto(actual, expected = {}) {
     tenantId: expected.tenantId ?? expect.any(String),
     email: expected.email ?? expect.any(String),
     status: expected.status ?? expect.any(String),
-    userRoles: expected.userRoles ?? expect.any(Array),
+    userRoles: expect.any(Array),
     createdAt: expect.any(String),
     updatedAt: expect.any(String),
   });

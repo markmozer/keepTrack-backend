@@ -15,8 +15,7 @@ import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserRoleAdminDto } from "../userRoles/userRole.mappers.js";
-
+import { toUserDetailDto } from "../users/user.mappers.js";
 
 export class AssignRoleToUser {
   /**
@@ -47,7 +46,7 @@ export class AssignRoleToUser {
 
   /**
    * @param {import("../ports/userRoles/userRole.types.js").AssignRoleToUserUCInput} input
-   * @returns {Promise<import("../ports/userRoles/userRole.types.js").AssignRoleToUserDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").AssignRoleToUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "AssignRoleToUser input");
@@ -72,7 +71,7 @@ export class AssignRoleToUser {
       });
     }
 
-    const existingUser = await this.userRepository.findById({
+    const existingUser = await this.userRepository.findDetailById({
       tenantId,
       userId: payload.targetUserId,
     });
@@ -90,17 +89,16 @@ export class AssignRoleToUser {
       throw new ResourceNotFoundError("role", { roleId: payload.roleId });
     }
 
-    const existingUserRole = await this.userRoleRepository.findByUserAndRole({
-      tenantId,
-      userId: payload.targetUserId,
-      roleId: payload.roleId,
-    });
+    const existingUserHasRole =
+      existingUser.userRoles?.some(
+        (userRole) => userRole.roleId === payload.roleId,
+      ) ?? false;
 
-    if (existingUserRole) {
-      return { created: false, payload: toUserRoleAdminDto(existingUserRole) };
+    if (existingUserHasRole) {
+      return { created: false, payload: toUserDetailDto(existingUser) };
     }
 
-    const row = await this.userRoleRepository.create({
+    await this.userRoleRepository.create({
       tenantId,
       userId: payload.targetUserId,
       roleId: payload.roleId,
@@ -108,6 +106,15 @@ export class AssignRoleToUser {
       validTo: payload.validTo,
     });
 
-    return { created: true, payload: toUserRoleAdminDto(row) };
+    const updatedUser = await this.userRepository.findDetailById({
+      tenantId,
+      userId: payload.targetUserId,
+    });
+
+    if (!updatedUser) {
+      throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
+    }
+
+    return { created: true, payload: toUserDetailDto(updatedUser) };
   }
 }

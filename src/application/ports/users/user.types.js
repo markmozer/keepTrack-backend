@@ -119,6 +119,15 @@
  * @property {string} updatedAt
  */
 
+/**
+ * Specific for AssignRoleToUser
+ * to accomodate idempotent behaviour (created true || false)
+ *
+ * @typedef {Object} AssignRoleToUserDto
+ * @property {boolean} created
+ * @property {UserDetailDto} payload
+ */
+
 // ============================================================
 // Infrastructure layer     select              userAuthRowSelect
 // Infrastructure layer     return model        userAuthRow

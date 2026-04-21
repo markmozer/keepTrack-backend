@@ -15,7 +15,7 @@ import { validateProvisionTenantAdminUserPayload } from "./provisionTenantAdminU
 import { UserStatus } from "../../domain/users/UserStatus.js";
 
 // mappers
-import { toUserAdminDto } from "../users/user.mappers.js";
+import { toUserDetailDto } from "../users/user.mappers.js";
 
 // other
 import { ConflictError } from "../../domain/shared/errors/index.js";
@@ -24,7 +24,7 @@ import { ConflictError } from "../../domain/shared/errors/index.js";
  * @typedef {Object} ProvisionedAdminUserDto
  * @property {boolean} success
  * @property {boolean} created
- * @property {import("../ports/users/user.types.js").UserAdminDto | null} payload
+ * @property {import("../ports/users/user.types.js").UserDetailDto | null} payload
  * @property {any} error
  */
 
@@ -77,7 +77,7 @@ export class ProvisionTenantAdminUser {
       return {
         success: true,
         created: false,
-        payload: toUserAdminDto(existingUser),
+        payload: toUserDetailDto(existingUser),
         error: null,
       };
     }
@@ -91,7 +91,7 @@ export class ProvisionTenantAdminUser {
     return {
       success: true,
       created: true,
-      payload: toUserAdminDto(user),
+      payload: toUserDetailDto(user),
       error: null,
     };
   }

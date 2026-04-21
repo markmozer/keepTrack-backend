@@ -113,12 +113,12 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByEmailRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow| null>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
    */
   async findByEmail({ tenantId, email }) {
     const row = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
 
     return row ? row : null;
@@ -187,7 +187,7 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").ActivateFromInviteRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
    */
   async activateFromInvite({
     userId,
@@ -206,7 +206,7 @@ export class UserRepositoryPrisma {
         passwordHash,
         updatedAt,
       },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
 
     return row;
@@ -229,7 +229,7 @@ export class UserRepositoryPrisma {
    * @param {import("../../../../application/ports/users/user.types.js").ForgotPasswordRepoInput} input
    * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
    */
-  async markAsPwdResetRequested({
+  async markForForgotPassword({
     userId,
     resetTokenHash,
     resetTokenExpiresAt,
@@ -244,7 +244,7 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").ResetPasswordRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
    */
   async resetPassword({
     userId,
@@ -261,7 +261,7 @@ export class UserRepositoryPrisma {
         passwordHash,
         updatedAt,
       },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
 
     return row;

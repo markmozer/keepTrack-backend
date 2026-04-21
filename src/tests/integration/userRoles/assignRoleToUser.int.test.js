@@ -9,13 +9,15 @@ import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
 import { seedUser } from "../../helpers/seed/seedUser.js";
+import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
 import { seedRole } from "../../helpers/seed/seedRole.js";
 import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserRoleAdminDto } from "../../helpers/assertions/expectUserRoleAdminDto.js";
+import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
+import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
 
 describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
   const endpoint = "/api/users";
@@ -61,16 +63,26 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
     });
   }
 
-  async function seedTargetUser({ tenant = primaryTenant } = {}) {
-    return seedUser({
+  async function seedTestUser({
+    tenant,
+    status,
+    userRoles,
+    passwordPlain = null,
+  } = {}) {
+    const resolvedStatus = status ?? UserStatus.NEW;
+    const resolvedUserRoles = userRoles ?? [];
+
+    const user = await setupTestUser({
       prisma: container.prisma,
-      passwordService: container.services.passwordService,
-      payload: {
-        tenantId: tenant.id,
-        status: UserStatus.NEW,
-        passwordPlain: null,
-      },
+      container,
+      defaultTenant: primaryTenant,
+      tenant,
+      userRoles: resolvedUserRoles,
+      status: resolvedStatus,
+      passwordPlain,
     });
+
+    return user;
   }
 
   async function seedTargetRole({
@@ -136,28 +148,40 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_ADMIN",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
+
       const targetRole = await seedTargetRole();
+
       const now = container.services.clockService.now();
 
-      const response = await api.post(`${endpoint}/${targetUser.id}/roles`).send({
-        roleId: targetRole.id,
-        validFrom: now,
-        validTo: null,
-      });
+      const response = await api
+        .post(`${endpoint}/${targetUser.id}/roles`)
+        .send({
+          roleId: targetRole.id,
+          validFrom: now,
+          validTo: null,
+        });
 
       const payload = expectAppSuccessWithPayload(response, {
         status: 201,
       });
 
-      expectUserRoleAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: primaryTenant.id,
-        userId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom: now.toISOString(),
-        validTo: null,
-        roleName: "USER_VIEWER",
+        id: payload.id,
+        email: payload.email,
+        status: UserStatus.NEW,
+        inviteTokenExpiresAt: null,
+        resetTokenExpiresAt: null,
       });
+
+      const userRole = payload.userRoles[0];
+      expect(typeof userRole.id).toBe("string");
+      expect(userRole.roleId).toBe(targetRole.id);
+      expect(userRole.validFrom).toBe(now.toISOString());
+      expect(userRole.validTo).toBeNull();
+      expectValidDate(userRole.createdAt);
+      expectValidDate(userRole.updatedAt);
 
       await expectPersistedUserRole({
         tenantId: primaryTenant.id,
@@ -173,7 +197,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_EDITOR",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
       const response = await assignRole(api, targetUser.id, targetRole.id);
@@ -183,7 +207,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
 
     it("returns 401 when principal is missing", async () => {
       const api = createApiClient(app, primaryTenant.slug);
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
       const response = await assignRole(api, targetUser.id, targetRole.id);
@@ -195,7 +219,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
   describe("tenant resolution", () => {
     it("returns 400 when X-Tenant-Slug header is missing", async () => {
       const api = createApiClient(app, undefined);
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
       const response = await assignRole(api, targetUser.id, targetRole.id);
@@ -205,7 +229,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
 
     it("returns 400 when X-Tenant-Slug header is empty", async () => {
       const api = createApiClient(app, "");
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
       const response = await assignRole(api, targetUser.id, targetRole.id);
@@ -251,38 +275,43 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         name: "USER_VIEWER",
       });
 
-      const targetUser = await seedUser({
-        prisma: container.prisma,
-        passwordService: container.services.passwordService,
-        payload: {
-          tenantId: primaryTenant.id,
-          status: UserStatus.NEW,
-          passwordPlain: null,
-          roleNames: ["USER_VIEWER"],
-        },
-      });
-
       const now = container.services.clockService.now();
       const futureValidFrom = container.services.clockService.addDays(now, 14);
 
-      const response = await api.post(`${endpoint}/${targetUser.id}/roles`).send({
-        roleId: targetRole.id,
-        validFrom: futureValidFrom,
-        validTo: null,
+      const targetUser = await seedTestUser({
+        userRoles: [{ name: "USER_VIEWER", validFrom: now }],
       });
+
+      const response = await api
+        .post(`${endpoint}/${targetUser.id}/roles`)
+        .send({
+          roleId: targetRole.id,
+          validFrom: futureValidFrom,
+          validTo: null,
+        });
 
       const payload = expectAppSuccessWithPayload(response, {
         status: 200,
       });
 
-      expectUserRoleAdminDto(payload, {
+      expectUserDetailDto(payload, {
         tenantId: primaryTenant.id,
-        userId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom: now.toISOString(),
-        validTo: null,
-        roleName: "USER_VIEWER",
+        id: payload.id,
+        email: payload.email,
+        status: UserStatus.NEW,
+        inviteTokenExpiresAt: null,
+        resetTokenExpiresAt: null,
       });
+
+      expect(payload.userRoles.length).toBe(1);
+      const userRole = payload.userRoles[0];
+      expect(userRole.id).toBe(targetUser.userRoles[0].id);
+      expect(userRole.roleId).toBe(targetRole.id);
+      expect(userRole.validFrom).toBe(now.toISOString());
+      expect(userRole.validTo).toBeNull();
+      expectValidDate(userRole.createdAt);
+      expectValidDate(userRole.updatedAt);
+      expect(userRole.roleName).toBe("USER_VIEWER");
 
       await expectPersistedUserRole({
         tenantId: primaryTenant.id,
@@ -309,7 +338,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         },
       });
 
-      const targetUser = await seedTargetUser({
+      const targetUser = await seedTestUser({
         tenant: secondaryTenant,
       });
 
@@ -338,7 +367,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         },
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
 
       const targetRole = await seedTargetRole({
         tenant: secondaryTenant,
@@ -375,7 +404,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_ADMIN",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const now = container.services.clockService.now();
 
       const responseWithoutRoleId = await api
@@ -413,7 +442,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_ADMIN",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
 
       const response = await api
         .post(`${endpoint}/${targetUser.id}/roles`)
@@ -429,7 +458,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_ADMIN",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
       const responseOne = await api
@@ -458,7 +487,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_ADMIN",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
       const now = container.services.clockService.now();
 
@@ -488,7 +517,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
         roleName: "USER_ADMIN",
       });
 
-      const targetUser = await seedTargetUser();
+      const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
       const validFrom = container.services.clockService.now();

@@ -7,7 +7,6 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
-import { seedTargetUser } from "../../helpers/seed/seedTargetUser.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
@@ -15,6 +14,7 @@ import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserList } from "../../helpers/assertions/expectUserList.js";
 import { UserStatus } from "@prisma/client";
 import { toUserDto } from "../../../application/users/user.mappers.js";
+import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
 
 describe("GetUsers (integration) GET /api/users", () => {
   const endpoint = "/api/users";
@@ -44,33 +44,33 @@ describe("GetUsers (integration) GET /api/users", () => {
     const seedUsers = [
       {
         email: "user_beta@example.com",
-        roleNames: ["USER_VIEWER"],
+        userRoles: [{name: "USER_VIEWER"}],
         status: UserStatus.INVITED,
       },
       {
         email: "user_alpha@example.com",
-        roleNames: ["USER_ADMIN", "CONTRACT_ADMIN"],
+        userRoles: [{name: "USER_ADMIN"},{name: "CONTRACT_ADMIN"}],
         status: UserStatus.NEW,
       },
       {
         email: "user_delta@example.com",
-        roleNames: ["USER_ADMIN", "CONTRACT_ADMIN"],
+        userRoles: [{name: "USER_ADMIN"},{name: "CONTRACT_ADMIN"}],
         status: UserStatus.INACTIVE,
       },
       {
         email: "user_charlie@example.com",
-        roleNames: ["USER_VIEWER"],
+        userRoles: [{name: "USER_VIEWER"}],
         status: UserStatus.ACTIVE,
       },
     ];
 
     for (const su of seedUsers) {
-      let user = await seedTargetUser({
+      let user = await setupTestUser({
         prisma: container.prisma,
         container,
         defaultTenant: primaryTenant,
         email: su.email,
-        roleNames: su.roleNames,
+        userRoles: su.userRoles,
         status: su.status,
       });
       users.push(user);
@@ -402,13 +402,13 @@ describe("GetUsers (integration) GET /api/users", () => {
         },
       });
 
-      await seedTargetUser({
+      await setupTestUser({
         prisma: container.prisma,
         container,
         defaultTenant: primaryTenant,
         tenant: otherTenant,
         email: "other_user@example.com",
-        roleNames: ["USER_VIEWER"],
+        userRoles: [{name: "USER_VIEWER"}],
         status: UserStatus.ACTIVE,
       });
       const { api } = await setupUserViewer();

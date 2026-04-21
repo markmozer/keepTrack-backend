@@ -16,7 +16,7 @@ import {
   isStatusForAcceptInvite,
 } from "../../domain/users/UserStatus.js";
 
-import { toUserAdminDto } from "./user.mappers.js";
+import { toUserDetailDto } from "./user.mappers.js";
 
 export class AcceptInvite {
   /**
@@ -39,7 +39,7 @@ export class AcceptInvite {
 
   /**
    * @param {import("../ports/users/user.types.js").AcceptInviteUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserAdminDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
    */
   async execute(input) {
     const obj = v.object(input, "AcceptInvite input");
@@ -83,6 +83,6 @@ export class AcceptInvite {
       updatedAt: now,
     });
 
-    return toUserAdminDto(activatedUser);
+    return toUserDetailDto(activatedUser);
   }
 }

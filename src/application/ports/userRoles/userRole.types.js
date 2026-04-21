@@ -30,14 +30,7 @@
  * @property {string} roleName
  */
 
-/**
- * Specific for AssignRoleToUser
- * to accomodate idempotent behaviour (created true || false)
- *
- * @typedef {Object} AssignRoleToUserDto
- * @property {boolean} created
- * @property {UserRoleDto} payload
- */
+
 
 // ============================================================
 // Infrastructure layer     select              userRoleAdminRowSelect

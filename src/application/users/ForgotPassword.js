@@ -121,7 +121,7 @@ export class ForgotPassword {
       const expiresAt = this.clockService.addMinutes(now, ttlMinutes);
       const validityPeriod = `${ttlMinutes} minutes`;
 
-      const updated = await this.userRepository.markAsPwdResetRequested({
+      const updated = await this.userRepository.markForForgotPassword({
         userId: existingUser.id,
         tenantId,
         resetTokenHash: tokenHash,

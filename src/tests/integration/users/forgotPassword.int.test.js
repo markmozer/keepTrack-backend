@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
-import { seedTargetUser } from "../../helpers/seed/seedTargetUser.js";
+import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
 import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
@@ -46,19 +46,19 @@ describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
   });
 
   async function seedResetCandidate({
-    roleNames = ["USER_VIEWER"],
+    userRoles = [{ name: "USER_VIEWER"}],
     passwordPlain = strongPassword,
     status = UserStatus.ACTIVE,
     tenant,
   } = {}) {
-    const user = await seedTargetUser({
+    const user = await setupTestUser({
       prisma: container.prisma,
       container,
       defaultTenant: primaryTenant,
       tenant,
       status,
       passwordPlain,
-      roleNames,
+      userRoles,
     });
 
     return { user };

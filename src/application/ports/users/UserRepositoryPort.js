@@ -27,16 +27,16 @@
 /**
  * @typedef {Object} UserRepositoryPort
  * @property {(input: CreateUserRepoInput) => Promise<UserDetailRow>} create
- * @property {(input: FindUserByEmailRepoInput) => Promise<UserAdminRow | null>} findByEmail
+ * @property {(input: FindUserByEmailRepoInput) => Promise<UserDetailRow | null>} findByEmail
  * @property {(input: FindUserByIdRepoInput) => Promise<UserAdminRow | null>} findById
  * @property {(input: FindUserByIdRepoInput) => Promise<UserDetailRow | null>} findDetailById
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserDetailRow>} markAsInvited
  * @property {(InviteTokenHash: string) => Promise<UserAdminRow | null>} findByInviteTokenHash
  * @property {(ResetTokenHash: string) => Promise<UserAdminRow | null>} findByResetTokenHash
- * @property {(input: ActivateFromInviteRepoInput) => Promise<UserAdminRow>} activateFromInvite
+ * @property {(input: ActivateFromInviteRepoInput) => Promise<UserDetailRow>} activateFromInvite
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserAuthRow | null>} findByEmailForAuth
- * @property {(input: ForgotPasswordRepoInput) => Promise<UserAdminRow>} markAsPwdResetRequested
- * @property {(input: ResetPasswordRepoInput) => Promise<UserAdminRow>} resetPassword
+ * @property {(input: ForgotPasswordRepoInput) => Promise<UserAdminRow>} markForForgotPassword
+ * @property {(input: ResetPasswordRepoInput) => Promise<UserDetailRow>} resetPassword
  * @property {(input: FindUsersPageRepoInput) => Promise<FindUsersPageRepoResult>} findPage
  */
 
@@ -65,7 +65,7 @@ export function assertUserRepositoryPort(repo) {
   if (typeof (/** @type {any} */ (repo).findByInviteTokenHash) !== "function") throw new Error(errorMsg("findByInviteTokenHash(...)"));  
   if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
   if (typeof (/** @type {any} */ (repo).markAsInvited) !== "function") throw new Error(errorMsg("markAsInvited(...)"));  
-  if (typeof (/** @type {any} */ (repo).markAsPwdResetRequested) !== "function") throw new Error(errorMsg("markAsPwdResetRequested(...)"));
+  if (typeof (/** @type {any} */ (repo).markForForgotPassword) !== "function") throw new Error(errorMsg("markForForgotPassword(...)"));
   if (typeof (/** @type {any} */ (repo).findByResetTokenHash) !== "function") throw new Error(errorMsg("findByResetTokenHash(...)"));
   if (typeof (/** @type {any} */ (repo).resetPassword) !== "function") throw new Error(errorMsg("resetPassword(...)"));
   
