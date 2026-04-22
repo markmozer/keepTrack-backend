@@ -51,7 +51,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
       container,
       tenant: baseTenant,
       email: "superadmin@example.com",
-      roleNames: ["SUPER_ADMIN"],
+      userRoles: [{name: "SUPER_ADMIN"}],
     });
   }
 
@@ -62,7 +62,7 @@ describe("CreateTenant (integration) POST /api/tenants", () => {
       container,
       tenant: baseTenant,
       email: "admin@example.com",
-      roleNames: ["ADMIN"],
+      userRoles: [{name: "ADMIN"}],
     });
   }
 

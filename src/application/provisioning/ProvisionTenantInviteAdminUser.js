@@ -22,7 +22,7 @@ import {
 } from "../../domain/users/UserStatus.js";
 
 // mappers
-import { toUserAdminDto } from "../users/user.mappers.js";
+import { toUserDetailDto } from "../users/user.mappers.js";
 
 // other
 import { ConflictError } from "../../domain/shared/errors/index.js";
@@ -31,7 +31,7 @@ import { ConflictError } from "../../domain/shared/errors/index.js";
  * @typedef {Object} ProvisionedAdminUserDto
  * @property {boolean} success
  * @property {boolean} invited
- * @property {import("../ports/users/user.types.js").UserAdminDto | null} payload
+ * @property {import("../ports/users/user.types.js").UserDetailDto | null} payload
  * @property {string | null} token
  * @property {any} error
  */
@@ -146,7 +146,7 @@ export class ProvisionTenantInviteAdminUser {
     return {
       success: true,
       invited: true,
-      payload: toUserAdminDto(updated),
+      payload: toUserDetailDto(updated),
       token: tokenPlaintext,
       error: null,
     };

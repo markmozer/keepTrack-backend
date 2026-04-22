@@ -93,7 +93,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
       container,
       tenant: baseTenant,
       email: "super_admin@example.com",
-      roleNames: ["SUPER_ADMIN"],
+      userRoles: [{name: "SUPER_ADMIN"}],
     });
   }
 
@@ -104,7 +104,7 @@ describe("GetTenants (integration) GET /api/tenants", () => {
       container,
       tenant: clientAlpha,
       email: "admin@example.com",
-      roleNames: ["ADMIN"],
+      userRoles: [{name: "ADMIN"}],
     });
   }
   describe("authorization", () => {

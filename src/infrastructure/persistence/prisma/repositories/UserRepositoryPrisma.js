@@ -22,14 +22,6 @@ export const userRowSelect = {
   },
 };
 
-export const userAdminRowSelect = {
-  ...userRowSelect,
-  inviteTokenExpiresAt: true,
-  resetTokenExpiresAt: true,
-  createdAt: true,
-  updatedAt: true,
-};
-
 export const userAuthRowSelect = {
   id: true,
   tenantId: true,
@@ -87,22 +79,9 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByIdRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow | null>}
-   */
-  async findById({ tenantId, userId }) {
-    const row = await this.prisma.user.findFirst({
-      where: { id: userId, tenantId },
-      select: userAdminRowSelect,
-    });
-
-    return row ? row : null;
-  }
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").FindUserByIdRepoInput} params
    * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow | null>}
    */
-  async findDetailById({ tenantId, userId }) {
+  async findById({ tenantId, userId }) {
     const row = await this.prisma.user.findFirst({
       where: { id: userId, tenantId },
       select: userDetailRowSelect,
@@ -161,12 +140,12 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {string} inviteTokenHash
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow| null>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
    */
   async findByInviteTokenHash(inviteTokenHash) {
     const row = await this.prisma.user.findFirst({
       where: { inviteTokenHash },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
 
     return row ? row : null;
@@ -174,12 +153,12 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {string} resetTokenHash
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow| null>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
    */
   async findByResetTokenHash(resetTokenHash) {
     const row = await this.prisma.user.findFirst({
       where: { resetTokenHash },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
 
     return row ? row : null;
@@ -227,7 +206,7 @@ export class UserRepositoryPrisma {
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").ForgotPasswordRepoInput} input
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAdminRow>}
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
    */
   async markForForgotPassword({
     userId,
@@ -238,7 +217,7 @@ export class UserRepositoryPrisma {
     return this.prisma.user.update({
       where: { id: userId },
       data: { resetTokenHash, resetTokenExpiresAt, updatedAt },
-      select: userAdminRowSelect,
+      select: userDetailRowSelect,
     });
   }
 

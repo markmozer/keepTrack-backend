@@ -45,7 +45,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
   describe("success path", () => {
     it("returns 200 with principal for authenticated user", async () => {
       const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      const userRoles = [{ name: "ADMIN" }];
 
       const { user, api } = await setupAuthenticatedPrincipal({
         app,
@@ -54,7 +54,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
         tenant: testTenant,
         email,
         password: "Strong123!123",
-        roleNames,
+        userRoles,
       });
 
       const response = await api.get("/api/auth/me");
@@ -64,7 +64,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
       expectAuthMePayload(payload, {
         userId: user.id,
         tenantId: testTenant.id,
-        roleNames,
+        userRoles,
       });
     });
   });
@@ -97,7 +97,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
     });
     it("returns 401 when tenant-slug does not match principal", async () => {
       const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      const userRoles = [{name: "ADMIN"}];
 
       const { cookie } = await setupAuthenticatedPrincipal({
         app,
@@ -106,7 +106,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
         tenant: testTenant,
         email,
         password: "Strong123!123",
-        roleNames,
+        userRoles,
       });
 
       await seedTenant({

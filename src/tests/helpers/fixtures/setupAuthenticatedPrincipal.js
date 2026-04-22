@@ -6,6 +6,7 @@ import { seedRole } from "../seed/seedRole.js";
 import { seedUser } from "../seed/seedUser.js";
 import { loginAs } from "../auth/loginAs.js";
 import { createAuthenticatedApiClient } from "../http/authenticatedApiClient.js";
+import { UserStatus } from "../../../domain/users/UserStatus.js";
 
 /**
  * @param {Object} params
@@ -15,7 +16,7 @@ import { createAuthenticatedApiClient } from "../http/authenticatedApiClient.js"
  * @param {{ id: string, slug: string }} params.tenant
  * @param {string} params.email
  * @param {string} [params.password]
- * @param {string[]} [params.roleNames]
+ * @param {{name?: string, validFrom?: Date | null, validTo?: Date | null}[]} [params.userRoles]
  * @returns {Promise<{ user: unknown, cookie: string[], api: ReturnType<typeof createAuthenticatedApiClient> }>}
  */
 export async function setupAuthenticatedPrincipal({
@@ -25,29 +26,28 @@ export async function setupAuthenticatedPrincipal({
   tenant,
   email,
   password = "Test123!123",
-  roleNames = [],
+  userRoles = [],
 }) {
 
-  for (const roleName of roleNames) {
+  for (const ur of userRoles) {
     await seedRole({
       prisma,
       payload: {
         tenantId: tenant.id,
-        name: roleName,
+        name: ur.name,
       },
     });
   }
 
+
   const user = await seedUser({
     prisma,
-    passwordService: container.services.passwordService,
-    payload: {
-      tenantId: tenant.id,
-      email,
-      status: "ACTIVE",
-      passwordPlain: password,
-      roleNames,
-    },
+    container,
+    defaultTenant: tenant,
+    userRoles,
+    status: UserStatus.ACTIVE,
+    passwordPlain: password,
+    email,
   });
 
   const { cookie } = await loginAs({

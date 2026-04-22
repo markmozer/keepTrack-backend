@@ -58,7 +58,7 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
       container,
       tenant,
       email: "super_admin@example.com",
-      roleNames: ["SUPER_ADMIN"],
+      userRoles: [{name: "SUPER_ADMIN"}],
     });
   }
 
@@ -69,7 +69,7 @@ describe("GetTenantById (integration) GET /api/tenants/:tenantId", () => {
       container,
       tenant,
       email: "admin@example.com",
-      roleNames: ["ADMIN"],
+      userRoles: [{name: "ADMIN"}],
     });
   }
 

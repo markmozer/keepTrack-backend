@@ -67,7 +67,7 @@ export class GetUserById {
       });
     }
 
-    const user = await this.userRepository.findDetailById({
+    const user = await this.userRepository.findById({
       tenantId,
       userId: payload.userId,
     });

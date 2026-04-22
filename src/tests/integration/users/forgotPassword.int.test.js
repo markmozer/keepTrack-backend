@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
-import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
+import { seedUser } from "../../helpers/seed/seedUser.js";
 import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
@@ -51,7 +51,7 @@ describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
     status = UserStatus.ACTIVE,
     tenant,
   } = {}) {
-    const user = await setupTestUser({
+    const user = await seedUser({
       prisma: container.prisma,
       container,
       defaultTenant: primaryTenant,

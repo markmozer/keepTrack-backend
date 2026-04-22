@@ -32,38 +32,6 @@
  */
 
 // ============================================================
-// Infrastructure layer     select              userAdminRowSelect
-// Infrastructure layer     return model        userAdminRow
-// Application layer        return model        userAdminDto
-// ============================================================
-
-/**
- * @typedef {Object} UserAdminRow
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {UserStatus} status
- * @property {{ role: { name: string } }[]} userRoles
- * @property {Date | null} inviteTokenExpiresAt
- * @property {Date | null} resetTokenExpiresAt
- * @property {Date} createdAt
- * @property {Date} updatedAt
- */
-
-/**
- * @typedef {Object} UserAdminDto
- * @property {string} tenantId
- * @property {string} id
- * @property {string} email
- * @property {UserStatus} status
- * @property {string[]} roleNames
- * @property {string | null} inviteTokenExpiresAt
- * @property {string | null} resetTokenExpiresAt
- * @property {string} createdAt
- * @property {string} updatedAt
- */
-
-// ============================================================
 // Infrastructure layer     select              userDetailRowSelect
 // Infrastructure layer     return model        userDetailRow
 // Application layer        return model        userDetailDto
@@ -72,8 +40,6 @@
 /**
  * @typedef {object} UserRoleDetailRow
  * @property {string} id
- * @property {string} tenantId
- * @property {string} userId
  * @property {string} roleId
  * @property {Date} validFrom
  * @property {Date|null} validTo
@@ -338,7 +304,7 @@
  */
 
 /**
- * Input used for findById / findDetailById
+ * Input used for findById
  * 
  * RepoInput 
  * @typedef {Object} FindUserByIdRepoInput

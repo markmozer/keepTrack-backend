@@ -44,7 +44,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
 
   async function setupAuthenticatedApi() {
     const email = `user@${testTenant.slug}.nl`;
-    const roleNames = ["ADMIN"];
+    const userRoles = [{name: "ADMIN"}];
 
     const { user, cookie, api } = await setupAuthenticatedPrincipal({
       app,
@@ -53,7 +53,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
       tenant: testTenant,
       email,
       password: "Strong123!123",
-      roleNames,
+      userRoles,
     });
 
     return { user, cookie, api };

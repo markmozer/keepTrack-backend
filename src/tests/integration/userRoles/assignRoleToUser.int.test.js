@@ -9,7 +9,6 @@ import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
 import { seedUser } from "../../helpers/seed/seedUser.js";
-import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
 import { seedRole } from "../../helpers/seed/seedRole.js";
 import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
@@ -50,8 +49,8 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
 
   async function setupAuthSingleRolePrincipal({ tenant, roleName } = {}) {
     const resolvedTenant = tenant ?? primaryTenant;
-    const resolvedRoleName = roleName ? roleName.toUpperCase() : "USER_ADMIN";
-    const resolvedEmail = `${resolvedRoleName.toLowerCase()}-${randomUUID().slice(0, 8)}@example.com`;
+    const resolvedUserRole = roleName ? {name: roleName.toUpperCase()} : {name: "USER_ADMIN"};
+    const resolvedEmail = `${roleName.toLowerCase()}-${randomUUID().slice(0, 8)}@example.com`;
 
     return setupAuthenticatedPrincipal({
       app,
@@ -59,7 +58,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       container,
       tenant: resolvedTenant,
       email: resolvedEmail,
-      roleNames: [resolvedRoleName],
+      userRoles: [resolvedUserRole],
     });
   }
 
@@ -72,7 +71,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
     const resolvedStatus = status ?? UserStatus.NEW;
     const resolvedUserRoles = userRoles ?? [];
 
-    const user = await setupTestUser({
+    const user = await seedUser({
       prisma: container.prisma,
       container,
       defaultTenant: primaryTenant,

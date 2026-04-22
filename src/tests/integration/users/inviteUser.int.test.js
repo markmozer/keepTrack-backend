@@ -15,7 +15,7 @@ import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppS
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
-import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
+import { seedUser } from "../../helpers/seed/seedUser.js";
 
 describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
   const endpoint = "/api/users";
@@ -49,8 +49,8 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
   async function setupAuthSingleRolePrincipal({ tenant, roleName } = {}) {
     const resolvedTenant = tenant ?? primaryTenant;
-    const resolvedRoleName = roleName ? roleName.toUpperCase() : "USER_ADMIN";
-    const resolvedEmail = `${resolvedRoleName.toLowerCase()}-${randomUUID().slice(0, 8)}@example.com`;
+    const resolvedUserRole = roleName ? {name: roleName.toUpperCase()} : {name: "USER_ADMIN"};
+    const resolvedEmail = `${roleName.toLowerCase()}-${randomUUID().slice(0, 8)}@example.com`;
 
     return setupAuthenticatedPrincipal({
       app,
@@ -58,7 +58,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
       container,
       tenant: resolvedTenant,
       email: resolvedEmail,
-      roleNames: [resolvedRoleName],
+      userRoles: [resolvedUserRole],
     });
   }
 
@@ -71,7 +71,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
     const resolvedStatus = status ?? UserStatus.NEW;
     const resolvedUserRoles = userRoles ?? defaultUserRole;
 
-    const user = await setupTestUser({
+    const user = await seedUser({
       prisma: container.prisma,
       container,
       defaultTenant: primaryTenant,
@@ -147,7 +147,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const targetRoleNames = [{name: "USER_VIEWER"}];
 
-      const targetUser = await setupTestUser({
+      const targetUser = await seedUser({
         prisma: container.prisma,
         container,
         defaultTenant: primaryTenant,

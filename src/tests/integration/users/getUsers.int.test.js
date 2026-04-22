@@ -14,7 +14,7 @@ import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserList } from "../../helpers/assertions/expectUserList.js";
 import { UserStatus } from "@prisma/client";
 import { toUserDto } from "../../../application/users/user.mappers.js";
-import { setupTestUser } from "../../helpers/fixtures/setupTestUser.js";
+import { seedUser } from "../../helpers/seed/seedUser.js";
 
 describe("GetUsers (integration) GET /api/users", () => {
   const endpoint = "/api/users";
@@ -65,7 +65,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     ];
 
     for (const su of seedUsers) {
-      let user = await setupTestUser({
+      let user = await seedUser({
         prisma: container.prisma,
         container,
         defaultTenant: primaryTenant,
@@ -90,7 +90,7 @@ describe("GetUsers (integration) GET /api/users", () => {
       container,
       tenant: primaryTenant,
       email: "user_viewer@example.com",
-      roleNames: ["USER_VIEWER"],
+      userRoles: [{name: "USER_VIEWER"}],
     });
   }
 
@@ -101,7 +101,7 @@ describe("GetUsers (integration) GET /api/users", () => {
       container,
       tenant: primaryTenant,
       email: "contract_admin@example.com",
-      roleNames: ["CONTRACT_ADMIN"],
+      userRoles: [{name: "CONTRACT_ADMIN"}],
     });
   }
   describe("authorization", () => {
@@ -402,7 +402,7 @@ describe("GetUsers (integration) GET /api/users", () => {
         },
       });
 
-      await setupTestUser({
+      await seedUser({
         prisma: container.prisma,
         container,
         defaultTenant: primaryTenant,

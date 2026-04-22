@@ -103,11 +103,7 @@ export class InviteUser {
       });
     }
 
-    // const existingUser = await this.userRepository.findById({
-    //   tenantId,
-    //   userId: payload.targetUserId,
-    // });
-    const existingUser = await this.userRepository.findDetailById({
+    const existingUser = await this.userRepository.findById({
       tenantId,
       userId: payload.targetUserId,
     });
@@ -122,24 +118,12 @@ export class InviteUser {
       });
     }
 
-    // const assignedRoles = await this.userRoleRepository.findByUser({
-    //   tenantId: tenantId,
-    //   userId: payload.targetUserId,
-    // });
-
-    // if (!assignedRoles || assignedRoles.length === 0)
-    //   throw new ValidationError("user has no roles", {
-    //     userId: payload.targetUserId,
-    //   });
     if (!existingUser.userRoles || existingUser.userRoles.length === 0)
       throw new ValidationError("user has no roles", {
         userId: payload.targetUserId,
       });
 
     const now = this.clockService.now();
-    // const hasValidRoleNowOrFuture = assignedRoles.some(
-    //   (r) => !r.validTo || new Date(r.validTo) >= now,
-    // );
     const hasValidRoleNowOrFuture = existingUser.userRoles.some(
       (r) => !r.validTo || new Date(r.validTo) >= now,
     );

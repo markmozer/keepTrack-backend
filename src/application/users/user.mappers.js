@@ -17,29 +17,6 @@ export function toUserDto(row) {
 }
 
 /**
- * @param {import("../ports/users/user.types.js").UserAdminRow} row
- * @returns {import("../ports/users/user.types.js").UserAdminDto}
- */
-export function toUserAdminDto(row) {
-  return {
-    id: row.id,
-    tenantId: row.tenantId,
-    email: row.email,
-    status: row.status,
-    roleNames: row.userRoles.map((ur) => ur.role.name),
-    inviteTokenExpiresAt: row.inviteTokenExpiresAt
-      ? row.inviteTokenExpiresAt.toISOString()
-      : null,
-    resetTokenExpiresAt: row.resetTokenExpiresAt
-      ? row.resetTokenExpiresAt.toISOString()
-      : null,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
-  };
-}
-
-
-/**
  * @param {import("../ports/users/user.types.js").UserDetailRow} row
  * @returns {import("../ports/users/user.types.js").UserDetailDto}
  */

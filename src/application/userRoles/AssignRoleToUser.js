@@ -71,7 +71,7 @@ export class AssignRoleToUser {
       });
     }
 
-    const existingUser = await this.userRepository.findDetailById({
+    const existingUser = await this.userRepository.findById({
       tenantId,
       userId: payload.targetUserId,
     });
@@ -106,7 +106,7 @@ export class AssignRoleToUser {
       validTo: payload.validTo,
     });
 
-    const updatedUser = await this.userRepository.findDetailById({
+    const updatedUser = await this.userRepository.findById({
       tenantId,
       userId: payload.targetUserId,
     });

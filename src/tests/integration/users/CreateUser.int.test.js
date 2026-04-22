@@ -48,7 +48,7 @@ describe("CreateUser (integration) POST /api/users", () => {
       container,
       tenant: clientTenant,
       email: `user_admin@${clientTenant.slug}.nl`,
-      roleNames: ["USER_ADMIN"],
+      userRoles: [{name: "USER_ADMIN"}],
     });
   }
 
@@ -59,7 +59,7 @@ describe("CreateUser (integration) POST /api/users", () => {
       container,
       tenant: clientTenant,
       email: `user_editor@${clientTenant.slug}.nl`,
-      roleNames: ["USER_EDITOR"],
+      userRoles: [{name: "USER_EDITOR"}],
     });
   }
 

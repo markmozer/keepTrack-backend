@@ -60,7 +60,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
         container,
         tenant: baseTenant,
         email,
-        roleNames: ["SUPER_ADMIN"],
+        userRoles: [{name: "SUPER_ADMIN"}],
       });
 
       const name = "NEW_ROLE";
@@ -93,7 +93,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
         container,
         tenant: clientTenant,
         email,
-        roleNames: ["ADMIN"],
+        userRoles: [{name: "ADMIN"}],
       });
 
       const name = "NEW_ROLE";
@@ -152,7 +152,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
         container,
         tenant: baseTenant,
         email,
-        roleNames: ["SUPER_ADMIN"],
+        userRoles: [{name: "SUPER_ADMIN"}],
       });
 
       const name = "NEW_ROLE";
@@ -186,7 +186,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
         container,
         tenant: baseTenant,
         email,
-        roleNames: ["SUPER_ADMIN"],
+        userRoles: [{name: "SUPER_ADMIN"}],
       });
 
       const first = await api.post("/api/roles").send({});

@@ -68,7 +68,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
       container,
       tenant: clientTenant,
       email: "user_viewer@example.com",
-      roleNames: ["USER_VIEWER"],
+      userRoles: [{name: "USER_VIEWER"}],
     });
   }
 
@@ -79,7 +79,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
       container,
       tenant: clientTenant,
       email: "contract_admin@example.com",
-      roleNames: ["CONTRACT_ADMIN"],
+      userRoles: [{name: "CONTRACT_ADMIN"}],
     });
   }
   describe("authorization", () => {

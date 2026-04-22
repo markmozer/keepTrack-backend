@@ -2,13 +2,12 @@
  * File: src/tests/integration/auth/authenticateUser.int.test.js
  */
 
-
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
 import { seedTenant } from "../../helpers/seed/seedTenant.js";
-import { setupLoginCandidate } from "../../helpers/fixtures/setupLoginCandidate.js";
+import { seedUser } from "../../helpers/seed/seedUser.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
@@ -44,16 +43,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
 
   describe("success path", () => {
     it("authenticates an active user, returns 200, and sets session cookie", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
 
-      const { user, password } = await setupLoginCandidate({
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);
@@ -64,6 +64,8 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
       });
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
+
+      const roleNames = userRoles.map((ur) => ur.name);
 
       expect(payload).toEqual({
         user: {
@@ -85,16 +87,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
   });
   describe("tenant resolution", () => {
     it("returns 400 when X-Tenant-Slug header is missing", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
 
-      const { user, password } = await setupLoginCandidate({
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, undefined);
@@ -107,16 +110,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
       expectAppError(response, 400, "BAD_REQUEST");
     });
     it("returns 400 when X-Tenant-Slug header is empty", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
 
-      const { user, password } = await setupLoginCandidate({
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, "");
@@ -131,16 +135,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
   });
   describe("validation", () => {
     it("returns 422 when email is missing", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
 
-      const { password } = await setupLoginCandidate({
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);
@@ -166,35 +171,36 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
       expectAppError(response3, 422, "VALIDATION_ERROR");
     });
     it("returns 422 when password is missing", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
 
-      await setupLoginCandidate({
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);
 
       const response1 = await api.post("/api/auth/login").send({
-        email,
+        email: user.email,
       });
 
       expectAppError(response1, 422, "VALIDATION_ERROR");
 
       const response2 = await api.post("/api/auth/login").send({
-        email,
+        email: user.email,
         password: null,
       });
 
       expectAppError(response2, 422, "VALIDATION_ERROR");
 
       const response3 = await api.post("/api/auth/login").send({
-        email,
+        email: user.email,
         password: "",
       });
 
@@ -203,8 +209,8 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
   });
   describe("authentication failures", () => {
     it("returns 401 when unknown email in tenant", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
+      // const email = `user@${testTenant.slug}.nl`;
+      // const roleNames = ["ADMIN"];
 
       const otherTenant = await seedTenant({
         prisma: container.prisma,
@@ -215,13 +221,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
         },
       });
 
-      const { user, password } = await setupLoginCandidate({
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
+
+      const user = await seedUser({
         prisma: container.prisma,
         container,
+        defaultTenant: testTenant,
         tenant: otherTenant,
-        email,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);
@@ -234,16 +244,16 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
       expectAppError(response, 401, "INVALID_CREDENTIALS");
     });
     it("returns 401 when user has no password", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
-      const { user } = await setupLoginCandidate({
+      
+      const userRoles = [{ name: "ADMIN" }];
+
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
-        hasPassword: false,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: null,
       });
 
       const api = createApiClient(app, testTenant.slug);
@@ -256,16 +266,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
       expectAppError(response, 401, "INVALID_CREDENTIALS");
     });
     it("returns 401 when password is invalid", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
-      const { user } = await setupLoginCandidate({
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "CorrectPassword123!";
+
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
-        password: "CorrectPassword123!",
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);
@@ -278,15 +289,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
       expectAppError(response, 401, "INVALID_CREDENTIALS");
     });
     it("returns 401 when user status is not ACTIVE", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
-      const { user, password } = await setupLoginCandidate({
+      
+      const userRoles = [{ name: "ADMIN" }];
+      const password = "Strong123!123";
+
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.INVITED,
-        roleNames,
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);
@@ -301,35 +314,17 @@ describe("AuthenticateUser (integration) POST /api/auth/login", () => {
   });
   describe("role requirements", () => {
     it("returns 403 when user has no valid roles", async () => {
-      const email = `user@${testTenant.slug}.nl`;
-      const roleNames = ["ADMIN"];
-      const { user, password } = await setupLoginCandidate({
+      
+      const userRoles = [{ name: "ADMIN", validFrom: new Date(1900, 1, 1), validTo: new Date(1900, 1, 2)  }];
+      const password = "Strong123!123";
+
+      const user = await seedUser({
         prisma: container.prisma,
         container,
-        tenant: testTenant,
-        email,
+        defaultTenant: testTenant,
+        userRoles,
         status: UserStatus.ACTIVE,
-        roleNames,
-      });
-
-      const role = await container.prisma.role.findUnique({
-        where: {
-          tenantId_name: { tenantId: testTenant.id, name: roleNames[0] },
-        },
-      });
-
-      await container.prisma.userRole.update({
-        where: {
-          tenantId_userId_roleId: {
-            tenantId: testTenant.id,
-            userId: user.id,
-            roleId: role.id,
-          },
-        },
-        data: {
-          validFrom: new Date(1900, 1, 1),
-          validTo: new Date(1900, 1, 2),
-        },
+        passwordPlain: password,
       });
 
       const api = createApiClient(app, testTenant.slug);

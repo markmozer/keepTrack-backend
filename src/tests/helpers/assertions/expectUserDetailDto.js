@@ -1,6 +1,7 @@
 /**
- * File: src/tests/helpers/assertions/expectUserAdminDto.js
+ * File: src/tests/helpers/assertions/expectUserDetailDto.js
  */
+
 
 import { expect } from "vitest";
 import { expectValidDate } from "./expectValidDate.js";
