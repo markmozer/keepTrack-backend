@@ -10,18 +10,12 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @param {Object} deps
  * @param {import("../../../application/users/CreateUser.js").CreateUser} deps.createUserUseCase
  * @param {import("../../../application/users/InviteUser.js").InviteUser} deps.inviteUserUseCase
- * @param {import("../../../application/users/AcceptInvite.js").AcceptInvite} deps.acceptInviteUseCase
- * @param {import("../../../application/users/ForgotPassword.js").ForgotPassword} deps.requestPasswordResetUseCase
- * @param {import("../../../application/users/ResetPassword.js").ResetPassword} deps.resetPasswordUseCase
  * @param {import("../../../application/users/GetUsers.js").GetUsers} deps.getUsersUseCase
  * @param {import("../../../application/users/GetUserById.js").GetUserById} deps.getUserByIdUseCase
  */
 export function createUserController({
   createUserUseCase,
   inviteUserUseCase,
-  acceptInviteUseCase,
-  requestPasswordResetUseCase,
-  resetPasswordUseCase,
   getUsersUseCase,
   getUserByIdUseCase,
 }) {
@@ -64,79 +58,6 @@ export function createUserController({
           principal: reqWithContext.principal,
           payload: {
             targetUserId,
-          },
-        });
-
-        res.status(200).json(AppResponse.ok(result));
-        return;
-      } catch (e) {
-        next(e);
-      }
-    },
-    /**
-     * POST /api/users/accept-invite
-     * @param {import("express").Request} req
-     * @param {import("express").Response} res
-     * @param {import("express").NextFunction} next
-     */
-    async acceptInvite(req, res, next) {
-      try {
-        const body = v.object(req.body, "body");
-
-        const result = await acceptInviteUseCase.execute({
-          principal: null,
-          payload: {
-            tokenPlain: body.token,
-            passwordPlain: body.password,
-          },
-        });
-
-        res.status(200).json(AppResponse.ok(result));
-        return;
-      } catch (e) {
-        next(e);
-      }
-    },
-    /**
-     * POST /api/users/forgot-password
-     * @param {import("express").Request} req
-     * @param {import("express").Response} res
-     * @param {import("express").NextFunction} next
-     */
-    async requestPasswordReset(req, res, next) {
-      try {
-        const reqWithContext = asRequestWithContext(req);
-        const body = v.object(reqWithContext.body, "body");
-
-        const result = await requestPasswordResetUseCase.execute({
-          principal: null,
-          payload: {
-            tenantId: reqWithContext.context?.tenant?.id,
-            email: body.email,
-          },
-        });
-
-        res.status(200).json(AppResponse.ok(result));
-        return;
-      } catch (e) {
-        next(e);
-      }
-    },
-    /**
-     * POST /api/users/reset-password
-     * @param {import("express").Request} req
-     * @param {import("express").Response} res
-     * @param {import("express").NextFunction} next
-     */
-    async resetPassword(req, res, next) {
-      try {
-        const body = v.object(req.body, "body");
-
-        const result = await resetPasswordUseCase.execute({
-          principal: null,
-          payload: {
-            tokenPlain: body.token,
-            passwordPlain: body.password,
           },
         });
 

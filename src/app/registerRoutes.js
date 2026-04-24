@@ -5,9 +5,6 @@
 
 import express from "express";
 
-import { createTenantController } from "../interface/http/controllers/tenant.controller.js";
-import { createTenantsRouter } from "../interface/http/routers/tenants.router.js";
-
 import { createRoleController } from "../interface/http/controllers/role.controller.js";
 import { createRolesRouter } from "../interface/http/routers/roles.router.js";
 
@@ -22,6 +19,7 @@ import { createAuthRouter } from "../interface/http/routers/auth.router.js";
 
 import { createSystemController } from "../interface/http/controllers/system.controller.js";
 import { createSystemRouter } from "../interface/http/routers/system.router.js";
+import { createTenantResolutionMiddleware } from "../interface/http/middleware/tenantResolution.middleware.js";
 
 /**
  * @typedef {ReturnType<import("./buildContainer.js").buildContainer>} AppContainer
@@ -33,12 +31,6 @@ import { createSystemRouter } from "../interface/http/routers/system.router.js";
  */
 export function registerRoutes(app, container) {
   // --- Controllers (Interface/http) ---
-  const tenantController = createTenantController({
-    createTenantUseCase: container.useCases.createTenant,
-    getTenantByIdUseCase: container.useCases.getTenantById,
-    getTenantsUseCase: container.useCases.getTenants,
-  });
-
   const roleController = createRoleController({
     createRoleUseCase: container.useCases.createRole,
     getRolesUseCase: container.useCases.getRoles,
@@ -47,9 +39,6 @@ export function registerRoutes(app, container) {
   const userController = createUserController({
     createUserUseCase: container.useCases.createUser,
     inviteUserUseCase: container.useCases.inviteUser,
-    acceptInviteUseCase: container.useCases.acceptInvite,
-    requestPasswordResetUseCase: container.useCases.requestPasswordReset,
-    resetPasswordUseCase: container.useCases.resetPassword,
     getUsersUseCase: container.useCases.getUsers,
     getUserByIdUseCase: container.useCases.getUserById,
   });
@@ -61,6 +50,9 @@ export function registerRoutes(app, container) {
   const authController = createAuthController({
     authenticateUserUseCase: container.useCases.authenticateUser,
     getCurrentSessionUseCase: container.useCases.getCurrentSession,
+    acceptInviteUseCase: container.useCases.acceptInvite,
+    requestPasswordResetUseCase: container.useCases.requestPasswordReset,
+    resetPasswordUseCase: container.useCases.resetPassword,
     sessionServicePort: container.services.sessionService,
     config: container.appConfig.cookie,
   });
@@ -70,15 +62,23 @@ export function registerRoutes(app, container) {
   });
 
   // --- Routers (Interface/http) ---
-  const apiRouter = express.Router();
+  const tenantApiRouter = express.Router({ mergeParams: true });
 
+  tenantApiRouter.use("/auth", createAuthRouter({ authController }));
+  tenantApiRouter.use("/users", createUsersRouter({ userController }));
+  tenantApiRouter.use("/users", createUserRolesRouter({ userRoleController }));
+  tenantApiRouter.use(
+    "/role-assignments",
+    createUserRolesRouter({ userRoleController }),
+  );
+  tenantApiRouter.use("/roles", createRolesRouter({ roleController }));
 
-  apiRouter.use("/tenants", createTenantsRouter({ tenantController }));
-  apiRouter.use("/roles", createRolesRouter({ roleController }));
-  apiRouter.use("/users", createUsersRouter({ userController }));
-  apiRouter.use("/users", createUserRolesRouter({ userRoleController }));
-  apiRouter.use("/auth",  createAuthRouter({ authController }));
-  apiRouter.use("/system", createSystemRouter({systemController}));
-
-  app.use("/api", apiRouter);
+  app.use("/api/system", createSystemRouter({ systemController }));
+  app.use(
+    "/api/t/:tenantSlug",
+    createTenantResolutionMiddleware({
+      tenantRepository: container.repositories.tenantRepository,
+    }),
+    tenantApiRouter,
+  );
 }

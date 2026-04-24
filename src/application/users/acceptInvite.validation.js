@@ -10,12 +10,13 @@ import { validatePasswordPlain } from "../../domain/security/validatePassword.js
  */
 export function validateAcceptInvitePayload(input) {
   v.object(input, "input", {
-    allowedKeys: ["tokenPlain", "passwordPlain"],
-    requiredKeys: ["tokenPlain", "passwordPlain"],
+    allowedKeys: ["tenantId", "tokenPlain", "passwordPlain"],
+    requiredKeys: ["tenantId", "tokenPlain", "passwordPlain"],
   });
 
+  const tenantId = v.uuid(input.tenantId, "tenantId");
   const tokenPlain = v.string(input.tokenPlain, "tokenPlain");
   const passwordPlain = validatePasswordPlain(input.passwordPlain);
 
-  return { tokenPlain, passwordPlain };
+  return { tenantId, tokenPlain, passwordPlain };
 }

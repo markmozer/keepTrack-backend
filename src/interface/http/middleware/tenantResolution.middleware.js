@@ -2,18 +2,21 @@
  * File: src/interface/http/middleware/tenantResolution.middleware.js
  */
 
-import { ResourceNotFoundError } from "../../../domain/shared/errors/index.js";
+import {
+  BadRequestError,
+  ResourceNotFoundError,
+} from "../../../domain/shared/errors/index.js";
 
 /**
  * @typedef {import("../../../application/ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} TenantRepositoryPort
  */
 
 /**
- * Resolves tenant context from request headers.
+ * Resolves tenant context from request path params.
  *
  * Behavior:
  * - if tenant is already present on req.context, do nothing
- * - if no tenant slug is provided, do nothing
+ * - if no tenant slug is provided, throw
  * - if a tenant slug is provided but no tenant exists, throw
  * - if a tenant slug is provided and found, set req.context.tenant
  *
@@ -33,14 +36,14 @@ export function createTenantResolutionMiddleware({ tenantRepository }) {
         return next();
       }
 
-      const rawSlug = req.header("X-Tenant-Slug");
+      const rawSlug = req.params?.tenantSlug;
       const slug = typeof rawSlug === "string" ? rawSlug.trim() : "";
 
       if (!slug) {
-        return next();
+        throw new BadRequestError("Tenant slug is required for this route.");
       }
 
-      const tenant = await tenantRepository.findBySlug( slug );
+      const tenant = await tenantRepository.findBySlug(slug);
 
       if (!tenant) {
         throw new ResourceNotFoundError("tenant", {
