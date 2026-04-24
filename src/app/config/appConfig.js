@@ -21,6 +21,7 @@ import { getEnv, requireEnv } from "./env.js";
  * @typedef {Object} FrontendConfig
  * @property {string} protocol
  * @property {string} baseDomain
+ * @property {string[]} allowedOrigins
  */
 
 /**
@@ -137,6 +138,17 @@ function parsePositiveInt(name, value) {
 }
 
 /**
+ * @param {string} value
+ * @returns {string[]}
+ */
+function parseOriginList(value) {
+  return value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+/**
  * @returns {AppConfig}
  */
 export function loadAppConfig() {
@@ -144,6 +156,7 @@ export function loadAppConfig() {
 
   const protocol = requireEnv("APP_PROTOCOL");
   const baseDomain = requireEnv("APP_BASE_DOMAIN").replace(/\/+$/, "");
+  const allowedOrigins = parseOriginList(getEnv("CORS_ALLOWED_ORIGINS", ""));
 
   const emailProvider = parseEmailProvider(getEnv("EMAIL_PROVIDER", "mock"));
 
@@ -175,6 +188,7 @@ export function loadAppConfig() {
     frontend: {
       protocol,
       baseDomain,
+      allowedOrigins,
     },
     cookie: {
       name: getEnv("SESSION_COOKIE_NAME", "sid"),

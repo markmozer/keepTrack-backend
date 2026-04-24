@@ -8,24 +8,47 @@ import cors from "cors";
  */
 
 /**
- * @param {string | undefined} origin
- * @param {AppConfig} appConfig
+ * @param {URL} url
+ * @returns {boolean}
  */
-function isAllowedOrigin(origin, appConfig) {
-  if (!origin) return false;
+function isDevelopmentLocalhostOrigin(url) {
+  return (
+    url.hostname === "localhost" ||
+    url.hostname === "127.0.0.1" ||
+    url.hostname.endsWith(".localhost")
+  );
+}
 
-  try {
-    const url = new URL(origin);
-    const { baseDomain } = appConfig.frontend;
+/**
+ * @param {URL} url
+ * @param {AppConfig} appConfig
+ * @returns {boolean}
+ */
+function isAllowedByBaseDomain(url, appConfig) {
+  const { baseDomain } = appConfig.frontend;
 
-    if (url.hostname === baseDomain) return true;
-
-    if (url.hostname.endsWith(`.${baseDomain}`)) return true;
-
-    return false;
-  } catch {
+  if (!baseDomain) {
     return false;
   }
+
+  return (
+    url.hostname === baseDomain || url.hostname.endsWith(`.${baseDomain}`)
+  );
+}
+
+/**
+ * @param {URL} url
+ * @param {AppConfig} appConfig
+ * @returns {boolean}
+ */
+function isAllowedByConfiguredOrigins(url, appConfig) {
+  const allowedOrigins = appConfig.frontend.allowedOrigins ?? [];
+
+  if (allowedOrigins.length === 0) {
+    return false;
+  }
+
+  return allowedOrigins.includes(url.origin);
 }
 
 /**
@@ -39,23 +62,15 @@ export function createCorsMiddleware(appConfig) {
       try {
         const url = new URL(origin);
 
-        // --- DEV ---
-        if (appConfig.runtime.isDevelopment) {
-          if (
-            url.hostname === "localhost" ||
-            url.hostname.endsWith(".localhost")
-          ) {
-            return callback(null, true);
-          }
+        if (appConfig.runtime.isDevelopment && isDevelopmentLocalhostOrigin(url)) {
+          return callback(null, true);
         }
 
-        // --- PROD ---
-        const { baseDomain } = appConfig.frontend;
+        if (isAllowedByConfiguredOrigins(url, appConfig)) {
+          return callback(null, true);
+        }
 
-        if (
-          url.hostname === baseDomain ||
-          url.hostname.endsWith(`.${baseDomain}`)
-        ) {
+        if (isAllowedByBaseDomain(url, appConfig)) {
           return callback(null, true);
         }
 
