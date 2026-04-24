@@ -1,6 +1,7 @@
 /**
- * File: src/infrastructure/urls/TenantInviteLinkBuilder.js
+ * File: src/infrastructure/services/url/TenantLinkBuilderService.js
  */
+
 
 /**
  * @typedef {import("../../../application/ports/urls/TenantLinkBuilderServicePort.js").TenantLinkBuilderServicePort} TenantLinkBuilderServicePort} TenantLinkBuilderServicePort
