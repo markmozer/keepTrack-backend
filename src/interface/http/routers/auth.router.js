@@ -27,7 +27,7 @@ export function createAuthRouter({ authController }) {
   router.post(
     "/forgot-password",
     requireTenantMiddleware,
-    authController.requestPasswordReset,
+    authController.forgotPassword,
   );
   router.post(
     "/reset-password",

@@ -1,5 +1,5 @@
 /**
- * File: src/application/users/requestPasswordReset.validation.js
+ * File: src/application/users/forgotPassword.validation.js
  */
 
 

@@ -85,7 +85,7 @@ import { GetUserById } from "../application/users/GetUserById.js";
  * @property {import("../application/userRoles/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUser
  * @property {import("../application/users/InviteUser.js").InviteUser} inviteUser
  * @property {import("../application/users/AcceptInvite.js").AcceptInvite} acceptInvite
- * @property {import("../application/users/ForgotPassword.js").ForgotPassword} requestPasswordReset
+ * @property {import("../application/users/ForgotPassword.js").ForgotPassword} forgotPassword
  * @property {import("../application/users/ResetPassword.js").ResetPassword} resetPassword
  * @property {import("../application/system/GetAppHealth.js").GetAppHealth} getAppHealth
  * @property {import("../application/system/GetDbHealth.js").GetDbHealth} getDbHealth
@@ -292,7 +292,7 @@ export function buildContainer({ appConfig }) {
     clockService,
     passwordService,
   });
-  const requestPasswordReset = new ForgotPassword({
+  const forgotPassword = new ForgotPassword({
     tenantRepository,
     userRepository,
     userRoleRepository,
@@ -353,7 +353,7 @@ export function buildContainer({ appConfig }) {
     assignRoleToUser,
     inviteUser,
     acceptInvite,
-    requestPasswordReset,
+    forgotPassword,
     resetPassword,
     getAppHealth,
     getDbHealth,

@@ -22,7 +22,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @param {AuthenticateUser} params.authenticateUserUseCase
  * @param {GetCurrentSession} params.getCurrentSessionUseCase
  * @param {AcceptInvite} params.acceptInviteUseCase
- * @param {ForgotPassword} params.requestPasswordResetUseCase
+ * @param {ForgotPassword} params.forgotPasswordUseCase
  * @param {ResetPassword} params.resetPasswordUseCase
  * @param {SessionServicePort} params.sessionServicePort
  * @param {CookieConfig} params.config
@@ -31,7 +31,7 @@ export function createAuthController({
   authenticateUserUseCase,
   getCurrentSessionUseCase,
   acceptInviteUseCase,
-  requestPasswordResetUseCase,
+  forgotPasswordUseCase,
   resetPasswordUseCase,
   sessionServicePort,
   config,
@@ -141,12 +141,12 @@ export function createAuthController({
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
      */
-    async requestPasswordReset(req, res, next) {
+    async forgotPassword(req, res, next) {
       try {
         const request = asRequestWithContext(req);
         const body = v.object(request.body, "body");
 
-        const result = await requestPasswordResetUseCase.execute({
+        const result = await forgotPasswordUseCase.execute({
           principal: null,
           payload: {
             tenantId: request.context?.tenant?.id,

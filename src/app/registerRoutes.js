@@ -51,7 +51,7 @@ export function registerRoutes(app, container) {
     authenticateUserUseCase: container.useCases.authenticateUser,
     getCurrentSessionUseCase: container.useCases.getCurrentSession,
     acceptInviteUseCase: container.useCases.acceptInvite,
-    requestPasswordResetUseCase: container.useCases.requestPasswordReset,
+    forgotPasswordUseCase: container.useCases.forgotPassword,
     resetPasswordUseCase: container.useCases.resetPassword,
     sessionServicePort: container.services.sessionService,
     config: container.appConfig.cookie,

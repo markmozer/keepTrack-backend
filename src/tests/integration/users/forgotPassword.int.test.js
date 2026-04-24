@@ -1,6 +1,7 @@
 /**
- * File: src/tests/integration/users/requestPasswordReset.int.test.js
+ * File: src/tests/integration/users/forgotPassword.int.test.js
  */
+
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
 
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
