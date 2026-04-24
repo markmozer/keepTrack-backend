@@ -15,3 +15,15 @@ dotenv.config({
   override: true,
   quiet: true,
 });
+
+if (!process.env.APP_PROTOCOL) {
+  process.env.APP_PROTOCOL = "https";
+}
+
+if (!process.env.APP_BASE_DOMAIN) {
+  process.env.APP_BASE_DOMAIN = "keeptrack.test";
+}
+
+if (!process.env.PORT) {
+  process.env.PORT = "3000";
+}

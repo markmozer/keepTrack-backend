@@ -18,8 +18,8 @@ import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
 
-describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
-  const endpoint = "/api/users";
+describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignments", () => {
+  const endpoint = "/api/role-assignments";
   let app;
   let container;
   let primaryTenant;
@@ -100,7 +100,8 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
   async function assignRole(api, userId, roleId, overrides = {}) {
     const now = container.services.clockService.now();
 
-    return api.post(`${endpoint}/${userId}/roles`).send({
+    return api.post(endpoint).send({
+      targetUserId: userId,
       roleId,
       validFrom: now,
       validTo: null,
@@ -154,8 +155,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const now = container.services.clockService.now();
 
       const response = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom: now,
           validTo: null,
@@ -216,7 +218,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 when tenant route segment is missing", async () => {
       const api = createApiClient(app, undefined);
       const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
@@ -226,7 +228,7 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 404 when tenantSlug in path is empty", async () => {
+    it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
       const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
@@ -234,33 +236,6 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const response = await assignRole(api, targetUser.id, targetRole.id);
 
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
-    });
-  });
-
-  describe("routing", () => {
-    it("returns 404 when userId path param is missing or empty", async () => {
-      const { api } = await setupAuthSingleRolePrincipal({
-        roleName: "USER_ADMIN",
-      });
-
-      const targetRole = await seedTargetRole();
-      const now = container.services.clockService.now();
-
-      const responseOne = await api.post(`${endpoint}/roles`).send({
-        roleId: targetRole.id,
-        validFrom: now,
-        validTo: null,
-      });
-
-      expectAppError(responseOne, 404, "ROUTE_NOT_FOUND");
-
-      const responseTwo = await api.post(`${endpoint}//roles`).send({
-        roleId: targetRole.id,
-        validFrom: now,
-        validTo: null,
-      });
-
-      expectAppError(responseTwo, 404, "ROUTE_NOT_FOUND");
     });
   });
 
@@ -282,8 +257,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       });
 
       const response = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom: futureValidFrom,
           validTo: null,
@@ -344,8 +320,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const targetRole = await seedTargetRole();
 
       const response = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
         });
 
@@ -374,8 +351,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       });
 
       const response = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
         });
 
@@ -384,18 +362,39 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
   });
 
   describe("validation", () => {
-    it("returns 422 when userId is not a valid UUID", async () => {
+    it("returns 422 when targetUserId is missing, empty, null, or invalid", async () => {
       const { api } = await setupAuthSingleRolePrincipal({
         roleName: "USER_ADMIN",
       });
 
       const targetRole = await seedTargetRole();
 
-      const response = await api.post(`${endpoint}/not-a-uuid/roles`).send({
+      const responseWithoutTargetUserId = await api.post(endpoint).send({
         roleId: targetRole.id,
       });
 
-      expectAppError(response, 422, "VALIDATION_ERROR");
+      expectAppError(responseWithoutTargetUserId, 422, "VALIDATION_ERROR");
+
+      const responseWithTargetUserIdNull = await api.post(endpoint).send({
+        targetUserId: null,
+        roleId: targetRole.id,
+      });
+
+      expectAppError(responseWithTargetUserIdNull, 422, "VALIDATION_ERROR");
+
+      const responseWithTargetUserIdEmpty = await api.post(endpoint).send({
+        targetUserId: "",
+        roleId: targetRole.id,
+      });
+
+      expectAppError(responseWithTargetUserIdEmpty, 422, "VALIDATION_ERROR");
+
+      const responseWithTargetUserIdInvalid = await api.post(endpoint).send({
+        targetUserId: "not-a-uuid",
+        roleId: targetRole.id,
+      });
+
+      expectAppError(responseWithTargetUserIdInvalid, 422, "VALIDATION_ERROR");
     });
 
     it("returns 422 when roleId is missing, empty, or null", async () => {
@@ -407,8 +406,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const now = container.services.clockService.now();
 
       const responseWithoutRoleId = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           validFrom: now,
           validTo: null,
         });
@@ -416,8 +416,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       expectAppError(responseWithoutRoleId, 422, "VALIDATION_ERROR");
 
       const responseWithRoleIdNull = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: null,
           validFrom: now,
           validTo: null,
@@ -426,8 +427,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       expectAppError(responseWithRoleIdNull, 422, "VALIDATION_ERROR");
 
       const responseWithRoleIdEmpty = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: "",
           validFrom: now,
           validTo: null,
@@ -444,8 +446,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const targetUser = await seedTestUser();
 
       const response = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: "not-a-uuid",
         });
 
@@ -461,8 +464,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const targetRole = await seedTargetRole();
 
       const responseOne = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom: "yesterday",
           validTo: null,
@@ -471,8 +475,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       expectAppError(responseOne, 422, "VALIDATION_ERROR");
 
       const responseTwo = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom: 123,
           validTo: null,
@@ -491,8 +496,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const now = container.services.clockService.now();
 
       const responseOne = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom: now,
           validTo: "tomorrow",
@@ -501,8 +507,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       expectAppError(responseOne, 422, "VALIDATION_ERROR");
 
       const responseTwo = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom: now,
           validTo: 123,
@@ -523,8 +530,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       const validTo = container.services.clockService.addDays(validFrom, -1);
 
       const responseOne = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom,
           validTo,
@@ -533,8 +541,9 @@ describe("AssignRoleToUser (integration) POST /api/users/:userId/roles", () => {
       expectAppError(responseOne, 422, "VALIDATION_ERROR");
 
       const responseTwo = await api
-        .post(`${endpoint}/${targetUser.id}/roles`)
+        .post(endpoint)
         .send({
+          targetUserId: targetUser.id,
           roleId: targetRole.id,
           validFrom,
           validTo: validFrom,

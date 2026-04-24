@@ -86,50 +86,49 @@ export class ForgotPassword {
 
     const { tenantId, email } = payload;
 
+    const existingTenant = await this.tenantRepository.findById(tenantId);
+    if (!existingTenant) return genericAuthResponse();
+
+    const existingUser = await this.userRepository.findForgotPasswordUserByEmail({
+      tenantId,
+      email,
+    });
+
+    if (!existingUser) return genericAuthResponse();
+
+    if (!isStatusForForgotPassword(existingUser.status))
+      return genericAuthResponse();
+
+    const assignedRoles = await this.userRoleRepository.findByUser({
+      tenantId,
+      userId: existingUser.id,
+    });
+
+    if (!assignedRoles || assignedRoles.length === 0)
+      return genericAuthResponse();
+
+    const now = this.clockService.now();
+    const hasValidRoleNowOrFuture = assignedRoles.some(
+      (r) => !r.validTo || new Date(r.validTo) >= now,
+    );
+    if (!hasValidRoleNowOrFuture) {
+      return genericAuthResponse();
+    }
+
+    const { tokenPlaintext, tokenHash } = this.tokenService.generate();
+    const ttlMinutes = this.config?.resetTtlMinutes ?? 15;
+    const expiresAt = this.clockService.addMinutes(now, ttlMinutes);
+    const validityPeriod = `${ttlMinutes} minutes`;
+
+    const updated = await this.userRepository.markForForgotPassword({
+      userId: existingUser.id,
+      tenantId,
+      resetTokenHash: tokenHash,
+      resetTokenExpiresAt: expiresAt,
+      updatedAt: now,
+    });
+
     try {
-      const existingTenant = await this.tenantRepository.findById(tenantId);
-      if (!existingTenant) return genericAuthResponse();
-
-      const existingUser = await this.userRepository.findByEmail({
-        tenantId,
-        email,
-      });
-
-      if (!existingUser) return genericAuthResponse();
-
-      if (!isStatusForForgotPassword(existingUser.status))
-        return genericAuthResponse();
-
-      const assignedRoles = await this.userRoleRepository.findByUser({
-        tenantId,
-        userId: existingUser.id,
-      });
-
-      if (!assignedRoles || assignedRoles.length === 0)
-        return genericAuthResponse();
-
-      const now = this.clockService.now();
-      const hasValidRoleNowOrFuture = assignedRoles.some(
-        (r) => !r.validTo || new Date(r.validTo) >= now,
-      );
-      if (!hasValidRoleNowOrFuture) {
-        return genericAuthResponse();
-      }
-
-      const { tokenPlaintext, tokenHash } = this.tokenService.generate();
-      const ttlMinutes = this.config?.resetTtlMinutes ?? 15;
-      const expiresAt = this.clockService.addMinutes(now, ttlMinutes);
-      const validityPeriod = `${ttlMinutes} minutes`;
-
-      const updated = await this.userRepository.markForForgotPassword({
-        userId: existingUser.id,
-        tenantId,
-        resetTokenHash: tokenHash,
-        resetTokenExpiresAt: expiresAt,
-        updatedAt: now,
-      });
-
-      // make sure that expiredAt is a valid date
       if (!(updated.resetTokenExpiresAt instanceof Date)) {
         throw new Error(
           "Password reset token expiration must be set before sending email",
@@ -147,11 +146,24 @@ export class ForgotPassword {
         expiresAt: updated.resetTokenExpiresAt,
         validityPeriod,
       });
-
-      return genericAuthResponse();
     } catch (err) {
-      console.error("ForgotPassword failed", err);
-      return genericAuthResponse();
+      const rollbackAt = this.clockService.now();
+
+      try {
+        await this.userRepository.markForForgotPassword({
+          userId: existingUser.id,
+          tenantId,
+          resetTokenHash: existingUser.resetTokenHash,
+          resetTokenExpiresAt: existingUser.resetTokenExpiresAt,
+          updatedAt: rollbackAt,
+        });
+      } catch (rollbackError) {
+        console.error("ForgotPassword rollback failed", rollbackError);
+      }
+
+      throw err;
     }
+
+    return genericAuthResponse();
   }
 }

@@ -62,6 +62,19 @@
  */
 
 /**
+ * @typedef {object} ForgotPasswordUserRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
+ * @property {Array<UserRoleDetailRow>} userRoles
+ * @property {string|null} resetTokenHash
+ * @property {Date|null} resetTokenExpiresAt
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ */
+
+/**
  * @typedef {object} UserRoleDetailDto
  * @property {string} id
  * @property {string} roleId
@@ -337,6 +350,15 @@
  * 
  * RepoInput
  * @typedef {Object} FindUserByEmailRepoInput
+ * @property {string} tenantId
+ * @property {string} email
+ */
+
+/**
+ * Input used for forgot-password candidate lookup
+ *
+ * RepoInput
+ * @typedef {Object} FindForgotPasswordUserByEmailRepoInput
  * @property {string} tenantId
  * @property {string} email
  */

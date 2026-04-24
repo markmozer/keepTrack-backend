@@ -66,6 +66,18 @@ export const userDetailRowSelect = {
   },
 };
 
+export const forgotPasswordUserRowSelect = {
+  id: true,
+  tenantId: true,
+  email: true,
+  status: true,
+  resetTokenHash: true,
+  resetTokenExpiresAt: true,
+  createdAt: true,
+  updatedAt: true,
+  userRoles: userDetailRowSelect.userRoles,
+};
+
 /**
  * @implements {UserRepositoryPort}
  */
@@ -98,6 +110,19 @@ export class UserRepositoryPrisma {
     const row = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
       select: userDetailRowSelect,
+    });
+
+    return row ? row : null;
+  }
+
+  /**
+   * @param {import("../../../../application/ports/users/user.types.js").FindForgotPasswordUserByEmailRepoInput} params
+   * @returns {Promise<import("../../../../application/ports/users/user.types.js").ForgotPasswordUserRow | null>}
+   */
+  async findForgotPasswordUserByEmail({ tenantId, email }) {
+    const row = await this.prisma.user.findUnique({
+      where: { tenantId_email: { tenantId, email } },
+      select: forgotPasswordUserRowSelect,
     });
 
     return row ? row : null;

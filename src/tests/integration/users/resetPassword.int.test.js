@@ -1,5 +1,5 @@
 /**
- * File: src/tests/integration/users/acceptInvite.int.test.js
+ * File: src/tests/integration/users/resetPassword.int.test.js
  */
 
 import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
@@ -14,7 +14,7 @@ import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppS
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 
-describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
+describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-password", () => {
   const endpoint = "/api/users/reset-password";
   const oldPassword = "Strong123!123";
   const newPassword = "NewStrong123!123";
@@ -140,7 +140,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         id: user.id,
         email: user.email,
         status: UserStatus.ACTIVE,
-        userRoles: [{ name: "USER_VIEWER" }],
+        userRoles: [{ roleName: "USER_VIEWER" }],
         resetTokenExpiresAt: null,
       });
 
@@ -190,7 +190,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 when tenant route segment is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.post(endpoint).send({
@@ -201,7 +201,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 404 when tenantSlug in path is empty", async () => {
+    it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
       const response = await api.post(endpoint).send({
@@ -342,7 +342,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         id: user.id,
         email: user.email,
         status: UserStatus.ACTIVE,
-        roleNames: [{ name: "USER_VIEWER" }],
+        userRoles: [{ roleName: "USER_VIEWER" }],
         resetTokenExpiresAt: null,
       });
 
@@ -378,6 +378,30 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
     ])("$test", async ({ status }) => {
       const { tokenPlaintext } = await seedUserWithResetToken({
         status,
+      });
+
+      const api = createApiClient(app, primaryTenant.slug);
+
+      const response = await api.post(endpoint).send({
+        token: tokenPlaintext,
+        password: newPassword,
+      });
+
+      expectAppError(response, 422, "VALIDATION_ERROR");
+    });
+
+    it("returns 422 when the reset token belongs to another tenant", async () => {
+      const secondaryTenant = await seedTenant({
+        prisma: container.prisma,
+        payload: {
+          name: "Secondary Tenant",
+          slug: "secondary-tenant",
+          type: "CLIENT",
+        },
+      });
+
+      const { tokenPlaintext } = await seedUserWithResetToken({
+        tenant: secondaryTenant,
       });
 
       const api = createApiClient(app, primaryTenant.slug);

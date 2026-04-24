@@ -14,7 +14,7 @@ import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppS
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 
-describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
+describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite", () => {
   const endpoint = "/api/users/accept-invite";
   const strongPassword = "Strong123!123";
 
@@ -48,6 +48,8 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
   async function seedInvitedUser({
     userRoles = [{ name: "USER_VIEWER" }],
     expiresAt,
+    status = UserStatus.INVITED,
+    tenant,
   } = {}) {
     const { tokenPlaintext, tokenHash } =
       await container.services.tokenService.generate();
@@ -64,7 +66,8 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
       prisma: container.prisma,
       container,
       defaultTenant: primaryTenant,
-      status: UserStatus.INVITED,
+      tenant,
+      status,
       inviteTokenHash: tokenHash,
       inviteTokenExpiresAt,
       userRoles,
@@ -123,7 +126,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         id: user.id,
         email: user.email,
         status: UserStatus.ACTIVE,
-        userRoles: ["USER_VIEWER"],
+        userRoles: [{ roleName: "USER_VIEWER" }],
         resetTokenExpiresAt: null,
       });
 
@@ -171,7 +174,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 when tenant route segment is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.post(endpoint).send({
@@ -182,7 +185,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 404 when tenantSlug in path is empty", async () => {
+    it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
       const response = await api.post(endpoint).send({
@@ -323,7 +326,7 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         id: user.id,
         email: user.email,
         status: UserStatus.ACTIVE,
-        userRoles: [{name: "USER_VIEWER"}],
+        userRoles: [{ roleName: "USER_VIEWER" }],
         resetTokenExpiresAt: null,
       });
 
@@ -357,24 +360,33 @@ describe("AcceptInvite (integration) POST /api/users/accept-invite", () => {
         status: UserStatus.INACTIVE,
       },
     ])("$test", async ({ status }) => {
-      const userRoles = [{name: "USER_VIEWER"}];
-      const { tokenPlaintext, tokenHash } =
-        await container.services.tokenService.generate();
-
-      const now = container.services.clockService.now();
-      const inviteTokenExpiresAt = container.services.clockService.addDays(
-        now,
-        container.appConfig.auth.inviteTtlDays,
-      );
-
-      await seedInvitedUser({
-        prisma: container.prisma,
-        container,
-        defaultTenant: primaryTenant,
+      const { tokenPlaintext } = await seedInvitedUser({
         status,
-        inviteTokenHash: tokenHash,
-        inviteTokenExpiresAt,
-        userRoles,
+        userRoles: [{ name: "USER_VIEWER" }],
+      });
+
+      const api = createApiClient(app, primaryTenant.slug);
+
+      const response = await api.post(endpoint).send({
+        token: tokenPlaintext,
+        password: strongPassword,
+      });
+
+      expectAppError(response, 422, "VALIDATION_ERROR");
+    });
+
+    it("returns 422 when the invite token belongs to another tenant", async () => {
+      const secondaryTenant = await seedTenant({
+        prisma: container.prisma,
+        payload: {
+          name: "Secondary Tenant",
+          slug: "secondary-tenant",
+          type: "CLIENT",
+        },
+      });
+
+      const { tokenPlaintext } = await seedInvitedUser({
+        tenant: secondaryTenant,
       });
 
       const api = createApiClient(app, primaryTenant.slug);

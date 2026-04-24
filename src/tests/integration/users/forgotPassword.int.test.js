@@ -1,8 +1,7 @@
 /**
  * File: src/tests/integration/users/forgotPassword.int.test.js
  */
-
-import { describe, it, expect, beforeEach, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from "vitest";
 
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
 import { resetDatabase } from "../../helpers/db/resetDatabase.js";
@@ -13,8 +12,8 @@ import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
-describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
-  const endpoint = "/api/users/forgot-password";
+describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-password", () => {
+  const endpoint = "/api/auth/forgot-password";
   const strongPassword = "Strong123!123";
   const standardMessage =
     "Als dit email adres bestaat, ontvangt u een email met een password reset link.";
@@ -146,7 +145,7 @@ describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 when tenant route segment is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.post(endpoint).send({
@@ -156,7 +155,7 @@ describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 404 when tenantSlug in path is empty", async () => {
+    it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
       const response = await api.post(endpoint).send({
@@ -318,6 +317,41 @@ describe("ForgotPassword (integration) POST /api/users/forgot-password", () => {
       expect(row?.status).toBe(status);
       expect(row?.resetTokenHash).toBeNull();
       expect(row?.resetTokenExpiresAt).toBeNull();
+    });
+
+    it("returns 500 and rolls back the reset token when email delivery fails", async () => {
+      const { user } = await seedResetCandidate();
+      const originalSend = container.services.emailService.sendPasswordResetEmail;
+
+      try {
+        container.services.emailService.sendPasswordResetEmail = vi.fn(async () => {
+          throw new Error("SMTP temporarily unavailable");
+        });
+
+        const api = createApiClient(app, primaryTenant.slug);
+
+        const response = await api.post(endpoint).send({
+          email: user.email,
+        });
+
+        expectAppError(response, 500);
+        expect(response.body.error.message).toBe("Internal Server Error");
+
+        const row = await container.prisma.user.findUnique({
+          where: {
+            tenantId_email: {
+              tenantId: user.tenantId,
+              email: user.email,
+            },
+          },
+        });
+
+        expect(row).toBeTruthy();
+        expect(row?.resetTokenHash).toBeNull();
+        expect(row?.resetTokenExpiresAt).toBeNull();
+      } finally {
+        container.services.emailService.sendPasswordResetEmail = originalSend;
+      }
     });
   });
 
