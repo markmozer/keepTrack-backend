@@ -57,7 +57,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
         userRoles,
       });
 
-      const response = await api.get("/api/auth/me");
+      const response = await api.get(`/api/t/${testTenant.slug}/auth/me`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
@@ -70,20 +70,20 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 400 when X-Tenant-Slug header is missing", async () => {
+    it("returns 404 when tenantSlug in path is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.get("/api/auth/me");
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 400 when X-Tenant-Slug header is empty", async () => {
+    it("returns 404 when tenantSlug in path is empty", async () => {
       const api = createApiClient(app, "");
 
-      const response = await api.get("/api/auth/me");
+      const response = await api.get(`/api/auth/me`);
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
   });
 
@@ -123,7 +123,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
         cookie,
       });
 
-      const response = await otherApi.get("/api/auth/me");
+      const response = await otherApi.get(`/api/t/other-tenant/auth/me`);
 
       expectAppError(response, 401, "UNAUTHORIZED");
     });

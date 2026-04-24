@@ -65,7 +65,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
 
       const name = "NEW_ROLE";
 
-      const response = await api.post("/api/roles").send({
+      const response = await api.post(`/api/t/${baseTenant.slug}/roles`).send({
         name,
       });
 
@@ -98,7 +98,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
 
       const name = "NEW_ROLE";
 
-      const response = await api.post("/api/roles").send({
+      const response = await api.post(`/api/t/${clientTenant.slug}/roles`).send({
         name,
       });
 
@@ -109,7 +109,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
 
       const name = "NEW_ROLE";
 
-      const response = await api.post("/api/roles").send({
+      const response = await api.post(`/api/t/${clientTenant.slug}/roles`).send({
         name,
       });
 
@@ -118,7 +118,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
   });
 
   describe("authentication / tenant resolution", () => {
-    it("returns 400 when X-Tenant-Slug header is missing", async () => {
+    it("returns 404 when tenantSlug in path is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const name = "NEW_ROLE";
@@ -127,10 +127,10 @@ describe("CreateRole (integration) POST /api/roles", () => {
         name,
       });
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 400 when X-Tenant-Slug header is empty", async () => {
+    it("returns 404 when tenantSlug in path is empty", async () => {
       const api = createApiClient(app, "");
 
       const name = "NEW_ROLE";
@@ -139,7 +139,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
         name,
       });
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
   });
 
@@ -157,7 +157,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
 
       const name = "NEW_ROLE";
 
-      const first = await api.post("/api/roles").send({
+      const first = await api.post(`/api/t/${baseTenant.slug}/roles`).send({
         name,
       });
 
@@ -169,7 +169,7 @@ describe("CreateRole (integration) POST /api/roles", () => {
         name,
       });
 
-      const second = await api.post("/api/roles").send({
+      const second = await api.post(`/api/t/${baseTenant.slug}/roles`).send({
         name,
       });
 
@@ -189,17 +189,17 @@ describe("CreateRole (integration) POST /api/roles", () => {
         userRoles: [{name: "SUPER_ADMIN"}],
       });
 
-      const first = await api.post("/api/roles").send({});
+      const first = await api.post(`/api/t/${baseTenant.slug}/roles`).send({});
 
       expectAppError(first, 422, "VALIDATION_ERROR");
 
-      const second = await api.post("/api/roles").send({
+      const second = await api.post(`/api/t/${baseTenant.slug}/roles`).send({
         name: null,
       });
 
       expectAppError(second, 422, "VALIDATION_ERROR");
 
-      const third = await api.post("/api/roles").send({
+      const third = await api.post(`/api/t/${baseTenant.slug}/roles`).send({
         name: "",
       });
 

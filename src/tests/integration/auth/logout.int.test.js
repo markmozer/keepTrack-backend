@@ -63,7 +63,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     it("returns 200 with loggedOut=true when authenticated user logs out", async () => {
       const { api } = await setupAuthenticatedApi();
 
-      const response = await api.post("/api/auth/logout");
+      const response = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
@@ -74,20 +74,20 @@ describe("Logout (integration) POST /api/auth/logout", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 400 when X-Tenant-Slug header is missing", async () => {
+    it("returns 404 when tenantSlug in path is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.post("/api/auth/logout");
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 400 when X-Tenant-Slug header is empty", async () => {
+    it("returns 404 when tenantSlug in path is empty", async () => {
       const api = createApiClient(app, "");
 
       const response = await api.post("/api/auth/logout");
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
   });
 
@@ -95,7 +95,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     it("returns 200 with loggedOut=true when principal is missing", async () => {
       const api = createApiClient(app, testTenant.slug);
 
-      const response = await api.post("/api/auth/logout");
+      const response = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
@@ -107,8 +107,8 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     it("returns 200 with loggedOut=true when called multiple times", async () => {
       const { api } = await setupAuthenticatedApi();
 
-      const first = await api.post("/api/auth/logout");
-      const second = await api.post("/api/auth/logout");
+      const first = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
+      const second = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
 
       const firstPayload = expectAppSuccessWithPayload(first, { status: 200 });
       const secondPayload = expectAppSuccessWithPayload(second, { status: 200 });
@@ -132,10 +132,10 @@ describe("Logout (integration) POST /api/auth/logout", () => {
         cookie,
       });
 
-      const meBeforeLogout = await authenticatedApi.get("/api/auth/me");
+      const meBeforeLogout = await authenticatedApi.get(`/api/t/${testTenant.slug}/auth/me`);
       expect(meBeforeLogout.status).toBe(200);
 
-      const logoutResponse = await authenticatedApi.post("/api/auth/logout");
+      const logoutResponse = await authenticatedApi.post(`/api/t/${testTenant.slug}/auth/logout`);
       const logoutPayload = expectAppSuccessWithPayload(logoutResponse, {
         status: 200,
       });
@@ -144,7 +144,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
         loggedOut: true,
       });
 
-      const meAfterLogout = await authenticatedApi.get("/api/auth/me");
+      const meAfterLogout = await authenticatedApi.get(`/api/t/${testTenant.slug}/auth/me`);
       expectAppError(meAfterLogout, 401, "UNAUTHORIZED");
     });
   });

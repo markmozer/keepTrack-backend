@@ -49,8 +49,6 @@ export async function createApp({appConfig}) {
     );
   }
   
-  app.use(createTenantResolutionMiddleware({ tenantRepository: container.repositories.tenantRepository }));
-  
   app.use(
     sessionMiddleware(container.services.sessionService, {
       cookieName: appConfig.cookie.name,

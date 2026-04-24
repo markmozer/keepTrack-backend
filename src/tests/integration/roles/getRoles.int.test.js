@@ -86,7 +86,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns 200 when user has USER_VIEWER role", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles");
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
       expectRoleList(payload, { page: 1, pageSize: 25 });
@@ -95,7 +95,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns 403 when user has CONTRACT_ADMIN role", async () => {
       const { api } = await setupContractAdmin();
 
-      const response = await api.get("/api/roles");
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`);
 
       expectAppError(response, 403, "FORBIDDEN");
     });
@@ -103,7 +103,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns 401 when principal is missing", async () => {
       const api = createApiClient(app, clientTenant.slug);
 
-      const response = await api.get("/api/roles");
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`);
 
       expectAppError(response, 401, "UNAUTHORIZED");
     });
@@ -113,7 +113,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns all roles with default pagination", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles");
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
       expectRoleList(payload, { page: 1, pageSize: 25 });
@@ -131,7 +131,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("filters roles by name", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         roleName: "AAAAAA_E",
       });
 
@@ -146,7 +146,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("sorts roles by name ascending", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         roleName: "AAAAAA",
         sortField: "name",
         sortDirection: "asc",
@@ -168,7 +168,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("sorts roles by name descending", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         roleName: "AAAAAA",
         sortField: "name",
         sortDirection: "desc",
@@ -192,7 +192,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns the first page with the requested page size", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         roleName: "AAAAAA",
         page: 1,
         pageSize: 2,
@@ -213,7 +213,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns the second page with the requested page size", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         roleName: "AAAAAA",
         page: 2,
         pageSize: 2,
@@ -236,7 +236,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns 422 when page is invalid", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         page: 0,
       });
 
@@ -246,7 +246,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns 422 when pageSize is invalid", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         pageSize: -1,
       });
 
@@ -256,7 +256,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
     it("returns 422 when sort direction is invalid", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles").query({
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`).query({
         sortField: "name",
         sortDirection: "sideways",
       });
@@ -286,7 +286,7 @@ describe("GetRoles (integration) GET /api/roles", () => {
 
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/roles");
+      const response = await api.get(`/api/t/${clientTenant.slug}/roles`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
       expectRoleList(payload, { page: 1, pageSize: 25 });
@@ -297,20 +297,20 @@ describe("GetRoles (integration) GET /api/roles", () => {
     });
   });
   describe("tenant resolution", () => {
-    it("returns 400 when X-Tenant-Slug header is missing", async () => {
+    it("returns 404 when tenantSlug in path is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.get("/api/roles");
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 400 when X-Tenant-Slug header is empty", async () => {
+    it("returns 400 when tenant in path is empty", async () => {
       const api = createApiClient(app, "");
 
       const response = await api.get("/api/roles");
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
   });
 });

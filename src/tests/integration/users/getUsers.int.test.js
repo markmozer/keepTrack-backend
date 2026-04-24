@@ -130,20 +130,20 @@ describe("GetUsers (integration) GET /api/users", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 400 when X-Tenant-Slug header is missing", async () => {
+    it("returns 404 when tenantSlug in path is missing", async () => {
       const api = createApiClient(app, undefined);
 
       const response = await api.get(endpoint);
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
 
-    it("returns 400 when X-Tenant-Slug header is empty", async () => {
+    it("returns 404 when tenantSlug in path is empty", async () => {
       const api = createApiClient(app, "");
 
       const response = await api.get(endpoint);
 
-      expectAppError(response, 400, "BAD_REQUEST");
+      expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
   });
 
