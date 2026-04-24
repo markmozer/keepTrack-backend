@@ -17,7 +17,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 export function createUserRoleController({ assignRoleToUserUseCase }) {
   return {
     /**
-     * POST /api/users/:userId/roles
+     * POST /api/t/:tenantSlug/role-assignments
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
@@ -26,13 +26,11 @@ export function createUserRoleController({ assignRoleToUserUseCase }) {
       try {
         const reqWithContext = asRequestWithContext(req);
         const body = v.object(reqWithContext.body, "body");
-        const targetUserId = /** @type {string} */ (reqWithContext.params.userId);
-
 
         const result = await assignRoleToUserUseCase.execute({
           principal: reqWithContext.principal,
           payload: {
-            targetUserId,
+            targetUserId: body.targetUserId || reqWithContext.params.userId,
             roleId: body.roleId,
             validFrom: body.validFrom,
             validTo: body.validTo,

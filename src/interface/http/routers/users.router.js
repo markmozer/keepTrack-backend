@@ -24,21 +24,6 @@ export function createUsersRouter({ userController }) {
     requireAuth,
     userController.inviteUser,
   );
-  router.post(
-    "/accept-invite",
-    requireTenantMiddleware,
-    userController.acceptInvite,
-  );
-  router.post(
-    "/forgot-password",
-    requireTenantMiddleware,
-    userController.requestPasswordReset,
-  );
-  router.post(
-    "/reset-password",
-    requireTenantMiddleware,
-    userController.resetPassword,
-  );
   router.get(
     "/",
     requireTenantMiddleware,

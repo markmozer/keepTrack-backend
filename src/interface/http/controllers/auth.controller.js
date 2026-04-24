@@ -10,6 +10,9 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 /**
  * @typedef {import("../../../application/auth/AuthenticateUser.js").AuthenticateUser} AuthenticateUser
  * @typedef {import("../../../application/sessions/GetCurrentSession.js").GetCurrentSession} GetCurrentSession
+ * @typedef {import("../../../application/users/AcceptInvite.js").AcceptInvite} AcceptInvite
+ * @typedef {import("../../../application/users/ForgotPassword.js").ForgotPassword} ForgotPassword
+ * @typedef {import("../../../application/users/ResetPassword.js").ResetPassword} ResetPassword
  * @typedef {import("../../../application/ports/session/SessionServicePort.js").SessionServicePort} SessionServicePort
  * @typedef {import("../../../app/config/appConfig.js").CookieConfig} CookieConfig
  */
@@ -18,18 +21,24 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
  * @param {Object} params
  * @param {AuthenticateUser} params.authenticateUserUseCase
  * @param {GetCurrentSession} params.getCurrentSessionUseCase
+ * @param {AcceptInvite} params.acceptInviteUseCase
+ * @param {ForgotPassword} params.requestPasswordResetUseCase
+ * @param {ResetPassword} params.resetPasswordUseCase
  * @param {SessionServicePort} params.sessionServicePort
  * @param {CookieConfig} params.config
  */
 export function createAuthController({
   authenticateUserUseCase,
   getCurrentSessionUseCase,
+  acceptInviteUseCase,
+  requestPasswordResetUseCase,
+  resetPasswordUseCase,
   sessionServicePort,
   config,
 }) {
   return {
     /**
-     * POST /api/auth/login
+     * POST /api/t/:tenantSlug/auth/login
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
@@ -70,7 +79,7 @@ export function createAuthController({
     },
 
     /**
-     * POST /api/auth/logout
+     * POST /api/t/:tenantSlug/auth/logout
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next
@@ -102,7 +111,81 @@ export function createAuthController({
       }
     },
     /**
-     * POST /api/auth/me
+     * POST /api/t/:tenantSlug/auth/accept-invite
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async acceptInvite(req, res, next) {
+      try {
+        const request = asRequestWithContext(req);
+        const body = v.object(request.body, "body");
+
+        const result = await acceptInviteUseCase.execute({
+          principal: null,
+          payload: {
+            tenantId: request.context?.tenant?.id,
+            tokenPlain: body.token,
+            passwordPlain: body.password,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * POST /api/t/:tenantSlug/auth/forgot-password
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async requestPasswordReset(req, res, next) {
+      try {
+        const request = asRequestWithContext(req);
+        const body = v.object(request.body, "body");
+
+        const result = await requestPasswordResetUseCase.execute({
+          principal: null,
+          payload: {
+            tenantId: request.context?.tenant?.id,
+            email: body.email,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * POST /api/t/:tenantSlug/auth/reset-password
+     * @param {import("express").Request} req
+     * @param {import("express").Response} res
+     * @param {import("express").NextFunction} next
+     */
+    async resetPassword(req, res, next) {
+      try {
+        const request = asRequestWithContext(req);
+        const body = v.object(request.body, "body");
+
+        const result = await resetPasswordUseCase.execute({
+          principal: null,
+          payload: {
+            tenantId: request.context?.tenant?.id,
+            tokenPlain: body.token,
+            passwordPlain: body.password,
+          },
+        });
+
+        res.status(200).json(AppResponse.ok(result));
+      } catch (e) {
+        next(e);
+      }
+    },
+    /**
+     * GET /api/t/:tenantSlug/auth/me
      * @param {import("express").Request} req
      * @param {import("express").Response} res
      * @param {import("express").NextFunction} next

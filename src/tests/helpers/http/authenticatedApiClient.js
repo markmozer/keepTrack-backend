@@ -14,10 +14,48 @@ export function createAuthenticatedApiClient(
   app,
   { tenantSlug = "base", cookie } = {},
 ) {
-  function withDefaults(req) {
-    if (tenantSlug !== undefined) {
-      req.set("X-Tenant-Slug", tenantSlug);
+  function resolveUrl(url) {
+    if (tenantSlug === undefined || typeof url !== "string") {
+      return url;
     }
+
+    if (url.startsWith("/api/system")) {
+      return url;
+    }
+
+    if (url.startsWith("/api/t/")) {
+      return url;
+    }
+
+    if (url.startsWith("/api/auth/")) {
+      return url.replace("/api/auth/", `/api/t/${tenantSlug}/auth/`);
+    }
+
+    if (url === "/api/users/accept-invite") {
+      return `/api/t/${tenantSlug}/auth/accept-invite`;
+    }
+
+    if (url === "/api/users/forgot-password") {
+      return `/api/t/${tenantSlug}/auth/forgot-password`;
+    }
+
+    if (url === "/api/users/request-pwd-reset") {
+      return `/api/t/${tenantSlug}/auth/forgot-password`;
+    }
+
+    if (url === "/api/users/reset-password") {
+      return `/api/t/${tenantSlug}/auth/reset-password`;
+    }
+
+    if (url.startsWith("/api/")) {
+      return url.replace("/api/", `/api/t/${tenantSlug}/`);
+    }
+
+    return url;
+  }
+
+  function withDefaults(method, url) {
+    const req = request(app)[method](resolveUrl(url));
 
     if (cookie) {
       req.set("Cookie", cookie);
@@ -27,10 +65,10 @@ export function createAuthenticatedApiClient(
   }
 
   return {
-    get: (url) => withDefaults(request(app).get(url)),
-    post: (url) => withDefaults(request(app).post(url)),
-    put: (url) => withDefaults(request(app).put(url)),
-    patch: (url) => withDefaults(request(app).patch(url)),
-    delete: (url) => withDefaults(request(app).delete(url)),
+    get: (url) => withDefaults("get", url),
+    post: (url) => withDefaults("post", url),
+    put: (url) => withDefaults("put", url),
+    patch: (url) => withDefaults("patch", url),
+    delete: (url) => withDefaults("delete", url),
   };
 }

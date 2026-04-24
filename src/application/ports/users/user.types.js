@@ -216,6 +216,7 @@
 /**
  * UCPayload
  * @typedef {Object} AcceptInviteUCPayload
+ * @property {unknown} tenantId
  * @property {unknown} tokenPlain
  * @property {unknown} passwordPlain
  */
@@ -267,6 +268,7 @@
 /**
  * UCPayload
  * @typedef {Object} ResetPasswordUCPayload
+ * @property {unknown} tenantId
  * @property {unknown} tokenPlain
  * @property {unknown} passwordPlain
  */
@@ -337,6 +339,24 @@
  * @typedef {Object} FindUserByEmailRepoInput
  * @property {string} tenantId
  * @property {string} email
+ */
+
+/**
+ * Input used for findByInviteTokenHash
+ *
+ * RepoInput
+ * @typedef {Object} FindUserByInviteTokenHashRepoInput
+ * @property {string} tenantId
+ * @property {string} inviteTokenHash
+ */
+
+/**
+ * Input used for findByResetTokenHash
+ *
+ * RepoInput
+ * @typedef {Object} FindUserByResetTokenHashRepoInput
+ * @property {string} tenantId
+ * @property {string} resetTokenHash
  */
 
 /**

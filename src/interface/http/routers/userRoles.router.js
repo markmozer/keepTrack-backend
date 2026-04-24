@@ -13,7 +13,18 @@ import {requireTenantMiddleware} from "../middleware/requireTenant.middleware.js
 export function createUserRolesRouter({ userRoleController }) {
   const router = express.Router();
 
-  router.post("/:userId/roles",requireTenantMiddleware, requireAuth, userRoleController.assignRoleToUser);
+  router.post(
+    "/",
+    requireTenantMiddleware,
+    requireAuth,
+    userRoleController.assignRoleToUser,
+  );
+  router.post(
+    "/:userId/roles",
+    requireTenantMiddleware,
+    requireAuth,
+    userRoleController.assignRoleToUser,
+  );
 
   return router;
 }

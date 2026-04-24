@@ -49,8 +49,10 @@ export class ResetPassword {
 
     const resetTokenHash = this.tokenService.hash(payload.tokenPlain);
 
-    const targetUser =
-      await this.userRepository.findByResetTokenHash(resetTokenHash);
+    const targetUser = await this.userRepository.findByResetTokenHash({
+      tenantId: payload.tenantId,
+      resetTokenHash,
+    });
 
     if (!targetUser) throw new ValidationError("Invite token is invalid.");
 

@@ -28,8 +28,7 @@ export class TenantLinkBuilderService {
    * @returns {string}
    */
   buildInviteLink(input) {
-    const { tenantMode, protocol, baseDomain } = this.config;
-    
+    const { protocol, baseDomain } = this.config;
     const { slug, token } = input;
 
     if (!slug || typeof slug !== "string") {
@@ -40,14 +39,10 @@ export class TenantLinkBuilderService {
       throw new Error("Invalid token.");
     }
 
-    const path = `/accept-invite?token=${encodeURIComponent(token)}`;
-    
-
-    if (tenantMode === "path") {
-      return `${protocol}://${baseDomain}/${slug}${path}`;
-    }
-
-    return `${protocol}://${slug}.${baseDomain}${path}`;
+    const url = new URL(`${protocol}://${baseDomain}`);
+    url.pathname = `/t/${slug}/accept-invite`;
+    url.searchParams.set("token", token);
+    return url.toString();
   }
 
     /**
@@ -55,8 +50,7 @@ export class TenantLinkBuilderService {
    * @returns {string}
    */
   buildPasswordResetLink(input) {
-    const { tenantMode, protocol, baseDomain } = this.config;
-    
+    const { protocol, baseDomain } = this.config;
     const { slug, token } = input;
 
     if (!slug || typeof slug !== "string") {
@@ -67,14 +61,10 @@ export class TenantLinkBuilderService {
       throw new Error("Invalid token.");
     }
 
-    const path = `/reset-password?token=${encodeURIComponent(token)}`;
-    
-
-    if (tenantMode === "path") {
-      return `${protocol}://${baseDomain}/${slug}${path}`;
-    }
-
-    return `${protocol}://${slug}.${baseDomain}${path}`;
+    const url = new URL(`${protocol}://${baseDomain}`);
+    url.pathname = `/t/${slug}/reset-password`;
+    url.searchParams.set("token", token);
+    return url.toString();
   }
 }
 

@@ -6,7 +6,6 @@ import { getEnv, requireEnv } from "./env.js";
 
 /**
  * @typedef {"development" | "test" | "production"} NodeEnv
- * @typedef {"subdomain" | "path"} TenantMode
  * @typedef {"lax" | "strict" | "none"} SameSite
  */
 
@@ -20,7 +19,6 @@ import { getEnv, requireEnv } from "./env.js";
 
 /**
  * @typedef {Object} FrontendConfig
- * @property {TenantMode} tenantMode
  * @property {string} protocol
  * @property {string} baseDomain
  */
@@ -101,19 +99,6 @@ function parseNodeEnv(value) {
 
 /**
  * @param {string} value
- * @returns {TenantMode}
- */
-function parseTenantMode(value) {
-  if (value !== "subdomain" && value !== "path") {
-    throw new Error(
-      `Invalid APP_TENANT_MODE: "${value}". Expected "subdomain" or "path".`,
-    );
-  }
-  return value;
-}
-
-/**
- * @param {string} value
  * @returns {SameSite}
  */
 function parseSameSite(value) {
@@ -157,7 +142,6 @@ function parsePositiveInt(name, value) {
 export function loadAppConfig() {
   const nodeEnv = parseNodeEnv(getEnv("NODE_ENV", "development"));
 
-  const tenantMode = parseTenantMode(requireEnv("APP_TENANT_MODE"));
   const protocol = requireEnv("APP_PROTOCOL");
   const baseDomain = requireEnv("APP_BASE_DOMAIN").replace(/\/+$/, "");
 
@@ -189,7 +173,6 @@ export function loadAppConfig() {
       url: requireEnv("DATABASE_URL"),
     },
     frontend: {
-      tenantMode,
       protocol,
       baseDomain,
     },

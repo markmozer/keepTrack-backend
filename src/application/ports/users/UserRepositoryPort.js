@@ -7,6 +7,8 @@
  * @typedef {import("./user.types.js").CreateUserRepoInput} CreateUserRepoInput
  * @typedef {import("./user.types.js").FindUserByIdRepoInput} FindUserByIdRepoInput
  * @typedef {import("./user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
+ * @typedef {import("./user.types.js").FindUserByInviteTokenHashRepoInput} FindUserByInviteTokenHashRepoInput
+ * @typedef {import("./user.types.js").FindUserByResetTokenHashRepoInput} FindUserByResetTokenHashRepoInput
  * @typedef {import("./user.types.js").MarkAsInvitedRepoInput} MarkAsInvitedRepoInput
  * @typedef {import("./user.types.js").ActivateFromInviteRepoInput} ActivateFromInviteRepoInput
  * @typedef {import("./user.types.js").ForgotPasswordRepoInput} ForgotPasswordRepoInput
@@ -29,8 +31,8 @@
  * @property {(input: FindUserByEmailRepoInput) => Promise<UserDetailRow | null>} findByEmail
  * @property {(input: FindUserByIdRepoInput) => Promise<UserDetailRow | null>} findById
  * @property {(input: MarkAsInvitedRepoInput) => Promise<UserDetailRow>} markAsInvited
- * @property {(InviteTokenHash: string) => Promise<UserDetailRow | null>} findByInviteTokenHash
- * @property {(ResetTokenHash: string) => Promise<UserDetailRow | null>} findByResetTokenHash
+ * @property {(input: FindUserByInviteTokenHashRepoInput) => Promise<UserDetailRow | null>} findByInviteTokenHash
+ * @property {(input: FindUserByResetTokenHashRepoInput) => Promise<UserDetailRow | null>} findByResetTokenHash
  * @property {(input: ActivateFromInviteRepoInput) => Promise<UserDetailRow>} activateFromInvite
  * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserAuthRow | null>} findByEmailForAuth
  * @property {(input: ForgotPasswordRepoInput) => Promise<UserDetailRow>} markForForgotPassword

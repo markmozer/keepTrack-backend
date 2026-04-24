@@ -14,8 +14,7 @@ import request from "supertest";
  */
 export async function loginAs({ app, tenantSlug, email, password }) {
   const response = await request(app)
-    .post("/api/auth/login")
-    .set("X-Tenant-Slug", tenantSlug)
+    .post(`/api/t/${tenantSlug}/auth/login`)
     .send({ email, password });
 
   return {

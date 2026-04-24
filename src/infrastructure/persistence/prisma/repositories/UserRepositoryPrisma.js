@@ -139,12 +139,12 @@ export class UserRepositoryPrisma {
   }
 
   /**
-   * @param {string} inviteTokenHash
+   * @param {import("../../../../application/ports/users/user.types.js").FindUserByInviteTokenHashRepoInput} params
    * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
    */
-  async findByInviteTokenHash(inviteTokenHash) {
+  async findByInviteTokenHash({ tenantId, inviteTokenHash }) {
     const row = await this.prisma.user.findFirst({
-      where: { inviteTokenHash },
+      where: { tenantId, inviteTokenHash },
       select: userDetailRowSelect,
     });
 
@@ -152,12 +152,12 @@ export class UserRepositoryPrisma {
   }
 
   /**
-   * @param {string} resetTokenHash
+   * @param {import("../../../../application/ports/users/user.types.js").FindUserByResetTokenHashRepoInput} params
    * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
    */
-  async findByResetTokenHash(resetTokenHash) {
+  async findByResetTokenHash({ tenantId, resetTokenHash }) {
     const row = await this.prisma.user.findFirst({
-      where: { resetTokenHash },
+      where: { tenantId, resetTokenHash },
       select: userDetailRowSelect,
     });
 
