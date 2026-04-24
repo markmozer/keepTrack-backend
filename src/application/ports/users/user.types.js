@@ -272,8 +272,8 @@
  * @typedef {Object} ForgotPasswordRepoInput
  * @property {string} tenantId 
  * @property {string} userId
- * @property {string} resetTokenHash
- * @property {Date} resetTokenExpiresAt
+ * @property {string|null} resetTokenHash
+ * @property {Date|null} resetTokenExpiresAt
  * @property {Date} updatedAt
  */
 
