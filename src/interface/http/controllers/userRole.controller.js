@@ -30,7 +30,7 @@ export function createUserRoleController({ assignRoleToUserUseCase }) {
         const result = await assignRoleToUserUseCase.execute({
           principal: reqWithContext.principal,
           payload: {
-            targetUserId: body.targetUserId || reqWithContext.params.userId,
+            targetUserId: body.targetUserId,
             roleId: body.roleId,
             validFrom: body.validFrom,
             validTo: body.validTo,

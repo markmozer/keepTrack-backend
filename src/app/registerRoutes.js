@@ -66,7 +66,6 @@ export function registerRoutes(app, container) {
 
   tenantApiRouter.use("/auth", createAuthRouter({ authController }));
   tenantApiRouter.use("/users", createUsersRouter({ userController }));
-  tenantApiRouter.use("/users", createUserRolesRouter({ userRoleController }));
   tenantApiRouter.use(
     "/role-assignments",
     createUserRolesRouter({ userRoleController }),

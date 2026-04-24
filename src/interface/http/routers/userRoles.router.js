@@ -19,12 +19,6 @@ export function createUserRolesRouter({ userRoleController }) {
     requireAuth,
     userRoleController.assignRoleToUser,
   );
-  router.post(
-    "/:userId/roles",
-    requireTenantMiddleware,
-    requireAuth,
-    userRoleController.assignRoleToUser,
-  );
 
   return router;
 }

@@ -13,7 +13,7 @@ import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppS
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
 describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-password", () => {
-  const endpoint = "/api/auth/forgot-password";
+  const endpoint = "/api/t/:tenantSlug/auth/forgot-password";
   const strongPassword = "Strong123!123";
   const standardMessage =
     "Als dit email adres bestaat, ontvangt u een email met een password reset link.";
@@ -45,8 +45,12 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     }
   });
 
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/auth/forgot-password`;
+  }
+
   async function seedResetCandidate({
-    userRoles = [{ name: "USER_VIEWER"}],
+    userRoles = [{ name: "USER_VIEWER" }],
     passwordPlain = strongPassword,
     status = UserStatus.ACTIVE,
     tenant,
@@ -96,7 +100,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: user.email,
       });
 
@@ -132,7 +136,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     it("when email does not exist, returns 200 with standard message", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: "does.not.exist@keeptrack.nl",
       });
 
@@ -145,20 +149,20 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenant route segment is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post("/api/t/auth/forgot-password").send({
         email: "dummy@keeptrack.nl",
       });
 
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
     it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post("/api/t//auth/forgot-password").send({
         email: "dummy@keeptrack.nl",
       });
 
@@ -170,7 +174,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     it("returns 422 when email is missing", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({});
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({});
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -178,7 +182,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     it("returns 422 when email is null", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: null,
       });
 
@@ -188,7 +192,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     it("returns 422 when email is empty", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: "",
       });
 
@@ -198,7 +202,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     it("returns 422 when email is not a string", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: 123456789,
       });
 
@@ -208,7 +212,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
     it("returns 422 when email is not a valid email address", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: "user$keeptrackonline.nl",
       });
 
@@ -222,15 +226,15 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response_one = await api.post(endpoint).send({
+      const responseOne = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: user.email,
       });
 
-      const payload_one = expectAppSuccessWithPayload(response_one, {
+      const payloadOne = expectAppSuccessWithPayload(responseOne, {
         status: 200,
       });
 
-      expect(payload_one.message).toBe(standardMessage);
+      expect(payloadOne.message).toBe(standardMessage);
 
       const rowAfterFirstRequest = await container.prisma.user.findUnique({
         where: {
@@ -241,15 +245,15 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
         },
       });
 
-      const response_two = await api.post(endpoint).send({
+      const responseTwo = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: user.email,
       });
 
-      const payload_two = expectAppSuccessWithPayload(response_two, {
+      const payloadTwo = expectAppSuccessWithPayload(responseTwo, {
         status: 200,
       });
 
-      expect(payload_two.message).toBe(standardMessage);
+      expect(payloadTwo.message).toBe(standardMessage);
 
       const rowAfterSecondRequest = await container.prisma.user.findUnique({
         where: {
@@ -273,6 +277,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
         rowAfterFirstRequest.resetTokenExpiresAt.getTime(),
       );
     });
+
     it.each([
       {
         test: "returns 200 with standard message when user status is NEW",
@@ -291,7 +296,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: user.email,
       });
 
@@ -330,7 +335,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
 
         const api = createApiClient(app, primaryTenant.slug);
 
-        const response = await api.post(endpoint).send({
+        const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
           email: user.email,
         });
 
@@ -372,7 +377,7 @@ describe("ForgotPassword (integration) POST /api/t/:tenantSlug/auth/forgot-passw
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         email: user.email,
       });
 

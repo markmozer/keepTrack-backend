@@ -14,7 +14,7 @@ import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppS
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectAuthMePayload } from "../../helpers/assertions/expectAuthMePayload.js";
 
-describe("GetAuthMe (integration) GET /api/auth/me", () => {
+describe("GetAuthMe (integration) GET /api/t/:tenantSlug/auth/me", () => {
   let container;
   let app;
   let testTenant;
@@ -42,6 +42,10 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
     }
   });
 
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/auth/me`;
+  }
+
   describe("success path", () => {
     it("returns 200 with principal for authenticated user", async () => {
       const email = `user@${testTenant.slug}.nl`;
@@ -57,8 +61,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
         userRoles,
       });
 
-      const response = await api.get(`/api/t/${testTenant.slug}/auth/me`);
-
+      const response = await api.get(tenantEndpoint(testTenant.slug));
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
       expectAuthMePayload(payload, {
@@ -70,18 +73,16 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
+      const response = await api.get("/api/t/auth/me");
 
-      const response = await api.get("/api/auth/me");
-
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
     it("returns 404 when tenantSlug in path is empty", async () => {
       const api = createApiClient(app, "");
-
-      const response = await api.get(`/api/auth/me`);
+      const response = await api.get("/api/t//auth/me");
 
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
@@ -90,14 +91,14 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
   describe("authentication", () => {
     it("returns 401 when principal is missing", async () => {
       const api = createApiClient(app, testTenant.slug);
-
-      const response = await api.get("/api/auth/me");
+      const response = await api.get(tenantEndpoint(testTenant.slug));
 
       expectAppError(response, 401, "UNAUTHORIZED");
     });
+
     it("returns 401 when tenant-slug does not match principal", async () => {
       const email = `user@${testTenant.slug}.nl`;
-      const userRoles = [{name: "ADMIN"}];
+      const userRoles = [{ name: "ADMIN" }];
 
       const { cookie } = await setupAuthenticatedPrincipal({
         app,
@@ -123,7 +124,7 @@ describe("GetAuthMe (integration) GET /api/auth/me", () => {
         cookie,
       });
 
-      const response = await otherApi.get(`/api/t/other-tenant/auth/me`);
+      const response = await otherApi.get(tenantEndpoint("other-tenant"));
 
       expectAppError(response, 401, "UNAUTHORIZED");
     });

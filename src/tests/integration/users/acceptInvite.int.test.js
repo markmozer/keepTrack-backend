@@ -15,7 +15,7 @@ import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 
 describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite", () => {
-  const endpoint = "/api/users/accept-invite";
+  const endpoint = "/api/t/:tenantSlug/auth/accept-invite";
   const strongPassword = "Strong123!123";
 
   let app;
@@ -44,6 +44,10 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
       await container.shutdown();
     }
   });
+
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/auth/accept-invite`;
+  }
 
   async function seedInvitedUser({
     userRoles = [{ name: "USER_VIEWER" }],
@@ -112,7 +116,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: strongPassword,
       });
@@ -143,10 +147,9 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
       const { tokenPlaintext } = await seedInvitedUser();
 
       const api = createApiClient(app, primaryTenant.slug);
-
       const invalidToken = tokenPlaintext.slice(0, tokenPlaintext.length - 1);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: invalidToken,
         password: strongPassword,
       });
@@ -164,7 +167,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: strongPassword,
       });
@@ -174,21 +177,21 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenant route segment is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post("/api/t/auth/accept-invite").send({
         token: "dummy-token",
         password: strongPassword,
       });
 
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
     it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post("/api/t//auth/accept-invite").send({
         token: "dummy-token",
         password: strongPassword,
       });
@@ -203,7 +206,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         password: strongPassword,
       });
 
@@ -215,7 +218,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: null,
         password: strongPassword,
       });
@@ -228,7 +231,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: "",
         password: strongPassword,
       });
@@ -241,7 +244,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: 123456789,
         password: strongPassword,
       });
@@ -256,7 +259,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
       });
 
@@ -297,7 +300,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password,
       });
@@ -312,7 +315,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: strongPassword,
       });
@@ -338,7 +341,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
         email: user.email,
       });
 
-      const secondResponse = await api.post(endpoint).send({
+      const secondResponse = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: "AnotherStrongPassword123!",
       });
@@ -367,7 +370,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: strongPassword,
       });
@@ -391,7 +394,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: strongPassword,
       });

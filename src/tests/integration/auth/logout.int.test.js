@@ -2,7 +2,6 @@
  * File: src/tests/integration/auth/logout.int.test.js
  */
 
-
 import { describe, it, beforeEach, beforeAll, afterAll, expect } from "vitest";
 
 import { createTestApp } from "../../helpers/bootstrap/createTestApp.js";
@@ -14,7 +13,7 @@ import { createAuthenticatedApiClient } from "../../helpers/http/authenticatedAp
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 
-describe("Logout (integration) POST /api/auth/logout", () => {
+describe("Logout (integration) POST /api/t/:tenantSlug/auth/logout", () => {
   let container;
   let app;
   let testTenant;
@@ -42,9 +41,17 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     }
   });
 
+  function tenantLogoutEndpoint(slug) {
+    return `/api/t/${slug}/auth/logout`;
+  }
+
+  function tenantMeEndpoint(slug) {
+    return `/api/t/${slug}/auth/me`;
+  }
+
   async function setupAuthenticatedApi() {
     const email = `user@${testTenant.slug}.nl`;
-    const userRoles = [{name: "ADMIN"}];
+    const userRoles = [{ name: "ADMIN" }];
 
     const { user, cookie, api } = await setupAuthenticatedPrincipal({
       app,
@@ -63,8 +70,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     it("returns 200 with loggedOut=true when authenticated user logs out", async () => {
       const { api } = await setupAuthenticatedApi();
 
-      const response = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
-
+      const response = await api.post(tenantLogoutEndpoint(testTenant.slug));
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
       expect(payload).toEqual({
@@ -74,18 +80,16 @@ describe("Logout (integration) POST /api/auth/logout", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
+      const response = await api.post("/api/t/auth/logout");
 
-      const response = await api.post("/api/auth/logout");
-
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
     it("returns 404 when tenantSlug in path is empty", async () => {
       const api = createApiClient(app, "");
-
-      const response = await api.post("/api/auth/logout");
+      const response = await api.post("/api/t//auth/logout");
 
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
@@ -95,8 +99,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     it("returns 200 with loggedOut=true when principal is missing", async () => {
       const api = createApiClient(app, testTenant.slug);
 
-      const response = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
-
+      const response = await api.post(tenantLogoutEndpoint(testTenant.slug));
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
       expect(payload).toEqual({
@@ -107,8 +110,8 @@ describe("Logout (integration) POST /api/auth/logout", () => {
     it("returns 200 with loggedOut=true when called multiple times", async () => {
       const { api } = await setupAuthenticatedApi();
 
-      const first = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
-      const second = await api.post(`/api/t/${testTenant.slug}/auth/logout`);
+      const first = await api.post(tenantLogoutEndpoint(testTenant.slug));
+      const second = await api.post(tenantLogoutEndpoint(testTenant.slug));
 
       const firstPayload = expectAppSuccessWithPayload(first, { status: 200 });
       const secondPayload = expectAppSuccessWithPayload(second, { status: 200 });
@@ -124,7 +127,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
   });
 
   describe("session invalidation", () => {
-    it("destroys the session so /api/auth/me returns 401 after logout", async () => {
+    it("destroys the session so /api/t/:tenantSlug/auth/me returns 401 after logout", async () => {
       const { cookie } = await setupAuthenticatedApi();
 
       const authenticatedApi = createAuthenticatedApiClient(app, {
@@ -132,10 +135,10 @@ describe("Logout (integration) POST /api/auth/logout", () => {
         cookie,
       });
 
-      const meBeforeLogout = await authenticatedApi.get(`/api/t/${testTenant.slug}/auth/me`);
+      const meBeforeLogout = await authenticatedApi.get(tenantMeEndpoint(testTenant.slug));
       expect(meBeforeLogout.status).toBe(200);
 
-      const logoutResponse = await authenticatedApi.post(`/api/t/${testTenant.slug}/auth/logout`);
+      const logoutResponse = await authenticatedApi.post(tenantLogoutEndpoint(testTenant.slug));
       const logoutPayload = expectAppSuccessWithPayload(logoutResponse, {
         status: 200,
       });
@@ -144,7 +147,7 @@ describe("Logout (integration) POST /api/auth/logout", () => {
         loggedOut: true,
       });
 
-      const meAfterLogout = await authenticatedApi.get(`/api/t/${testTenant.slug}/auth/me`);
+      const meAfterLogout = await authenticatedApi.get(tenantMeEndpoint(testTenant.slug));
       expectAppError(meAfterLogout, 401, "UNAUTHORIZED");
     });
   });

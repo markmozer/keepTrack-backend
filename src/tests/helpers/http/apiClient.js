@@ -20,30 +20,6 @@ export function createApiClient(app, tenantSlug) {
       return url;
     }
 
-    if (url.startsWith("/api/auth/")) {
-      return url.replace("/api/auth/", `/api/t/${tenantSlug}/auth/`);
-    }
-
-    if (url === "/api/users/accept-invite") {
-      return `/api/t/${tenantSlug}/auth/accept-invite`;
-    }
-
-    if (url === "/api/users/forgot-password") {
-      return `/api/t/${tenantSlug}/auth/forgot-password`;
-    }
-
-    if (url === "/api/users/request-pwd-reset") {
-      return `/api/t/${tenantSlug}/auth/forgot-password`;
-    }
-
-    if (url === "/api/users/reset-password") {
-      return `/api/t/${tenantSlug}/auth/reset-password`;
-    }
-
-    if (url.startsWith("/api/")) {
-      return url.replace("/api/", `/api/t/${tenantSlug}/`);
-    }
-
     return url;
   }
 

@@ -54,11 +54,11 @@ export class ResetPassword {
       resetTokenHash,
     });
 
-    if (!targetUser) throw new ValidationError("Invite token is invalid.");
+    if (!targetUser) throw new ValidationError("Reset token is invalid.");
 
     if (!isStatusForResetPassword(targetUser.status)) {
       throw new ValidationError(
-        "Invite cannot be accepted for current user status.",
+        "Password cannot be reset for current user status.",
       );
     }
 
@@ -71,7 +71,7 @@ export class ResetPassword {
     const now = this.clockService.now();
 
     if (resetTokenExpiresAt <= now) {
-      throw new ValidationError("Invite token has expired.");
+      throw new ValidationError("Reset token has expired.");
     }
 
     const passwordHash = await this.passwordService.hash(payload.passwordPlain);

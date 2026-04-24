@@ -15,7 +15,7 @@ import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 
 describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-password", () => {
-  const endpoint = "/api/users/reset-password";
+  const endpoint = "/api/t/:tenantSlug/auth/reset-password";
   const oldPassword = "Strong123!123";
   const newPassword = "NewStrong123!123";
 
@@ -45,6 +45,10 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
       await container.shutdown();
     }
   });
+
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/auth/reset-password`;
+  }
 
   async function seedUserWithResetToken({
     passwordPlain = oldPassword,
@@ -126,7 +130,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: newPassword,
       });
@@ -159,10 +163,9 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
       const { tokenPlaintext } = await seedUserWithResetToken();
 
       const api = createApiClient(app, primaryTenant.slug);
-
       const invalidToken = tokenPlaintext.slice(0, tokenPlaintext.length - 1);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: invalidToken,
         password: newPassword,
       });
@@ -180,7 +183,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: newPassword,
       });
@@ -190,21 +193,21 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenant route segment is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post("/api/t/auth/reset-password").send({
         token: "dummy-token",
         password: newPassword,
       });
 
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
     it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post("/api/t//auth/reset-password").send({
         token: "dummy-token",
         password: newPassword,
       });
@@ -219,7 +222,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         password: newPassword,
       });
 
@@ -231,7 +234,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: null,
         password: newPassword,
       });
@@ -244,7 +247,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: "",
         password: newPassword,
       });
@@ -257,7 +260,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: 123456789,
         password: newPassword,
       });
@@ -272,7 +275,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
       });
 
@@ -313,7 +316,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password,
       });
@@ -328,7 +331,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: newPassword,
       });
@@ -354,7 +357,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
         email: user.email,
       });
 
-      const secondResponse = await api.post(endpoint).send({
+      const secondResponse = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: "AnotherStrongPassword123!",
       });
@@ -382,7 +385,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: newPassword,
       });
@@ -406,7 +409,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
 
       const api = createApiClient(app, primaryTenant.slug);
 
-      const response = await api.post(endpoint).send({
+      const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         token: tokenPlaintext,
         password: newPassword,
       });
