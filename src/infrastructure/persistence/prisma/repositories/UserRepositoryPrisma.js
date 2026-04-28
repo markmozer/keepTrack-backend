@@ -30,12 +30,15 @@ export const userAuthRowSelect = {
   passwordHash: true,
   userRoles: {
     select: {
+      validFrom: true,
+      validTo: true,
       role: {
         select: {
           name: true,
         },
       },
     },
+    orderBy: [{ validFrom: "asc" }, { createdAt: "asc" }],
   },
 };
 

@@ -342,5 +342,32 @@ describe("AuthenticateUser (integration) POST /api/t/:tenantSlug/auth/login", ()
 
       expectAppError(response, 403, "NO_VALID_ROLES");
     });
+
+    it("returns 403 with nextValidFrom when user only has future roles", async () => {
+      const futureValidFrom = new Date("2099-01-01T09:00:00.000Z");
+      const userRoles = [{ name: "ADMIN", validFrom: futureValidFrom }];
+      const password = "Strong123!123";
+
+      const user = await seedUser({
+        prisma: container.prisma,
+        container,
+        defaultTenant: testTenant,
+        userRoles,
+        status: UserStatus.ACTIVE,
+        passwordPlain: password,
+      });
+
+      const api = createApiClient(app, testTenant.slug);
+
+      const response = await api.post(tenantEndpoint(testTenant.slug)).send({
+        email: user.email,
+        password,
+      });
+
+      expectAppError(response, 403, "ROLES_NOT_YET_ACTIVE");
+      expect(response.body.error.details).toEqual({
+        nextValidFrom: futureValidFrom.toISOString(),
+      });
+    });
   });
 });

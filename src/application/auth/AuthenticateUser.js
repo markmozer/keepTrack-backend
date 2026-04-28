@@ -2,7 +2,6 @@
  * File: src/application/auth/AuthenticateUser.js
  */
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
-import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleRepositoryPort.js";
 import { assertPasswordServicePort } from "../ports/security/PasswordServicePort.js";
 import { assertSessionServicePort } from "../ports/session/SessionServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
@@ -13,33 +12,35 @@ import { validateAuthenticateUserPayload } from "./authenticateUser.validation.j
 import {
   InvalidCredentialsError,
   NoValidRolesError,
+  RolesNotYetActiveError,
 } from "../../domain/shared/errors/index.js";
 
 import { isStatusForAuthenticateUser } from "../../domain/users/UserStatus.js";
+import {
+  getNextRoleEffectiveAt,
+  hasRoleEffectiveAt,
+  hasRoleEffectiveNowOrFuture,
+} from "../../domain/authz/userRoleValidity.js";
 
 export class AuthenticateUser {
   /**
    * @param {Object} deps
    * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
-   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
    * @param {import("../ports/security/PasswordServicePort.js").PasswordServicePort} deps.passwordService
    * @param {import("../ports/session/SessionServicePort.js").SessionServicePort} deps.sessionService
    * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
    */
   constructor({
     userRepository,
-    userRoleRepository,
     passwordService,
     sessionService,
     clockService,
   }) {
     assertUserRepositoryPort(userRepository);
-    assertUserRoleRepositoryPort(userRoleRepository);
     assertPasswordServicePort(passwordService);
     assertSessionServicePort(sessionService);
     assertClockServicePort(clockService);
     this.userRepository = userRepository;
-    this.userRoleRepository = userRoleRepository;
     this.passwordService = passwordService;
     this.sessionService = sessionService;
     this.clockService = clockService;
@@ -80,17 +81,27 @@ export class AuthenticateUser {
       throw new InvalidCredentialsError();
     }
 
-    const validUserRoles = await this.userRoleRepository.findValidByUser({
-      tenantId: user.tenantId,
-      userId: user.id,
-      atDate: this.clockService.now(),
-    });
+    const now = this.clockService.now();
+    const authUserRoles = user.userRoles ?? [];
 
-    if (!validUserRoles || validUserRoles.length === 0) {
+    if (!hasRoleEffectiveAt(authUserRoles, now)) {
+      if (hasRoleEffectiveNowOrFuture(authUserRoles, now)) {
+        const nextValidFrom = getNextRoleEffectiveAt(authUserRoles, now);
+
+        throw new RolesNotYetActiveError(
+          "User roles are not yet active.",
+          nextValidFrom
+            ? { nextValidFrom: nextValidFrom.toISOString() }
+            : undefined,
+        );
+      }
+
       throw new NoValidRolesError("User has no valid roles");
     }
 
-    const roleNames = validUserRoles.map((r) => r.role.name);
+    const roleNames = authUserRoles
+      .filter((role) => hasRoleEffectiveAt([role], now))
+      .map((r) => r.role.name);
 
     const session = await this.sessionService.createSession({
       userId: user.id,

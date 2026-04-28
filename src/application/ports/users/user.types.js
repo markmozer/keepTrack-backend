@@ -120,7 +120,7 @@
  * @property {string} email
  * @property {UserStatus} status
  * @property {string} passwordHash
- * @property {{ role: { name: string } }[]} userRoles
+ * @property {{ validFrom: Date, validTo: Date | null, role: { name: string } }[]} userRoles
  */
 
 // =====================================================

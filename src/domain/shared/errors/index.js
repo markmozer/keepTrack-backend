@@ -5,6 +5,7 @@ export { ResourceNotFoundError } from "./ResourceNotFoundError.js";
 export { InvalidCredentialsError } from "./InvalidCredentialsError.js";
 export { ForbiddenError } from "./ForbiddenError.js";
 export { NoValidRolesError } from "./NoValidRolesError.js";
+export { RolesNotYetActiveError } from "./RolesNotYetActiveError.js";
 export { UnauthorizedError } from "./UnauthorizedError.js";
 export { BadRequestError } from "./BadRequestError.js";
 export { ConflictError } from "./ConflictError.js";

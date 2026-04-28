@@ -97,6 +97,7 @@ EMAIL_PROVIDER=mock
 
 APP_PROTOCOL=https
 APP_BASE_DOMAIN=localhost
+CORS_ALLOWED_ORIGINS=http://localhost:5173
 ```
 
 Voor integratietests gebruikt het project `.env.test`.
@@ -104,6 +105,7 @@ Voor integratietests gebruikt het project `.env.test`.
 Belangrijk:
 
 - `APP_PROTOCOL` en `APP_BASE_DOMAIN` zijn nodig voor tenant-aware invite/reset links
+- `CORS_ALLOWED_ORIGINS` laat je expliciet frontend origins toestaan
 - `EMAIL_PROVIDER=mock` is handig voor lokaal en test
 - `PORT` is verplicht via `appConfig`
 
@@ -156,6 +158,68 @@ Integratietests gebruiken:
 - Redis
 
 Voordat integratietests draaien, moet je testdatabase bereikbaar zijn en moeten de migraties daarop zijn toegepast.
+
+## Render / productie
+
+De productie-opzet is:
+
+- frontend: `https://keeptrackonline.nl`
+- backend: `https://api.keeptrackonline.nl`
+
+### Aanbevolen backend env vars op Render
+
+```env
+NODE_ENV=production
+PORT=10000
+
+DATABASE_URL=...
+REDIS_URL=...
+
+APP_PROTOCOL=https
+APP_BASE_DOMAIN=keeptrackonline.nl
+CORS_ALLOWED_ORIGINS=https://keeptrackonline.nl,https://www.keeptrackonline.nl
+
+SESSION_COOKIE_NAME=sid
+SESSION_COOKIE_SAME_SITE=lax
+SESSION_TTL_SECONDS=86400
+SESSION_KEY_PREFIX=sess:
+
+EMAIL_PROVIDER=mock
+```
+
+### Wanneer `SESSION_COOKIE_SAME_SITE=none` nodig is
+
+Gebruik `none` alleen als frontend en backend echt cross-site draaien, bijvoorbeeld:
+
+- frontend op `keeptrack-frontend.onrender.com`
+- backend op `keeptrack-backend.onrender.com`
+
+In de huidige productie-opzet met:
+
+- `keeptrackonline.nl`
+- `api.keeptrackonline.nl`
+
+is `lax` normaal gesproken prima, omdat dit same-site is en beter werkt met iOS Safari dan een third-party cookie-achtige setup.
+
+### CORS
+
+De backend ondersteunt nu twee manieren om origins toe te staan:
+
+- expliciet via `CORS_ALLOWED_ORIGINS`
+- als fallback via `APP_BASE_DOMAIN` en subdomeinen daarvan
+
+Voor Render is `CORS_ALLOWED_ORIGINS` de veiligste en duidelijkste optie.
+
+### iPhone / iPad
+
+Tijdens de migratie bleek iOS gevoeliger voor cross-site cookiegedrag dan desktop browsers. De combinatie hieronder werkte goed:
+
+- frontend op `https://keeptrackonline.nl`
+- backend op `https://api.keeptrackonline.nl`
+- frontend `VITE_API_BASE_URL=https://api.keeptrackonline.nl`
+- backend `CORS_ALLOWED_ORIGINS=https://keeptrackonline.nl,https://www.keeptrackonline.nl`
+
+Daarmee worden sessiecookies op Safari/iPhone/iPad betrouwbaar genoeg meegestuurd.
 
 ## Provision tenant
 

@@ -17,6 +17,7 @@
  * @property {string} email
  * @property {string | null} passwordHash
  * @property {UserStatus} status
+ * @property {{ validFrom: Date, validTo: Date | null, role: { name: string } }[]} userRoles
  */
 
 // =====================================================

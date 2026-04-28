@@ -23,6 +23,7 @@ import { UserStatus } from "../../domain/users/UserStatus.js";
 import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
+import { hasRoleEffectiveNowOrFuture } from "../../domain/authz/userRoleValidity.js";
 
 import { toUserDetailDto } from "./user.mappers.js";
 
@@ -124,8 +125,9 @@ export class InviteUser {
       });
 
     const now = this.clockService.now();
-    const hasValidRoleNowOrFuture = existingUser.userRoles.some(
-      (r) => !r.validTo || new Date(r.validTo) >= now,
+    const hasValidRoleNowOrFuture = hasRoleEffectiveNowOrFuture(
+      existingUser.userRoles,
+      now,
     );
     if (!hasValidRoleNowOrFuture) {
       throw new ValidationError(
