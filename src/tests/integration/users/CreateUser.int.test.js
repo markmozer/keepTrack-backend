@@ -41,6 +41,11 @@ describe("CreateUser (integration) POST /api/users", () => {
     }
   });
 
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/users`;
+  }
+
+
   async function setupUserAdmin() {
     return setupAuthenticatedPrincipal({
       app,
@@ -69,7 +74,7 @@ describe("CreateUser (integration) POST /api/users", () => {
 
       const email_new = `new_user@${clientTenant.slug}.nl`;
 
-      const response = await api.post("/api/users").send({
+      const response = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: email_new,
       });
 
@@ -120,7 +125,7 @@ describe("CreateUser (integration) POST /api/users", () => {
 
       const email_new = `new_user@${clientTenant.slug}.nl`;
 
-      const response = await api.post("/api/users").send({
+      const response = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: email_new,
       });
 
@@ -132,7 +137,7 @@ describe("CreateUser (integration) POST /api/users", () => {
 
       const email_new = `new_user@${clientTenant.slug}.nl`;
 
-      const response = await api.post("/api/users").send({
+      const response = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: email_new,
       });
 
@@ -141,24 +146,24 @@ describe("CreateUser (integration) POST /api/users", () => {
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
 
       const email_new = `new_user@${clientTenant.slug}.nl`;
 
-      const response = await api.post("/api/users").send({
+      const response = await api.post("/api/t/users").send({
         email: email_new,
       });
 
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
-    it("returns 404 when tenantSlug in path is empty", async () => {
+    it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
       const email_new = `new_user@${clientTenant.slug}.nl`;
 
-      const response = await api.post("/api/users").send({
+      const response = await api.post("/api/t//users").send({
         email: email_new,
       });
 
@@ -172,7 +177,7 @@ describe("CreateUser (integration) POST /api/users", () => {
 
       const email_new = `new_user@${clientTenant.slug}.nl`;
 
-      const first = await api.post("/api/users").send({
+      const first = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: email_new,
       });
 
@@ -189,7 +194,7 @@ describe("CreateUser (integration) POST /api/users", () => {
         resetTokenExpiresAt: null,
       });
 
-      const second = await api.post("/api/users").send({
+      const second = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: email_new,
       });
 
@@ -217,7 +222,7 @@ describe("CreateUser (integration) POST /api/users", () => {
 
       const { api } = await setupUserAdmin();
 
-      const response = await api.post("/api/users").send({
+      const response = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: duplicateEmail,
       });
 
@@ -240,17 +245,17 @@ describe("CreateUser (integration) POST /api/users", () => {
     it("returns 422 when email is missing", async () => {
       const { api } = await setupUserAdmin();
 
-      const first = await api.post("/api/users").send({});
+      const first = await api.post(tenantEndpoint(clientTenant.slug)).send({});
 
       expectAppError(first, 422, "VALIDATION_ERROR");
 
-      const second = await api.post("/api/users").send({
+      const second = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: null,
       });
 
       expectAppError(second, 422, "VALIDATION_ERROR");
 
-      const third = await api.post("/api/users").send({
+      const third = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: "",
       });
 
@@ -259,13 +264,13 @@ describe("CreateUser (integration) POST /api/users", () => {
     it("returns 422 when email is not valid", async () => {
       const { api } = await setupUserAdmin();
 
-      const first = await api.post("/api/users").send({
+      const first = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: "mark mozer",
       });
 
       expectAppError(first, 422, "VALIDATION_ERROR");
 
-      const second = await api.post("/api/users").send({
+      const second = await api.post(tenantEndpoint(clientTenant.slug)).send({
         email: "mark$mozer-consulting.com",
       });
 

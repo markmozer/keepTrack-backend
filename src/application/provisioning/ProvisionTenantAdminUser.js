@@ -12,10 +12,11 @@ import { validateProvisioningPrincipal } from "../auth/validateProvisioningPrinc
 import { validateProvisionTenantAdminUserPayload } from "./provisionTenantAdminUser.validation.js";
 
 // domain
+import { User } from "../../domain/users/User.js";
 import { UserStatus } from "../../domain/users/UserStatus.js";
 
 // mappers
-import { toUserDetailDto } from "../users/user.mappers.js";
+import { toUserDetailDto, toPublicUserDto } from "../users/user.mappers.js";
 
 // other
 import { ConflictError } from "../../domain/shared/errors/index.js";
@@ -82,16 +83,14 @@ export class ProvisionTenantAdminUser {
       };
     }
 
-    const user = await this.userRepository.create({
-      tenantId: tenant.id,
-      email: payload.email,
-      createdAt: payload.now,
-      updatedAt: payload.now,
-    })
+    const user = User.createNew({tenantId: tenant.id, email: payload.email, now: payload.now});
+
+    const persistedUser = await this.userRepository.create(user);
+
     return {
       success: true,
       created: true,
-      payload: toUserDetailDto(user),
+      payload: toPublicUserDto(persistedUser),
       error: null,
     };
   }

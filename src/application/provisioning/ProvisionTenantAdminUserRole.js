@@ -80,7 +80,7 @@ export class ProvisionTenantAdminUserRole {
       userId: payload.userId,
     });
 
-    if (!user) {
+    if (!user || user.id === null) {
       return {
         success: false,
         created: false,
@@ -95,7 +95,7 @@ export class ProvisionTenantAdminUserRole {
       );
     }
 
-    const userRoleArray = user.userRoles.map((ur) => ur.role.name);
+    const userRoleArray = user.userRoles.map((ur) => ur.roleName);
 
     const role = await this.roleRepository.findByName({
       tenantId: tenant.id,

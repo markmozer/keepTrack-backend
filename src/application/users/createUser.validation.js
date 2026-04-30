@@ -4,7 +4,7 @@
 import { v } from "../../domain/shared/validation/validators.js";
 import {
   validateUserEmail,
-} from "../../domain/users/createUser.js";
+} from "../../domain/users/user.validation.js";
 
 
 /**

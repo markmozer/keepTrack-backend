@@ -16,7 +16,9 @@ import {
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserDetailDto } from "./user.mappers.js";
+import { User } from "../../domain/users/User.js";
+
+import { toPublicUserDto } from "./user.mappers.js";
 
 export class CreateUser {
   /**
@@ -70,11 +72,10 @@ export class CreateUser {
       throw new ConflictError(`User '${payload.email}' already exists.`);
     }
 
-    const row = await this.userRepository.create({
-      tenantId: tenantId,
-      email: payload.email,
-    });
+    const user = User.createNew({tenantId, email: payload.email, now: new Date()});
 
-    return toUserDetailDto(row);
+    const persistedUser = await this.userRepository.create(user);
+
+    return toPublicUserDto(persistedUser);
   }
 }

@@ -2,18 +2,26 @@
  * File: src/application/sessions/session.mappers.js
  */
 
+
+
 /**
- * @param {import("../ports/users/user.types.js").UserRow} row
+ * @param {import("../../domain/users/User.js").User} user
  * @returns {import("../ports/session/session.types.js").SessionUser}
  */
-export function toSessionUserDto(row) {
+export function toSessionUserDto(user) {
+  if (!user.id) {
+    throw new Error("Cannot map user without id to SessionUserDto.");
+  }
+
   return {
-    id: row.id,
-    email: row.email,
-    status: row.status,
+    id: user.id,
+    email: user.email,
+    status: user.status,
     displayName: "display name",
-  };
+    }
+
 }
+
 
 /**
  * @param {import("../ports/tenants/tenant.types.js").TenantRow} row

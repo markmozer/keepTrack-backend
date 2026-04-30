@@ -4,8 +4,24 @@
 
 /**
  * @typedef {import("../../../domain/users/UserStatus.js").UserStatusValue} UserStatus
+ * @typedef {import("../shared/action.types.js").AvailableActionsDto} AvailableActionsDto
  */
 
+/**
+ * @typedef {"inviteUser" | "deactivateUser" | "deleteUser" | "createRoleAssignment"} UserActionName
+ */
+
+/**
+ * @typedef {"updateRoleAssignment" | "deleteRoleAssignment"} UserRoleActionName
+ */
+
+/**
+ * @typedef {Partial<Record<UserActionName, import("../shared/action.types.js").ActionDecisionDto>>} UserAvailableActionsDto
+ */
+
+/**
+ * @typedef {Partial<Record<UserRoleActionName, import("../shared/action.types.js").ActionDecisionDto>>} UserRoleAvailableActionsDto
+ */
 
 // ============================================================
 // Infrastructure layer     select              userRowSelect
@@ -108,6 +124,68 @@
  */
 
 // ============================================================
+// Infrastructure layer     select              publicUserRowSelect
+// Infrastructure layer     return model        publicUserRow
+// Application layer        return model        publicUserDto
+// ============================================================
+
+/**
+ * @typedef {object} UserRoleRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {string} roleId
+ * @property {Date} validFrom
+ * @property {Date|null} validTo
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ * @property {{ name: string }} role
+ */
+
+/**
+ * @typedef {object} publicUserRow
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
+ * @property {Array<UserRoleRow>} userRoles
+ * @property {Date|null} inviteTokenExpiresAt
+ * @property {Date|null} resetTokenExpiresAt
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ */
+
+/**
+ * @typedef {object} UserRoleDto
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {string} roleId
+ * @property {string} validFrom
+ * @property {string|null} validTo
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {string|null} roleName
+ * @property {UserRoleAvailableActionsDto} [availableActions]
+ */
+
+/**
+ * @typedef {object} publicUserDto
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {string} status
+ * @property {Array<UserRoleDto>} userRoles
+ * @property {string|null} inviteTokenExpiresAt
+ * @property {string|null} resetTokenExpiresAt
+ * @property {string} createdAt
+ * @property {string} updatedAt
+ * @property {UserAvailableActionsDto} [availableActions]
+ */
+
+
+
+// ============================================================
 // Infrastructure layer     select              userAuthRowSelect
 // Infrastructure layer     return model        userAuthRow
 // Application layer        return model        n/a
@@ -141,14 +219,6 @@
  * @property {CreateUserUCPayload} payload
  */
 
-/**
- * RepoInput
- * @typedef {Object} CreateUserRepoInput
- * @property {string} tenantId
- * @property {string} email
- * @property {Date} [createdAt]
- * @property {Date} [updatedAt]
- */
 
 // --- GetUsers ---
 

@@ -18,7 +18,6 @@ import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
 import { seedUser } from "../../helpers/seed/seedUser.js";
 
 describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
-  const endpoint = "/api/users";
   let app;
   let container;
   let primaryTenant;
@@ -46,6 +45,10 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
       await container.shutdown();
     }
   });
+
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/users`;
+  }
 
   async function setupAuthSingleRolePrincipal({ tenant, roleName } = {}) {
     const resolvedTenant = tenant ?? primaryTenant;
@@ -116,7 +119,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser();
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       const payload = expectAppSuccessWithPayload(response, {
         status: 200,
@@ -154,7 +157,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleNames: targetRoleNames,
       });
 
-      const response = await api.post(`${endpoint}/${targetUser.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${targetUser.id}/invite`);
 
       expectAppError(response, 403, "FORBIDDEN");
     });
@@ -164,7 +167,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser();
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       expectAppError(response, 401, "UNAUTHORIZED");
     });
@@ -176,9 +179,9 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser();
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`/api/t/users/${user.id}/invite`);
 
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
     it("returns 404 when tenantSlug in path is empty", async () => {
@@ -186,7 +189,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser();
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`/api/t//${user.id}/invite`);
 
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
@@ -196,11 +199,11 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
     it("returns 404 when userId path param is missing or empty", async () => {
       const api = createApiClient(app, primaryTenant.slug);
 
-      const responseOne = await api.post(`${endpoint}/invite`);
+      const responseOne = await api.post(`${tenantEndpoint(primaryTenant.slug)}/invite`);
 
       expectAppError(responseOne, 404, "ROUTE_NOT_FOUND");
 
-      const responseTwo = await api.post(`${endpoint}//invite`);
+      const responseTwo = await api.post(`${tenantEndpoint(primaryTenant.slug)}//invite`);
 
       expectAppError(responseTwo, 404, "ROUTE_NOT_FOUND");
     });
@@ -214,7 +217,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser({ status: UserStatus.ACTIVE });
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -225,7 +228,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser({ userRoles: [] });
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -242,7 +245,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser({ userRoles });
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });
@@ -253,7 +256,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser();
 
-      const first_response = await api.post(`${endpoint}/${user.id}/invite`);
+      const first_response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       const first_payload = expectAppSuccessWithPayload(first_response, {
         status: 200,
@@ -281,7 +284,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const firstInviteTokenHash = rowAfterFirstInvite?.inviteTokenHash;
 
-      const second_response = await api.post(`${endpoint}/${user.id}/invite`);
+      const second_response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       const second_payload = expectAppSuccessWithPayload(second_response, {
         status: 200,
@@ -330,7 +333,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
 
       const user = await seedTestUser({ tenant: secondaryTenant });
 
-      const response = await api.post(`${endpoint}/${user.id}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${user.id}/invite`);
 
       expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
@@ -339,7 +342,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const response = await api.post(`${endpoint}/${randomUUID()}/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/${randomUUID()}/invite`);
 
       expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
@@ -351,7 +354,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         roleName: "USER_EDITOR",
       });
 
-      const response = await api.post(`${endpoint}/not-a-uuid/invite`);
+      const response = await api.post(`${tenantEndpoint(primaryTenant.slug)}/not-a-uuid/invite`);
 
       expectAppError(response, 422, "VALIDATION_ERROR");
     });

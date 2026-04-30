@@ -16,7 +16,6 @@ import { expectAppError } from "../../helpers/assertions/expectAppError.js";
 import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
 
 describe("GetUserById (integration) POST /api/users/:userId", () => {
-  const endpoint = "/api/users";
   const strongPassword = "Strong123!123";
 
   let app;
@@ -45,6 +44,10 @@ describe("GetUserById (integration) POST /api/users/:userId", () => {
       await container.shutdown();
     }
   });
+
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/users`;
+  }
 
   async function setupUserViewer() {
     return setupAuthenticatedPrincipal({
@@ -78,7 +81,7 @@ describe("GetUserById (integration) POST /api/users/:userId", () => {
       const nowPlusFourteen = container.services.clockService.addDays(now, 14);
 
       const userRoles = [
-        { name: "ADMIN", validTo: new Date (2099,11,31)},
+        { name: "ADMIN", validTo: new Date(2099, 11, 31) },
         { name: "USER_ADMIN", validFrom: nowMinusFourteen },
         { name: "USER_VIEWER" },
         { name: "USER_EDITOR", validFrom: nowPlusFourteen },
@@ -95,7 +98,7 @@ describe("GetUserById (integration) POST /api/users/:userId", () => {
 
       const { api } = await setupUserViewer();
 
-      const response = await api.get(`${endpoint}/${user.id}`);
+      const response = await api.get(`${tenantEndpoint(primaryTenant.slug)}/${user.id}`);
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
@@ -108,7 +111,6 @@ describe("GetUserById (integration) POST /api/users/:userId", () => {
       });
 
       expect(payload.userRoles.length).toBe(userRoles.length);
-
     });
   });
 });

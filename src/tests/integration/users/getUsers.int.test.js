@@ -17,7 +17,6 @@ import { toUserDto } from "../../../application/users/user.mappers.js";
 import { seedUser } from "../../helpers/seed/seedUser.js";
 
 describe("GetUsers (integration) GET /api/users", () => {
-  const endpoint = "/api/users";
   const strongPassword = "Strong123!123";
 
   let app;
@@ -83,6 +82,10 @@ describe("GetUsers (integration) GET /api/users", () => {
     }
   });
 
+  function tenantEndpoint(slug) {
+    return `/api/t/${slug}/users`;
+  }
+
   async function setupUserViewer() {
     return setupAuthenticatedPrincipal({
       app,
@@ -108,7 +111,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("returns 200 when user has USER_VIEWER role", async () => {
       const { api } = await setupUserViewer();
 
-      const response = await api.get("/api/users");
+      const response = await api.get(tenantEndpoint(primaryTenant.slug));
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
       expectUserList(payload, { page: 1, pageSize: 25 });
@@ -117,31 +120,31 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("returns 403 when user has CONTRACT_ADMIN role", async () => {
       const { api } = await setupContractAdmin();
 
-      const response = await api.get(endpoint);
+      const response = await api.get(tenantEndpoint(primaryTenant.slug));
 
       expectAppError(response, 403, "FORBIDDEN");
     });
 
     it("returns 401 when principal is missing", async () => {
       const api = createApiClient(app, primaryTenant.slug);
-      const response = await api.get(endpoint);
+      const response = await api.get(tenantEndpoint(primaryTenant.slug));
       expectAppError(response, 401, "UNAUTHORIZED");
     });
   });
 
   describe("tenant resolution", () => {
-    it("returns 404 when tenantSlug in path is missing", async () => {
+    it("returns 404 resource-not-found when the tenant-like path segment does not resolve", async () => {
       const api = createApiClient(app, undefined);
 
-      const response = await api.get(endpoint);
+      const response = await api.get("/api/t/users");
 
-      expectAppError(response, 404, "ROUTE_NOT_FOUND");
+      expectAppError(response, 404, "RESOURCE_NOT_FOUND");
     });
 
-    it("returns 404 when tenantSlug in path is empty", async () => {
+    it("returns 404 when tenant slug is empty", async () => {
       const api = createApiClient(app, "");
 
-      const response = await api.get(endpoint);
+      const response = await api.get("/api/t//users");
 
       expectAppError(response, 404, "ROUTE_NOT_FOUND");
     });
@@ -150,7 +153,7 @@ describe("GetUsers (integration) GET /api/users", () => {
   describe("default behavior", () => {
     it("returns all users with default pagination", async () => {
       const { user, api } = await setupUserViewer();
-      const response = await api.get(endpoint);
+      const response = await api.get(tenantEndpoint(primaryTenant.slug));
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
       expectUserList(payload, { page: 1, pageSize: 25 });
       expect(payload.items).toHaveLength(5);
@@ -170,7 +173,7 @@ describe("GetUsers (integration) GET /api/users", () => {
   describe("filtering", () => {
     it("filters users by email", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         email: "ha",
       });
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
@@ -186,7 +189,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     });
     it("filters users by status", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         status: UserStatus.ACTIVE,
       });
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
@@ -202,7 +205,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     });
     it("filters users by roleName", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         roleName: "USER_ADMIN",
       });
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
@@ -222,7 +225,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("sorts users by email ascending", async () => {
       const { user, api } = await setupUserViewer();
       users.push(user);
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "email",
         sortDirection: "asc",
       });
@@ -240,7 +243,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("sorts users by email descending", async () => {
       const { user, api } = await setupUserViewer();
       users.push(user);
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "email",
         sortDirection: "desc",
       });
@@ -257,7 +260,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("sorts users by status ascending", async () => {
       const { user, api } = await setupUserViewer();
       users.push(user);
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "status",
         sortDirection: "asc",
       });
@@ -275,7 +278,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("sorts users by status descending", async () => {
       const { user, api } = await setupUserViewer();
       users.push(user);
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "status",
         sortDirection: "desc",
       });
@@ -292,7 +295,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("sorts users by createdAt ascending", async () => {
       const { user, api } = await setupUserViewer();
       users.push(user);
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "createdAt",
         sortDirection: "asc",
       });
@@ -310,7 +313,7 @@ describe("GetUsers (integration) GET /api/users", () => {
     it("sorts users by createdAt descending", async () => {
       const { user, api } = await setupUserViewer();
       users.push(user);
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "createdAt",
         sortDirection: "desc",
       });
@@ -329,7 +332,7 @@ describe("GetUsers (integration) GET /api/users", () => {
   describe("pagination", () => {
     it("returns the first page with the requested page size", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         page: 1,
         pageSize: 2,
         sortField: "email",
@@ -347,7 +350,7 @@ describe("GetUsers (integration) GET /api/users", () => {
 
     it("returns the second page with the requested page size", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         page: 2,
         pageSize: 2,
         sortField: "email",
@@ -367,7 +370,7 @@ describe("GetUsers (integration) GET /api/users", () => {
   describe("validation", () => {
     it("returns 422 when page is invalid", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         page: 0,
       });
       expectAppError(response, 422, "VALIDATION_ERROR");
@@ -375,7 +378,7 @@ describe("GetUsers (integration) GET /api/users", () => {
 
     it("returns 422 when pageSize is invalid", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         pageSize: -1,
       });
       expectAppError(response, 422, "VALIDATION_ERROR");
@@ -383,7 +386,7 @@ describe("GetUsers (integration) GET /api/users", () => {
 
     it("returns 422 when sort direction is invalid", async () => {
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint).query({
+      const response = await api.get(tenantEndpoint(primaryTenant.slug)).query({
         sortField: "name",
         sortDirection: "sideways",
       });
@@ -412,7 +415,7 @@ describe("GetUsers (integration) GET /api/users", () => {
         status: UserStatus.ACTIVE,
       });
       const { api } = await setupUserViewer();
-      const response = await api.get(endpoint);
+      const response = await api.get(tenantEndpoint(primaryTenant.slug));
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
       expectUserList(payload, { page: 1, pageSize: 25 });
       expect(payload.items.map((item) => item.email)).not.toContain(

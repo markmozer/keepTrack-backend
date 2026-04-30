@@ -15,7 +15,7 @@ import {
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserDetailDto } from "./user.mappers.js";
+import { toPublicUserDto } from "./user.mappers.js";
 
 
 
@@ -77,7 +77,7 @@ export class GetUserById {
     }
 
   
-    return toUserDetailDto(user);
+    return toPublicUserDto(user);
   }
 
   

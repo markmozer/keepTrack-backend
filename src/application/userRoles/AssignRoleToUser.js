@@ -15,7 +15,7 @@ import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toUserDetailDto } from "../users/user.mappers.js";
+import { toPublicUserDto } from "../users/user.mappers.js";
 
 export class AssignRoleToUser {
   /**
@@ -95,7 +95,7 @@ export class AssignRoleToUser {
       ) ?? false;
 
     if (existingUserHasRole) {
-      return { created: false, payload: toUserDetailDto(existingUser) };
+      return { created: false, payload: toPublicUserDto(existingUser) };
     }
 
     await this.userRoleRepository.create({
@@ -115,6 +115,6 @@ export class AssignRoleToUser {
       throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
     }
 
-    return { created: true, payload: toUserDetailDto(updatedUser) };
+    return { created: true, payload: toPublicUserDto(updatedUser) };
   }
 }

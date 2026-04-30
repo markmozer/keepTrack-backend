@@ -2,9 +2,43 @@
  * File: src/infrastructure/persistence/prisma/repositories/UserRepositoryPrisma.js
  */
 
+import { toPublicUserDomain, toPublicUserDomainOrNull } from "../mappers/UserPrismaMapper.js";
+
 /**
  * @typedef {import("../../../../application/ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
+ * @typedef {import("../../../../domain/users/User.js").User} User
  */
+
+export const publicUserRowSelect = {
+  id: true,
+  tenantId: true,
+  email: true,
+  status: true,
+  inviteTokenExpiresAt: true,
+  resetTokenExpiresAt: true,
+  createdAt: true,
+  updatedAt: true,
+  userRoles: {
+    select: {
+      id: true,
+      roleId: true,
+      validFrom: true,
+      validTo: true,
+      createdAt: true,
+      updatedAt: true,
+      role: {
+        select: {
+          name: true,
+        },
+      },
+    },
+    orderBy: [{ validFrom: "asc" }, { createdAt: "asc" }],
+  },
+};
+
+export const authUserRowSelect = {
+  id: true,
+};
 
 export const userRowSelect = {
   id: true,
@@ -93,17 +127,38 @@ export class UserRepositoryPrisma {
   }
 
   /**
+   * @param {User} user
+   * @returns {Promise<User>}
+   */
+  async create(user) {
+    const row = await this.prisma.user.create({
+      data: {
+        tenantId: user.tenantId,
+        email: user.email,
+        createdAt: user.createdAt ? user.createdAt : undefined,
+        updatedAt: user.updatedAt ? user.updatedAt : undefined,
+      },
+      select: publicUserRowSelect,
+    });
+    return toPublicUserDomain(row);
+  }
+
+  /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByIdRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow | null>}
+   * @returns {Promise<User | null>}
    */
   async findById({ tenantId, userId }) {
     const row = await this.prisma.user.findFirst({
       where: { id: userId, tenantId },
-      select: userDetailRowSelect,
+      select: publicUserRowSelect,
     });
 
-    return row ? row : null;
+    return toPublicUserDomainOrNull(row);
   }
+
+
+// ========================== TO BE CHANGED ==================
+
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByEmailRepoInput} params
@@ -129,23 +184,6 @@ export class UserRepositoryPrisma {
     });
 
     return row ? row : null;
-  }
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").CreateUserRepoInput} input
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
-   */
-  async create(input) {
-    const row = await this.prisma.user.create({
-      data: {
-        tenantId: input.tenantId,
-        email: input.email,
-        createdAt: input.createdAt ? input.createdAt : undefined,
-        updatedAt: input.updatedAt ? input.updatedAt : undefined,
-      },
-      select: userDetailRowSelect,
-    });
-    return row;
   }
 
   /**

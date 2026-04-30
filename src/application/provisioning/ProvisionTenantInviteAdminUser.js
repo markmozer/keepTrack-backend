@@ -95,7 +95,7 @@ export class ProvisionTenantInviteAdminUser {
       userId: payload.userId,
     });
 
-    if (!existingUser) {
+    if (!existingUser || existingUser.id === null) {
       return {
         success: false,
         invited: false,
