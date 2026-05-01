@@ -22,10 +22,8 @@ import {
 } from "../../domain/users/UserStatus.js";
 
 // mappers
-import { toUserDetailDto } from "../users/user.mappers.js";
+import { toPublicUserDto } from "../users/user.mappers.js";
 
-// other
-import { ConflictError } from "../../domain/shared/errors/index.js";
 
 /**
  * @typedef {Object} ProvisionedAdminUserDto
@@ -105,12 +103,6 @@ export class ProvisionTenantInviteAdminUser {
       };
     }
 
-    if (!isStatusForInviteUser(existingUser.status)) {
-      throw new ConflictError(
-        `tenant admin user with id ${payload.userId} has univitable status ${existingUser.status}.`,
-      );
-    }
-
     const inviteUserAction =
       existingUser.status === UserStatus.NEW ? "create" : "update";
 
@@ -118,16 +110,15 @@ export class ProvisionTenantInviteAdminUser {
     const ttlDays = 14;
     const expiresAt = this.clockService.addDays(payload.now, ttlDays);
 
-    const updated = await this.userRepository.markAsInvited({
-      userId: existingUser.id,
-      tenantId: existingUser.tenantId,
-      status: UserStatus.INVITED,
+    existingUser.invite({
       inviteTokenHash: tokenHash,
       inviteTokenExpiresAt: expiresAt,
-      updatedAt: payload.now,
+      now: payload.now,
     });
 
-    if (!(updated.inviteTokenExpiresAt instanceof Date)) {
+    const invitedUser = await this.userRepository.save(existingUser);
+
+    if (!(invitedUser.inviteTokenExpiresAt instanceof Date)) {
       throw new Error("Invite token expiration not set correctly.");
     }
 
@@ -137,16 +128,16 @@ export class ProvisionTenantInviteAdminUser {
     });
 
     await this.emailService.sendInviteUserEmail({
-      to: updated.email,
+      to: invitedUser.email,
       link: inviteLink,
-      expiresAt: updated.inviteTokenExpiresAt,
+      expiresAt: invitedUser.inviteTokenExpiresAt,
       validityPeriod: `${ttlDays} days`,
     });
 
     return {
       success: true,
       invited: true,
-      payload: toUserDetailDto(updated),
+      payload: toPublicUserDto(invitedUser),
       token: tokenPlaintext,
       error: null,
     };

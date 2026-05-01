@@ -284,16 +284,6 @@
  * @property {InviteUserUCPayload} payload
  */
 
-/**
- * RepoInput
- * @typedef {Object} MarkAsInvitedRepoInput
- * @property {string} tenantId 
- * @property {string} userId
- * @property {string} inviteTokenHash
- * @property {Date} inviteTokenExpiresAt
- * @property {UserStatus} status
- * @property {Date} updatedAt
- */
 
 // --- AcceptInvite ---
 /**
@@ -309,17 +299,6 @@
  * @typedef {Object} AcceptInviteUCInput
  * @property {null} principal
  * @property {AcceptInviteUCPayload} payload
- */
-
-/**
- * RepoInput
- * @typedef {Object} ActivateFromInviteRepoInput
- * @property {string} userId
- * @property {string} passwordHash
- * @property {null} inviteTokenHash
- * @property {null} inviteTokenExpiresAt
- * @property {UserStatus} status
- * @property {Date} updatedAt
  */
 
 // --- ForgotPassword ---

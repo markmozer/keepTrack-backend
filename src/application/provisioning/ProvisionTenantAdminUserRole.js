@@ -17,16 +17,16 @@ import { validateProvisionTenantAdminUserRolePayload } from "./provisionTenantAd
 import { UserStatus } from "../../domain/users/UserStatus.js";
 
 // mappers
-import { toUserRoleAdminDto } from "../userRoles/userRole.mappers.js";
+import { toPublicUserDto } from "../users/user.mappers.js";
 
 // other
 import { ConflictError } from "../../domain/shared/errors/index.js";
 
 /**
- * @typedef {Object} ProvisionedAdminUserRoleDto
+ * @typedef {Object} ProvisionedAdminUserDto
  * @property {boolean} success
  * @property {boolean} created
- * @property {import("../ports/userRoles/userRole.types.js").UserRoleAdminDto | null} payload
+ * @property {import("../ports/users/user.types.js").publicUserDto | null} payload
  * @property {any} error
  */
 
@@ -56,7 +56,7 @@ export class ProvisionTenantAdminUserRole {
 
   /**
    * @param {import("../ports/provisioning/provisioning.types.js").ProvisionTenantAdminUserRoleUCInput} input
-   * @returns {Promise<ProvisionedAdminUserRoleDto>}
+   * @returns {Promise<ProvisionedAdminUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "ProvisionTenantAdminUserRoleUCInput");
@@ -95,8 +95,6 @@ export class ProvisionTenantAdminUserRole {
       );
     }
 
-    const userRoleArray = user.userRoles.map((ur) => ur.roleName);
-
     const role = await this.roleRepository.findByName({
       tenantId: tenant.id,
       name: payload.roleName,
@@ -111,55 +109,46 @@ export class ProvisionTenantAdminUserRole {
       };
     }
 
-    let userRole;
+    const newUserRole = user.assignRole({
+      roleId: role.id,
+      validFrom: payload.now,
+      validTo: null,
+      now: payload.now,
+    });
 
-    if (userRoleArray.includes(role.name)) {
-      userRole = await this.userRoleRepository.findByUserAndRole({
-        tenantId: tenant.id,
-        userId: user.id,
-        roleId: role.id,
+    if (!newUserRole) {
+      const existingUserRole = user.userRoles.filter((ur) => {
+        return ur.roleId === role.id;
       });
-
-      if (!userRole) {
-        return {
-          success: false,
-          created: false,
-          payload: null,
-          error: `userRole for user ${payload.userId} and role ${payload.roleName} not found`,
-        };
-      } else if (
-        userRole.validFrom > payload.now ||
-        (userRole.validTo !== null && userRole.validTo < payload.now)
+      if (!existingUserRole || existingUserRole.length === 0)
+        throw new Error("Problem creating new UserRole");
+      if (
+        existingUserRole[0].validFrom > payload.now ||
+        (existingUserRole[0].validTo !== null && existingUserRole[0].validTo < payload.now)
       ) {
         return {
           success: false,
           created: false,
           payload: null,
-          error: `userRole out of validity: validFrom: ${userRole.validFrom} validTo: ${userRole.validTo}`,
+          error: `userRole out of validity: validFrom: ${existingUserRole[0].validFrom} validTo: ${existingUserRole[0].validTo}`,
         };
       }
-      return{
+      return {
         success: true,
         created: false,
-        payload: toUserRoleAdminDto(userRole),
+        payload: toPublicUserDto(user),
         error: null,
-      }
+      };
     }
 
-    userRole = await this.userRoleRepository.create({
-      tenantId: tenant.id,
-      userId: user.id,
-      roleId: role.id,
-      validFrom: payload.now,
-      validTo: null,
-      createdAt: payload.now,
-      updatedAt: payload.now,
-    });
+    const persistedUserRole = await this.userRoleRepository.create(newUserRole);
+
+    user.replaceUserRole(newUserRole, persistedUserRole);
 
     return {
       success: true,
       created: true,
-      payload: toUserRoleAdminDto(userRole),
+      payload: toPublicUserDto(user),
       error: null,
     };
   }

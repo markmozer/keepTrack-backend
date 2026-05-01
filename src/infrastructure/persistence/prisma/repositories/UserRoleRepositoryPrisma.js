@@ -2,11 +2,14 @@
  * File: src/infrastructure/persistence/prisma/repositories/UserRoleRepositoryPrisma.js
  */
 
+import { toUserRoleDomain } from "../mappers/UserPrismaMapper.js"
+
 /**
  * @typedef {import("../../../../application/ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
  * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
  * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleAdminRow} UserRoleAdminRow
  * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").AssignRoleToUserRepoInput} AssignRoleToUserRepoInput
+ * @typedef {import("../../../../domain/users/UserRole.js").UserRole} UserRole
  */
 
 const userRoleRowSelect = {
@@ -85,26 +88,24 @@ export class UserRoleRepositoryPrisma {
     });
   }
 
-
-
   /**
-   * @param {AssignRoleToUserRepoInput} input
-   * @returns {Promise<UserRoleAdminRow>}
+   * @param {UserRole} userRole
+   * @returns {Promise<UserRole>}
    */
-  async create(input) {
+  async create(userRole) {
     const row = await this.prisma.userRole.create({
       data: {
-        tenantId: input.tenantId,
-        userId: input.userId,
-        roleId: input.roleId,
-        validFrom: input.validFrom,
-        validTo: input.validTo,
-        createdAt: input.createdAt ? input.createdAt : undefined,
-        updatedAt: input.updatedAt ? input.updatedAt : undefined,
+        tenantId: userRole.tenantId,
+        userId: userRole.userId,
+        roleId: userRole.roleId,
+        validFrom: userRole.validFrom,
+        validTo: userRole.validTo,
+        createdAt: userRole.createdAt ? userRole.createdAt : undefined,
+        updatedAt: userRole.updatedAt ? userRole.updatedAt : undefined,
       },
       select: userRoleAdminRowSelect,
     });
 
-    return row;
+    return toUserRoleDomain(row);
   }
 }

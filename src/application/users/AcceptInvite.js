@@ -11,12 +11,7 @@ import { validateAcceptInvitePayload } from "./acceptInvite.validation.js";
 
 import { ValidationError } from "../../domain/shared/errors/index.js";
 
-import {
-  UserStatus,
-  isStatusForAcceptInvite,
-} from "../../domain/users/UserStatus.js";
-
-import { toUserDetailDto } from "./user.mappers.js";
+import { toPublicUserDto } from "./user.mappers.js";
 
 export class AcceptInvite {
   /**
@@ -56,35 +51,13 @@ export class AcceptInvite {
 
     if (!targetUser) throw new ValidationError("Invite token is invalid.");
 
-    if (!isStatusForAcceptInvite(targetUser.status)) {
-      throw new ValidationError(
-        "Invite cannot be accepted for current user status.",
-      );
-    }
-
-    const inviteTokenExpiresAt = v.date(
-      targetUser.inviteTokenExpiresAt,
-      "inviteTokenExpiresAt",
-      { nullable: false },
-    );
-
     const now = this.clockService.now();
-
-    if (inviteTokenExpiresAt <= now) {
-      throw new ValidationError("Invite token has expired.");
-    }
-
     const passwordHash = await this.passwordService.hash(payload.passwordPlain);
 
-    const activatedUser = await this.userRepository.activateFromInvite({
-      userId: targetUser.id,
-      passwordHash,
-      inviteTokenHash: null,
-      inviteTokenExpiresAt: null,
-      status: UserStatus.ACTIVE,
-      updatedAt: now,
-    });
+    targetUser.activateFromInvite({passwordHash, now});
 
-    return toUserDetailDto(activatedUser);
+    const activatedUser = await this.userRepository.save(targetUser);
+
+    return toPublicUserDto(activatedUser);
   }
 }

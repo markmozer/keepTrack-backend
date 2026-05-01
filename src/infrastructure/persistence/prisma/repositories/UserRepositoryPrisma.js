@@ -2,22 +2,17 @@
  * File: src/infrastructure/persistence/prisma/repositories/UserRepositoryPrisma.js
  */
 
-import { toPublicUserDomain, toPublicUserDomainOrNull } from "../mappers/UserPrismaMapper.js";
+import {
+  toPublicUserDomain,
+  toPublicUserDomainOrNull,
+} from "../mappers/UserPrismaMapper.js";
 
 /**
  * @typedef {import("../../../../application/ports/users/UserRepositoryPort.js").UserRepositoryPort} UserRepositoryPort
  * @typedef {import("../../../../domain/users/User.js").User} User
  */
 
-export const publicUserRowSelect = {
-  id: true,
-  tenantId: true,
-  email: true,
-  status: true,
-  inviteTokenExpiresAt: true,
-  resetTokenExpiresAt: true,
-  createdAt: true,
-  updatedAt: true,
+export const userRoleRowSelect = {
   userRoles: {
     select: {
       id: true,
@@ -36,8 +31,29 @@ export const publicUserRowSelect = {
   },
 };
 
-export const authUserRowSelect = {
+export const publicUserRowSelect = {
   id: true,
+  tenantId: true,
+  email: true,
+  status: true,
+  inviteTokenExpiresAt: true,
+  resetTokenExpiresAt: true,
+  createdAt: true,
+  updatedAt: true,
+  ...userRoleRowSelect,
+};
+
+export const privateUserRowSelectForAuth = {
+  id: true,
+  tenantId: true,
+  email: true,
+  status: true,
+  passwordHase: true,
+  inviteTokenExpiresAt: true,
+  resetTokenExpiresAt: true,
+  createdAt: true,
+  updatedAt: true,
+  ...userRoleRowSelect,
 };
 
 export const userRowSelect = {
@@ -156,13 +172,9 @@ export class UserRepositoryPrisma {
     return toPublicUserDomainOrNull(row);
   }
 
-
-// ========================== TO BE CHANGED ==================
-
-
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByEmailRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
+   * @returns {Promise<User | null>}
    */
   async findByEmail({ tenantId, email }) {
     const row = await this.prisma.user.findUnique({
@@ -170,8 +182,45 @@ export class UserRepositoryPrisma {
       select: userDetailRowSelect,
     });
 
-    return row ? row : null;
+    return toPublicUserDomainOrNull(row);
   }
+
+  /**
+   * @param {User} user
+   * @returns {Promise<User>}
+   */
+  async save(user) {
+    const row = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        email: user.email,
+        passwordHash: user.passwordHash,
+        inviteTokenHash: user.inviteTokenHash,
+        inviteTokenExpiresAt: user.inviteTokenExpiresAt,
+        resetTokenHash: user.resetTokenHash,
+        resetTokenExpiresAt: user.resetTokenExpiresAt,
+        status: user.status,
+      },
+      select: publicUserRowSelect,
+    });
+
+    return toPublicUserDomain(row);
+  }
+
+    /**
+   * @param {import("../../../../application/ports/users/user.types.js").FindUserByInviteTokenHashRepoInput} params
+   * @returns {Promise<User| null>}
+   */
+  async findByInviteTokenHash({ tenantId, inviteTokenHash }) {
+    const row = await this.prisma.user.findFirst({
+      where: { tenantId, inviteTokenHash },
+      select: publicUserRowSelect,
+    });
+
+    return toPublicUserDomainOrNull(row);
+  }
+
+  // ========================== TO BE CHANGED ==================
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindForgotPasswordUserByEmailRepoInput} params
@@ -186,36 +235,6 @@ export class UserRepositoryPrisma {
     return row ? row : null;
   }
 
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").MarkAsInvitedRepoInput} input
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
-   */
-  async markAsInvited({
-    userId,
-    status,
-    inviteTokenHash,
-    inviteTokenExpiresAt,
-    updatedAt,
-  }) {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { status, inviteTokenHash, inviteTokenExpiresAt, updatedAt },
-      select: userDetailRowSelect,
-    });
-  }
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").FindUserByInviteTokenHashRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
-   */
-  async findByInviteTokenHash({ tenantId, inviteTokenHash }) {
-    const row = await this.prisma.user.findFirst({
-      where: { tenantId, inviteTokenHash },
-      select: userDetailRowSelect,
-    });
-
-    return row ? row : null;
-  }
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByResetTokenHashRepoInput} params
@@ -228,33 +247,6 @@ export class UserRepositoryPrisma {
     });
 
     return row ? row : null;
-  }
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").ActivateFromInviteRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
-   */
-  async activateFromInvite({
-    userId,
-    passwordHash,
-    inviteTokenHash,
-    inviteTokenExpiresAt,
-    status,
-    updatedAt,
-  }) {
-    const row = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        status,
-        inviteTokenHash,
-        inviteTokenExpiresAt,
-        passwordHash,
-        updatedAt,
-      },
-      select: userDetailRowSelect,
-    });
-
-    return row;
   }
 
   /**

@@ -2,18 +2,32 @@
  * File: keepTrack-backend/src/domain/users/UserRole.js
  */
 
+/**
+ * @typedef {object} UserRoleParams
+ * @property {string | null} id
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {string} roleId
+ * @property {Date} validFrom
+ * @property {Date | null} validTo
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ * @property {string | undefined} [roleName]
+ */
+
+/**
+ * @typedef {object} CreateNewUserRoleParams
+ * @property {string} tenantId
+ * @property {string} userId
+ * @property {string} roleId
+ * @property {Date} validFrom
+ * @property {Date | null} validTo
+ * @property {Date} now
+ */
+
 export class UserRole {
   /**
-   * @param {object} params
-   * @param {string} params.id
-   * @param {string} params.tenantId
-   * @param {string} params.userId
-   * @param {string} params.roleId
-   * @param {Date} params.validFrom
-   * @param {Date | null} params.validTo
-   * @param {Date} params.createdAt
-   * @param {Date} params.updatedAt
-   * @param {string | undefined} [params.roleName]
+   * @param {UserRoleParams} params
    */
   constructor({
     id,
@@ -35,6 +49,23 @@ export class UserRole {
     this.createdAt = createdAt;
     this.updatedAt = updatedAt;
     this.roleName = roleName;
+  }
+
+  /**
+   * @param {CreateNewUserRoleParams} params
+   * @returns {UserRole}
+   */
+  static createNew({ tenantId, userId, roleId, validFrom, validTo, now }) {
+    return new UserRole({
+      id: null,
+      tenantId,
+      userId,
+      roleId,
+      validFrom,
+      validTo,
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
   /**

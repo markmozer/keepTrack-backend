@@ -35,7 +35,7 @@ import { CreateTenant } from "../application/tenants/CreateTenant.js";
 import { GetTenantById } from "../application/tenants/GetTenantById.js";
 import { CreateRole } from "../application/roles/CreateRole.js";
 import { CreateUser } from "../application/users/CreateUser.js";
-import { AssignRoleToUser } from "../application/userRoles/AssignRoleToUser.js";
+import { AssignRoleToUser } from "../application/users/AssignRoleToUser.js";
 import { InviteUser } from "../application/users/InviteUser.js";
 import { AcceptInvite } from "../application/users/AcceptInvite.js";
 import { ForgotPassword } from "../application/users/ForgotPassword.js";
@@ -82,7 +82,7 @@ import { GetUserById } from "../application/users/GetUserById.js";
  * @property {import("../application/tenants/GetTenantById.js").GetTenantById} getTenantById
  * @property {import("../application/roles/CreateRole.js").CreateRole} createRole
  * @property {import("../application/users/CreateUser.js").CreateUser} createUser
- * @property {import("../application/userRoles/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUser
+ * @property {import("../application/users/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUser
  * @property {import("../application/users/InviteUser.js").InviteUser} inviteUser
  * @property {import("../application/users/AcceptInvite.js").AcceptInvite} acceptInvite
  * @property {import("../application/users/ForgotPassword.js").ForgotPassword} forgotPassword
@@ -247,7 +247,6 @@ export function buildContainer({ appConfig }) {
 
   const authenticateUser = new AuthenticateUser({
     userRepository,
-    userRoleRepository,
     passwordService,
     sessionService,
     clockService,
@@ -273,6 +272,7 @@ export function buildContainer({ appConfig }) {
     userRepository,
     roleRepository,
     userRoleRepository,
+    clockService,
     authorizeAction,
   });
   const inviteUser = new InviteUser({

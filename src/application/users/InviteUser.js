@@ -25,8 +25,7 @@ import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 import { hasRoleEffectiveNowOrFuture } from "../../domain/authz/userRoleValidity.js";
 
-import { toUserDetailDto } from "./user.mappers.js";
-
+import { toPublicUserDto } from "./user.mappers.js";
 
 /**
  * @typedef {Object} Config
@@ -104,6 +103,8 @@ export class InviteUser {
       });
     }
 
+    const now = this.clockService.now();
+
     const existingUser = await this.userRepository.findById({
       tenantId,
       userId: payload.targetUserId,
@@ -113,47 +114,21 @@ export class InviteUser {
       throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
     }
 
-    if (!isStatusForInviteUser(existingUser.status)) {
-      throw new ValidationError("user status must be NEW or INVITED", {
-        status: existingUser.status,
-      });
-    }
-
-    if (!existingUser.userRoles || existingUser.userRoles.length === 0)
-      throw new ValidationError("user has no roles", {
-        userId: payload.targetUserId,
-      });
-
-    const now = this.clockService.now();
-    const hasValidRoleNowOrFuture = hasRoleEffectiveNowOrFuture(
-      existingUser.userRoles,
-      now,
-    );
-    if (!hasValidRoleNowOrFuture) {
-      throw new ValidationError(
-        "user has no valid roles now or in the future",
-        {
-          userId: payload.targetUserId,
-        },
-      );
-    }
-
     const { tokenPlaintext, tokenHash } = this.tokenService.generate();
     const ttlDays = this.config?.inviteTtlDays ?? 14;
     const expiresAt = this.clockService.addDays(now, ttlDays);
     const validityPeriod = `${ttlDays} days`;
 
-    const updated = await this.userRepository.markAsInvited({
-      userId: payload.targetUserId,
-      tenantId,
-      status: UserStatus.INVITED,
+    existingUser.invite({
       inviteTokenHash: tokenHash,
       inviteTokenExpiresAt: expiresAt,
-      updatedAt: now,
+      now,
     });
 
+    const invitedUser = await this.userRepository.save(existingUser);
+
     // make sure that expiredAt is a valid date
-    const returnedExpiresAt = updated.inviteTokenExpiresAt;
+    const returnedExpiresAt = invitedUser.inviteTokenExpiresAt;
     if (!(returnedExpiresAt instanceof Date)) {
       throw new Error(
         "Invite token expiration must be set before sending email",
@@ -166,12 +141,12 @@ export class InviteUser {
     });
 
     await this.emailService.sendInviteUserEmail({
-      to: updated.email,
+      to: invitedUser.email,
       link: inviteLink,
       expiresAt: returnedExpiresAt,
       validityPeriod,
     });
 
-    return toUserDetailDto(updated);
+    return toPublicUserDto(invitedUser);
   }
 }

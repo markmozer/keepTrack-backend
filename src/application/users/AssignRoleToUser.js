@@ -5,6 +5,7 @@ import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPor
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
 import { assertRoleRepositoryPort } from "../ports/roles/RoleRepositoryPort.js";
 import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleRepositoryPort.js";
+import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
@@ -15,7 +16,7 @@ import { ResourceNotFoundError } from "../../domain/shared/errors/index.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
 
-import { toPublicUserDto } from "../users/user.mappers.js";
+import { toPublicUserDto } from "./user.mappers.js";
 
 export class AssignRoleToUser {
   /**
@@ -24,6 +25,7 @@ export class AssignRoleToUser {
    * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
    * @param {import("../ports/roles/RoleRepositoryPort.js").RoleRepositoryPort} deps.roleRepository
    * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
    * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
   constructor({
@@ -31,16 +33,19 @@ export class AssignRoleToUser {
     userRepository,
     roleRepository,
     userRoleRepository,
+    clockService,
     authorizeAction,
   }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
     assertRoleRepositoryPort(roleRepository);
     assertUserRoleRepositoryPort(userRoleRepository);
+    assertClockServicePort(clockService);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
     this.roleRepository = roleRepository;
     this.userRoleRepository = userRoleRepository;
+    this.clockService = clockService;
     this.authorizeAction = authorizeAction;
   }
 
@@ -89,32 +94,24 @@ export class AssignRoleToUser {
       throw new ResourceNotFoundError("role", { roleId: payload.roleId });
     }
 
-    const existingUserHasRole =
-      existingUser.userRoles?.some(
-        (userRole) => userRole.roleId === payload.roleId,
-      ) ?? false;
+    const now = this.clockService.now();
 
-    if (existingUserHasRole) {
-      return { created: false, payload: toPublicUserDto(existingUser) };
-    }
-
-    await this.userRoleRepository.create({
-      tenantId,
-      userId: payload.targetUserId,
+    const newUserRole = existingUser.assignRole({
       roleId: payload.roleId,
       validFrom: payload.validFrom,
       validTo: payload.validTo,
+      now,
     });
 
-    const updatedUser = await this.userRepository.findById({
-      tenantId,
-      userId: payload.targetUserId,
-    });
-
-    if (!updatedUser) {
-      throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
+    if (!newUserRole) {
+      return { created: false, payload: toPublicUserDto(existingUser) };
     }
 
-    return { created: true, payload: toPublicUserDto(updatedUser) };
+    const persistedUserRole = await this.userRoleRepository.create(newUserRole);
+
+    existingUser.replaceUserRole(newUserRole, persistedUserRole);
+
+
+    return { created: true, payload: toPublicUserDto(existingUser) };
   }
 }

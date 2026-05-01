@@ -50,7 +50,7 @@ export function toPublicUserDomainOrNull(row) {
  * @param {import("../../../../application/ports/users/user.types.js").UserRoleRow} row 
  * @returns {UserRole}
  */
-function toUserRoleDomain(row) {
+export function toUserRoleDomain(row) {
   return new UserRole({
     id: row.id,
     tenantId: row.tenantId,

@@ -8,7 +8,7 @@ import { asRequestWithContext } from "../utils/asRequestWithContext.js";
 
 /**
  * @typedef {Object} Deps
- * @property {import("../../../application/userRoles/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUserUseCase
+ * @property {import("../../../application/users/AssignRoleToUser.js").AssignRoleToUser} assignRoleToUserUseCase
  */
 
 /**

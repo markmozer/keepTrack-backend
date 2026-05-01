@@ -16,7 +16,7 @@ import { User } from "../../domain/users/User.js";
 import { UserStatus } from "../../domain/users/UserStatus.js";
 
 // mappers
-import { toUserDetailDto, toPublicUserDto } from "../users/user.mappers.js";
+import { toPublicUserDto } from "../users/user.mappers.js";
 
 // other
 import { ConflictError } from "../../domain/shared/errors/index.js";
@@ -78,7 +78,7 @@ export class ProvisionTenantAdminUser {
       return {
         success: true,
         created: false,
-        payload: toUserDetailDto(existingUser),
+        payload: toPublicUserDto(existingUser),
         error: null,
       };
     }
