@@ -18,7 +18,6 @@ import { validateProvisionTenantInviteAdminUserPayload } from "./provisionTenant
 // domain
 import {
   UserStatus,
-  isStatusForInviteUser,
 } from "../../domain/users/UserStatus.js";
 
 // mappers
@@ -29,7 +28,7 @@ import { toPublicUserDto } from "../users/user.mappers.js";
  * @typedef {Object} ProvisionedAdminUserDto
  * @property {boolean} success
  * @property {boolean} invited
- * @property {import("../ports/users/user.types.js").UserDetailDto | null} payload
+ * @property {import("../ports/users/user.types.js").PublicUserDto | null} payload
  * @property {string | null} token
  * @property {any} error
  */

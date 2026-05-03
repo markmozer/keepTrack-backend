@@ -4,7 +4,6 @@
 
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
-import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleRepositoryPort.js";
 import { assertTokenServicePort } from "../ports/security/TokenServicePort.js";
 import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
@@ -16,14 +15,10 @@ import { validateInviteUserPayload } from "./inviteUser.validation.js";
 
 import {
   ResourceNotFoundError,
-  ValidationError,
 } from "../../domain/shared/errors/index.js";
 
-import { UserStatus } from "../../domain/users/UserStatus.js";
-import { isStatusForInviteUser } from "../../domain/users/UserStatus.js";
 import { CrudAction } from "../../domain/authz/authz.types.js";
 import { Resource } from "../../domain/authz/authz.types.js";
-import { hasRoleEffectiveNowOrFuture } from "../../domain/authz/userRoleValidity.js";
 
 import { toPublicUserDto } from "./user.mappers.js";
 
@@ -37,7 +32,6 @@ export class InviteUser {
    * @param {Object} deps
    * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
    * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
-   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
    * @param {import("../ports/security/TokenServicePort.js").TokenServicePort} deps.tokenService
    * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
    * @param {import("../ports/email/EmailServicePort.js").EmailServicePort} deps.emailService
@@ -49,7 +43,6 @@ export class InviteUser {
   constructor({
     tenantRepository,
     userRepository,
-    userRoleRepository,
     tokenService,
     emailService,
     clockService,
@@ -59,14 +52,12 @@ export class InviteUser {
   }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
-    assertUserRoleRepositoryPort(userRoleRepository);
     assertTokenServicePort(tokenService);
     assertEmailServicePort(emailService);
     assertClockServicePort(clockService);
     assertTenantLinkBuilderServicePort(tenantLinkBuilderService);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
-    this.userRoleRepository = userRoleRepository;
     this.tokenService = tokenService;
     this.emailService = emailService;
     this.clockService = clockService;
@@ -78,7 +69,7 @@ export class InviteUser {
   /**
    *
    * @param {import("../ports/users/user.types.js").InviteUserUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").PublicUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "InviteUser input");

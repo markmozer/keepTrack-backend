@@ -3,6 +3,7 @@
  */
 
 import {
+  toPrivateUserDomainForAuthOrNull,
   toPublicUserDomain,
   toPublicUserDomainOrNull,
 } from "../mappers/UserPrismaMapper.js";
@@ -44,15 +45,10 @@ export const publicUserRowSelect = {
 };
 
 export const privateUserRowSelectForAuth = {
-  id: true,
-  tenantId: true,
-  email: true,
-  status: true,
-  passwordHase: true,
-  inviteTokenExpiresAt: true,
-  resetTokenExpiresAt: true,
-  createdAt: true,
-  updatedAt: true,
+  ...publicUserRowSelect,
+  passwordHash: true,
+  inviteTokenHash: true,
+  resetTokenHash: true,
   ...userRoleRowSelect,
 };
 
@@ -69,26 +65,6 @@ export const userRowSelect = {
         },
       },
     },
-  },
-};
-
-export const userAuthRowSelect = {
-  id: true,
-  tenantId: true,
-  email: true,
-  status: true,
-  passwordHash: true,
-  userRoles: {
-    select: {
-      validFrom: true,
-      validTo: true,
-      role: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: [{ validFrom: "asc" }, { createdAt: "asc" }],
   },
 };
 
@@ -186,6 +162,19 @@ export class UserRepositoryPrisma {
   }
 
   /**
+   * @param {import("../../../../application/ports/users/user.types.js").FindUserByEmailRepoInput} params
+   * @returns {Promise<User | null>}
+   */
+  async findByEmailForAuth({ tenantId, email }) {
+    const row = await this.prisma.user.findUnique({
+      where: { tenantId_email: { tenantId, email } },
+      select: privateUserRowSelectForAuth,
+    });
+
+    return toPrivateUserDomainForAuthOrNull(row);
+  }
+
+  /**
    * @param {User} user
    * @returns {Promise<User>}
    */
@@ -207,102 +196,34 @@ export class UserRepositoryPrisma {
     return toPublicUserDomain(row);
   }
 
-    /**
+  /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByInviteTokenHashRepoInput} params
    * @returns {Promise<User| null>}
    */
   async findByInviteTokenHash({ tenantId, inviteTokenHash }) {
     const row = await this.prisma.user.findFirst({
       where: { tenantId, inviteTokenHash },
-      select: publicUserRowSelect,
+      select: privateUserRowSelectForAuth,
     });
 
-    return toPublicUserDomainOrNull(row);
+    return toPrivateUserDomainForAuthOrNull(row);
   }
-
-  // ========================== TO BE CHANGED ==================
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").FindForgotPasswordUserByEmailRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").ForgotPasswordUserRow | null>}
-   */
-  async findForgotPasswordUserByEmail({ tenantId, email }) {
-    const row = await this.prisma.user.findUnique({
-      where: { tenantId_email: { tenantId, email } },
-      select: forgotPasswordUserRowSelect,
-    });
-
-    return row ? row : null;
-  }
-
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUserByResetTokenHashRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow| null>}
+   * @returns {Promise<User | null>}
    */
   async findByResetTokenHash({ tenantId, resetTokenHash }) {
     const row = await this.prisma.user.findFirst({
       where: { tenantId, resetTokenHash },
-      select: userDetailRowSelect,
+      select: privateUserRowSelectForAuth,
     });
 
-    return row ? row : null;
+    return toPrivateUserDomainForAuthOrNull(row);
   }
 
-  /**
-   * @param {import("../../../../application/ports/auth/auth.types.js").FindUserByEmailForAuthRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserAuthRow| null>}
-   */
-  async findByEmailForAuth({ tenantId, email }) {
-    const row = await this.prisma.user.findUnique({
-      where: { tenantId_email: { tenantId, email } },
-      select: userAuthRowSelect,
-    });
+  // ========================== TO BE CHANGED ==================
 
-    return row ? row : null;
-  }
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").ForgotPasswordRepoInput} input
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
-   */
-  async markForForgotPassword({
-    userId,
-    resetTokenHash,
-    resetTokenExpiresAt,
-    updatedAt,
-  }) {
-    return this.prisma.user.update({
-      where: { id: userId },
-      data: { resetTokenHash, resetTokenExpiresAt, updatedAt },
-      select: userDetailRowSelect,
-    });
-  }
-
-  /**
-   * @param {import("../../../../application/ports/users/user.types.js").ResetPasswordRepoInput} params
-   * @returns {Promise<import("../../../../application/ports/users/user.types.js").UserDetailRow>}
-   */
-  async resetPassword({
-    userId,
-    passwordHash,
-    resetTokenHash,
-    resetTokenExpiresAt,
-    updatedAt,
-  }) {
-    const row = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        resetTokenHash,
-        resetTokenExpiresAt,
-        passwordHash,
-        updatedAt,
-      },
-      select: userDetailRowSelect,
-    });
-
-    return row;
-  }
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUsersPageRepoInput} input

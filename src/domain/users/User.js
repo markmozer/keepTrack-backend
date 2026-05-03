@@ -6,6 +6,9 @@ import {
   UserStatus,
   isStatusForInviteUser,
   isStatusForAcceptInvite,
+  isStatusForAuthenticateUser,
+  isStatusForForgotPassword,
+  isStatusForResetPassword,
 } from "./UserStatus.js";
 
 import { UserRole } from "./UserRole.js";
@@ -57,8 +60,29 @@ import { ValidationError } from "../shared/errors/index.js";
  */
 
 /**
+ * @typedef {object} RequestPasswordResetParams
+ * @property {string} resetTokenHash
+ * @property {Date} resetTokenExpiresAt
+ * @property {Date} now
+ */
+
+/**
+ * @typedef {object} ResetPasswordParams
+ * @property {string} passwordHash
+ * @property {Date} now
+ */
+
+/**
  * @typedef {import("../shared/decision/decision.js").DomainDecision} DomainDecision
  */
+
+/**
+ * @param {string | undefined | null} value
+ * @returns {value is string}
+ */
+function isString(value) {
+  return typeof value === "string";
+}
 
 export class User {
   /**
@@ -137,6 +161,40 @@ export class User {
    */
   getCurrentOrFutureRoles(now) {
     return this.userRoles.filter((userRole) => userRole.isCurrentOrFuture(now));
+  }
+
+  /**
+   * Returns the earliest date on which this user can login based on role validity.
+   *
+   * If the user already has a valid role now, returns now.
+   * If the user has no valid role now but has a future role, returns the earliest validFrom.
+   * If the user has no current/future role, returns null.
+   *
+   * @param {Date} now
+   * @returns {Date | null}
+   */
+  getEarliestLoginDate(now) {
+    if (this.hasValidRoleNow(now)) {
+      return now;
+    }
+
+    const futureRoleStartDates = this.userRoles
+      .filter((userRole) => userRole.isFuture(now))
+      .map((userRole) => userRole.validFrom)
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    return futureRoleStartDates[0] ?? null;
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {string[]}
+   */
+  getValidRoleNames(now) {
+    return this.userRoles
+      .filter((userRole) => userRole.isValidNow(now))
+      .map((userRole) => userRole.roleName)
+      .filter(isString);
   }
 
   /**
@@ -276,7 +334,7 @@ export class User {
     if (!decision.allowed) {
       throw new ValidationError("Invite cannot be accepted.", {
         reason: decision.reason,
-        userId: this.id,
+        ...decision.details,
       });
     }
 
@@ -284,5 +342,131 @@ export class User {
     this.passwordHash = passwordHash;
     this.inviteTokenHash = null;
     this.inviteTokenExpiresAt = null;
+  }
+
+  /**
+   * @returns {DomainDecision}
+   */
+  canAuthenticate() {
+    if (!isStatusForAuthenticateUser(this.status)) {
+      return deny("USER_STATUS_INVALID_FOR_LOGIN", { status: this.status });
+    }
+
+    if (!this.passwordHash) {
+      return deny("USER_HAS_NO_PASSWORD");
+    }
+
+    return allow();
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canLogin(now) {
+    if (!this.hasValidRoleNow(now)) {
+      return deny("USER_HAS_NO_VALID_ROLE", {
+        earliestLoginDate: this.getEarliestLoginDate(now),
+      });
+    }
+
+    return allow();
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canRequestPasswordReset(now) {
+    if (!isStatusForForgotPassword(this.status)) {
+      return deny("USER_STATUS_NOT_VALID_FOR_FORGOT_PASSWORD", {
+        status: this.status,
+      });
+    }
+
+    if (!this.passwordHash) {
+      return deny("USER_HAS_NO_PASSWORD");
+    }
+
+    if (!this.hasCurrentOrFutureRole(now)) {
+      return deny("USER_HAS_NO_CURRENT_OR_FUTURE_ROLE", { userId: this.id });
+    }
+
+    return allow();
+  }
+
+  /**
+   * @param {RequestPasswordResetParams} params
+   */
+  requestPasswordReset({ resetTokenHash, resetTokenExpiresAt, now }) {
+    const decision = this.canRequestPasswordReset(now);
+
+    if (!decision.allowed) {
+      throw new ValidationError("Password reset cannot be requested.", {
+        reason: decision.reason,
+        ...decision.details,
+      });
+    }
+
+    this.resetTokenHash = resetTokenHash;
+    this.resetTokenExpiresAt = resetTokenExpiresAt;
+  }
+
+  clearPasswordReset() {
+    this.resetTokenHash = null;
+    this.resetTokenExpiresAt = null;
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canResetPassword(now) {
+    if (
+      !this.resetTokenExpiresAt ||
+      this.resetTokenExpiresAt === null ||
+      !(this.resetTokenExpiresAt instanceof Date)
+    ) {
+      return deny("Reset token expiry is invalid.");
+    }
+
+    if (this.resetTokenExpiresAt <= now) {
+      return deny("Reset token has expired.", {
+        expiredAt: this.resetTokenExpiresAt,
+      });
+    }
+
+    if (!isStatusForResetPassword(this.status)) {
+      return deny("USER_STATUS_NOT_VALID_FOR_RESET_PASSWORD", {
+        status: this.status,
+      });
+    }
+
+    if (!this.passwordHash) {
+      return deny("USER_HAS_NO_PASSWORD");
+    }
+
+    if (!this.hasCurrentOrFutureRole(now)) {
+      return deny("USER_HAS_NO_CURRENT_OR_FUTURE_ROLE", { userId: this.id });
+    }
+
+    return allow();
+  }
+
+  /**
+   * @param {ResetPasswordParams} params
+   */
+  resetPassword({ passwordHash, now }) {
+    const decision = this.canResetPassword(now);
+
+    if (!decision.allowed) {
+      throw new ValidationError("Password cannot be reset.", {
+        reason: decision.reason,
+        ...decision.details,
+      });
+    }
+
+    ((this.passwordHash = passwordHash), (this.resetTokenHash = null));
+    this.resetTokenExpiresAt = null;
   }
 }

@@ -86,6 +86,14 @@ export class UserRole {
 
   /**
    * @param {Date} now
+   * @returns {boolean}
+   */
+  isFuture(now) {
+    return this.validFrom > now && (!this.validTo || this.validTo > now);
+  }
+
+  /**
+   * @param {Date} now
    */
   expire(now) {
     if (!this.validTo || this.validTo > now) {

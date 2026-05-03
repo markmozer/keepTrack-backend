@@ -12,11 +12,7 @@ import { validateResetPasswordPayload } from "./resetPassword.validation.js";
 
 import { ValidationError } from "../../domain/shared/errors/index.js";
 
-import {
-  isStatusForResetPassword,
-} from "../../domain/users/UserStatus.js";
-
-import { toUserDetailDto } from "./user.mappers.js";
+import { toPublicUserDto } from "./user.mappers.js";
 
 export class ResetPassword {
   /**
@@ -56,34 +52,13 @@ export class ResetPassword {
 
     if (!targetUser) throw new ValidationError("Reset token is invalid.");
 
-    if (!isStatusForResetPassword(targetUser.status)) {
-      throw new ValidationError(
-        "Password cannot be reset for current user status.",
-      );
-    }
-
-    const resetTokenExpiresAt = v.date(
-      targetUser.resetTokenExpiresAt,
-      "resetTokenExpiresAt",
-      { nullable: false },
-    );
-
     const now = this.clockService.now();
-
-    if (resetTokenExpiresAt <= now) {
-      throw new ValidationError("Reset token has expired.");
-    }
-
     const passwordHash = await this.passwordService.hash(payload.passwordPlain);
 
-    const resetUser = await this.userRepository.resetPassword({
-      userId: targetUser.id,
-      passwordHash,
-      resetTokenHash: null,
-      resetTokenExpiresAt: null,
-      updatedAt: now,
-    });
+    targetUser.resetPassword({passwordHash, now});
 
-    return toUserDetailDto(resetUser);
+    const resetUser = await this.userRepository.save(targetUser);
+
+    return toPublicUserDto(resetUser);
   }
 }

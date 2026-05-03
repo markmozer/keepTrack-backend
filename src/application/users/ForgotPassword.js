@@ -4,7 +4,6 @@
 
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
-import { assertUserRoleRepositoryPort } from "../ports/userRoles/UserRoleRepositoryPort.js";
 import { assertTokenServicePort } from "../ports/security/TokenServicePort.js";
 import { assertEmailServicePort } from "../ports/email/EmailServicePort.js";
 import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
@@ -12,9 +11,6 @@ import { assertTenantLinkBuilderServicePort } from "../ports/urls/TenantLinkBuil
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validateForgotPasswordPayload } from "./forgotPassword.validation.js";
-
-import { isStatusForForgotPassword } from "../../domain/users/UserStatus.js";
-
 
 /**
  * @typedef {Object} Config
@@ -38,7 +34,6 @@ export class ForgotPassword {
    * @param {Object} deps
    * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
    * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
-   * @param {import("../ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} deps.userRoleRepository
    * @param {import("../ports/security/TokenServicePort.js").TokenServicePort} deps.tokenService
    * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
    * @param {import("../ports/email/EmailServicePort.js").EmailServicePort} deps.emailService
@@ -48,7 +43,6 @@ export class ForgotPassword {
   constructor({
     tenantRepository,
     userRepository,
-    userRoleRepository,
     tokenService,
     emailService,
     clockService,
@@ -57,14 +51,13 @@ export class ForgotPassword {
   }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
-    assertUserRoleRepositoryPort(userRoleRepository);
     assertTokenServicePort(tokenService);
     assertEmailServicePort(emailService);
     assertClockServicePort(clockService);
     assertTenantLinkBuilderServicePort(tenantLinkBuilderService);
+
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
-    this.userRoleRepository = userRoleRepository;
     this.tokenService = tokenService;
     this.emailService = emailService;
     this.clockService = clockService;
@@ -73,90 +66,69 @@ export class ForgotPassword {
   }
 
   /**
-   *
    * @param {import("../ports/users/user.types.js").ForgotPasswordUCInput} input
    * @returns {Promise<GenericAuthResponseDto>}
    */
   async execute(input) {
     const obj = v.object(input, "ForgotPassword input");
-
-    // No principal required for this Use-Case
-
     const payload = validateForgotPasswordPayload(obj.payload);
 
     const { tenantId, email } = payload;
 
-    const existingTenant = await this.tenantRepository.findById(tenantId);
-    if (!existingTenant) return genericAuthResponse();
+    const tenant = await this.tenantRepository.findById(tenantId);
+    if (!tenant) return genericAuthResponse();
 
-    const existingUser = await this.userRepository.findForgotPasswordUserByEmail({
+    const user = await this.userRepository.findByEmailForAuth({
       tenantId,
       email,
     });
 
-    if (!existingUser) return genericAuthResponse();
-
-    if (!isStatusForForgotPassword(existingUser.status))
-      return genericAuthResponse();
-
-    const assignedRoles = await this.userRoleRepository.findByUser({
-      tenantId,
-      userId: existingUser.id,
-    });
-
-    if (!assignedRoles || assignedRoles.length === 0)
-      return genericAuthResponse();
+    if (!user) return genericAuthResponse();
 
     const now = this.clockService.now();
-    const hasValidRoleNowOrFuture = assignedRoles.some(
-      (r) => !r.validTo || new Date(r.validTo) >= now,
-    );
-    if (!hasValidRoleNowOrFuture) {
+
+    const decision = user.canRequestPasswordReset(now);
+
+    if (!decision.allowed) {
       return genericAuthResponse();
     }
 
     const { tokenPlaintext, tokenHash } = this.tokenService.generate();
+
     const ttlMinutes = this.config?.resetTtlMinutes ?? 15;
     const expiresAt = this.clockService.addMinutes(now, ttlMinutes);
     const validityPeriod = `${ttlMinutes} minutes`;
 
-    const updated = await this.userRepository.markForForgotPassword({
-      userId: existingUser.id,
-      tenantId,
+    user.requestPasswordReset({
       resetTokenHash: tokenHash,
       resetTokenExpiresAt: expiresAt,
-      updatedAt: now,
+      now,
+    });
+
+    const updatedUser = await this.userRepository.save(user);
+
+    if (!(updatedUser.resetTokenExpiresAt instanceof Date)) {
+      throw new Error(
+        "Password reset token expiration must be set before sending email",
+      );
+    }
+
+    const resetLink = this.tenantLinkBuilderService.buildPasswordResetLink({
+      slug: tenant.slug,
+      token: tokenPlaintext,
     });
 
     try {
-      if (!(updated.resetTokenExpiresAt instanceof Date)) {
-        throw new Error(
-          "Password reset token expiration must be set before sending email",
-        );
-      }
-
-      const resetLink = this.tenantLinkBuilderService.buildPasswordResetLink({
-        slug: existingTenant.slug,
-        token: tokenPlaintext,
-      });
-
       await this.emailService.sendPasswordResetEmail({
-        to: updated.email,
+        to: updatedUser.email,
         link: resetLink,
-        expiresAt: updated.resetTokenExpiresAt,
+        expiresAt: updatedUser.resetTokenExpiresAt,
         validityPeriod,
       });
     } catch (err) {
-      const rollbackAt = this.clockService.now();
-
       try {
-        await this.userRepository.markForForgotPassword({
-          userId: existingUser.id,
-          tenantId,
-          resetTokenHash: existingUser.resetTokenHash,
-          resetTokenExpiresAt: existingUser.resetTokenExpiresAt,
-          updatedAt: rollbackAt,
-        });
+        updatedUser.clearPasswordReset();
+        await this.userRepository.save(updatedUser);
       } catch (rollbackError) {
         console.error("ForgotPassword rollback failed", rollbackError);
       }

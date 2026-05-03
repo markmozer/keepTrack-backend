@@ -42,7 +42,7 @@ export class GetUserById {
   /**
    *
    * @param {import("../ports/users/user.types.js").GetUserByIdUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").PublicUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "InviteUser input");

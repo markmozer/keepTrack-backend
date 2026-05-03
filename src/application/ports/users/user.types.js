@@ -78,19 +78,6 @@
  */
 
 /**
- * @typedef {object} ForgotPasswordUserRow
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {UserStatus} status
- * @property {Array<UserRoleDetailRow>} userRoles
- * @property {string|null} resetTokenHash
- * @property {Date|null} resetTokenExpiresAt
- * @property {Date} createdAt
- * @property {Date} updatedAt
- */
-
-/**
  * @typedef {object} UserRoleDetailDto
  * @property {string} id
  * @property {string} roleId
@@ -114,19 +101,11 @@
  * @property {string} updatedAt
  */
 
-/**
- * Specific for AssignRoleToUser
- * to accomodate idempotent behaviour (created true || false)
- *
- * @typedef {Object} AssignRoleToUserDto
- * @property {boolean} created
- * @property {UserDetailDto} payload
- */
 
 // ============================================================
 // Infrastructure layer     select              publicUserRowSelect
-// Infrastructure layer     return model        publicUserRow
-// Application layer        return model        publicUserDto
+// Infrastructure layer     return model        PublicUserRow
+// Application layer        return model        PublicUserDto
 // ============================================================
 
 /**
@@ -156,6 +135,22 @@
  */
 
 /**
+ * @typedef {object} privateUserRowForAuth
+ * @property {string} id
+ * @property {string} tenantId
+ * @property {string} email
+ * @property {UserStatus} status
+ * @property {string} passwordHash
+ * @property {string | null} inviteTokenHash
+ * @property {Date | null} inviteTokenExpiresAt
+ * @property {string | null} resetTokenHash
+ * @property {Date | null} resetTokenExpiresAt
+ * @property {Array<UserRoleRow>} userRoles
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
+ */
+
+/**
  * @typedef {object} UserRoleDto
  * @property {string} id
  * @property {string} tenantId
@@ -170,7 +165,7 @@
  */
 
 /**
- * @typedef {object} publicUserDto
+ * @typedef {object} PublicUserDto
  * @property {string} id
  * @property {string} tenantId
  * @property {string} email
@@ -183,22 +178,13 @@
  * @property {UserAvailableActionsDto} [availableActions]
  */
 
-
-
-// ============================================================
-// Infrastructure layer     select              userAuthRowSelect
-// Infrastructure layer     return model        userAuthRow
-// Application layer        return model        n/a
-// ============================================================
-
 /**
- * @typedef {Object} UserAuthRow
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {UserStatus} status
- * @property {string} passwordHash
- * @property {{ validFrom: Date, validTo: Date | null, role: { name: string } }[]} userRoles
+ * Specific for AssignRoleToUser
+ * to accomodate idempotent behaviour (created true || false)
+ *
+ * @typedef {Object} AssignRoleToUserDto
+ * @property {boolean} created
+ * @property {PublicUserDto} payload
  */
 
 // =====================================================
@@ -316,16 +302,6 @@
  * @property {ForgotPasswordUCPayload} payload
  */
 
-/**
- * RepoInput
- * @typedef {Object} ForgotPasswordRepoInput
- * @property {string} tenantId 
- * @property {string} userId
- * @property {string|null} resetTokenHash
- * @property {Date|null} resetTokenExpiresAt
- * @property {Date} updatedAt
- */
-
 // --- ResetPassword ---
 /**
  * UCPayload
@@ -340,16 +316,6 @@
  * @typedef {Object} ResetPasswordUCInput
  * @property {null} principal
  * @property {ResetPasswordUCPayload} payload
- */
-
-/**
- * RepoInput
- * @typedef {Object} ResetPasswordRepoInput
- * @property {string} userId
- * @property {string} passwordHash
- * @property {null} resetTokenHash
- * @property {null} resetTokenExpiresAt
- * @property {Date} updatedAt
  */
 
 

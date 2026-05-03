@@ -278,7 +278,6 @@ export function buildContainer({ appConfig }) {
   const inviteUser = new InviteUser({
     tenantRepository,
     userRepository,
-    userRoleRepository,
     tokenService,
     emailService,
     clockService,
@@ -295,7 +294,6 @@ export function buildContainer({ appConfig }) {
   const forgotPassword = new ForgotPassword({
     tenantRepository,
     userRepository,
-    userRoleRepository,
     tokenService,
     emailService,
     clockService,

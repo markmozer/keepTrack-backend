@@ -47,6 +47,30 @@ export function toPublicUserDomainOrNull(row) {
 
 /**
  * 
+ * @param {import("../../../../application/ports/users/user.types.js").privateUserRowForAuth} row 
+ * @returns {User | null}
+ */
+export function toPrivateUserDomainForAuthOrNull(row) {
+  if (!row) return null;
+
+  return new User({
+    id: row.id,
+    tenantId: row.tenantId,
+    email: row.email,
+    status: row.status,
+    passwordHash: row.passwordHash,
+    inviteTokenHash: row.inviteTokenHash,
+    inviteTokenExpiresAt: row.inviteTokenExpiresAt,
+    resetTokenHash: row.resetTokenHash,
+    resetTokenExpiresAt: row.resetTokenExpiresAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    userRoles: row.userRoles?.map(toUserRoleDomain) ?? [],
+  });
+}
+
+/**
+ * 
  * @param {import("../../../../application/ports/users/user.types.js").UserRoleRow} row 
  * @returns {UserRole}
  */

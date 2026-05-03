@@ -34,7 +34,7 @@ export class AcceptInvite {
 
   /**
    * @param {import("../ports/users/user.types.js").AcceptInviteUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").PublicUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "AcceptInvite input");

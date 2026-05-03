@@ -59,7 +59,7 @@ function toIsoOrNull(value) {
  * @param {object} [options]
  * @param {import("../ports/users/user.types.js").UserAvailableActionsDto} [options.availableActions]
  * @param {Record<string, import("../ports/users/user.types.js").UserRoleAvailableActionsDto>} [options.userRoleAvailableActionsById]
- * @returns {import("../ports/users/user.types.js").publicUserDto}
+ * @returns {import("../ports/users/user.types.js").PublicUserDto}
  */
 export function toPublicUserDto(
   user,

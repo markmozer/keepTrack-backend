@@ -25,7 +25,7 @@ import { ConflictError } from "../../domain/shared/errors/index.js";
  * @typedef {Object} ProvisionedAdminUserDto
  * @property {boolean} success
  * @property {boolean} created
- * @property {import("../ports/users/user.types.js").UserDetailDto | null} payload
+ * @property {import("../ports/users/user.types.js").PublicUserDto | null} payload
  * @property {any} error
  */
 

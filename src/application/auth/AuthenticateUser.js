@@ -15,12 +15,36 @@ import {
   RolesNotYetActiveError,
 } from "../../domain/shared/errors/index.js";
 
-import { isStatusForAuthenticateUser } from "../../domain/users/UserStatus.js";
-import {
-  getNextRoleEffectiveAt,
-  hasRoleEffectiveAt,
-  hasRoleEffectiveNowOrFuture,
-} from "../../domain/authz/userRoleValidity.js";
+import { User } from "../../domain/users/User.js";
+
+/**
+ * @typedef {object} LoginDecisionDetails
+ * @property {Date | null} [earliestLoginDate]
+ */
+
+/**
+ *
+ * @param {User} user
+ * @returns {string}
+ */
+function requirePasswordHash(user) {
+  if (!user.passwordHash) {
+    throw new Error("Expected passwordHash");
+  }
+  return user.passwordHash;
+}
+
+/**
+ *
+ * @param {User} user
+ * @returns {string}
+ */
+function requireUserId(user) {
+  if (!user.id) {
+    throw new Error("Expected userId");
+  }
+  return user.id;
+}
 
 export class AuthenticateUser {
   /**
@@ -64,47 +88,45 @@ export class AuthenticateUser {
       throw new InvalidCredentialsError();
     }
 
-    if (!isStatusForAuthenticateUser(user.status)) {
+    const now = this.clockService.now();
+
+    const authNDecision = user.canAuthenticate();
+    if (!authNDecision.allowed) {
       throw new InvalidCredentialsError();
     }
 
-    if (!user.passwordHash) {
-      throw new InvalidCredentialsError();
-    }
+    const hash = requirePasswordHash(user);
+    const userId = requireUserId(user);
 
-    const ok = await this.passwordService.verify(
-      payload.passwordPlain,
-      user.passwordHash,
-    );
+    const ok = await this.passwordService.verify(payload.passwordPlain, hash);
 
     if (!ok) {
       throw new InvalidCredentialsError();
     }
 
-    const now = this.clockService.now();
-    const authUserRoles = user.userRoles ?? [];
+    /** @type {import("../../domain/shared/decision/decision.js").DomainDecision & { details: LoginDecisionDetails | null }} */
+    const authZDecision = user.canLogin(now);
 
-    if (!hasRoleEffectiveAt(authUserRoles, now)) {
-      if (hasRoleEffectiveNowOrFuture(authUserRoles, now)) {
-        const nextValidFrom = getNextRoleEffectiveAt(authUserRoles, now);
-
-        throw new RolesNotYetActiveError(
-          "User roles are not yet active.",
-          nextValidFrom
-            ? { nextValidFrom: nextValidFrom.toISOString() }
-            : undefined,
-        );
+    if (!authZDecision.allowed) {
+      if (authZDecision.reason !== "USER_HAS_NO_VALID_ROLE") {
+        throw new InvalidCredentialsError();
       }
 
-      throw new NoValidRolesError("User has no valid roles");
+      const earliest = authZDecision.details?.earliestLoginDate ?? null;
+
+      if (earliest === null) {
+        throw new NoValidRolesError("User has no valid roles");
+      }
+
+      throw new RolesNotYetActiveError("User roles are not yet active.", {
+        nextValidFrom: earliest.toISOString(),
+      });
     }
 
-    const roleNames = authUserRoles
-      .filter((role) => hasRoleEffectiveAt([role], now))
-      .map((r) => r.role.name);
+    const roleNames = user.getValidRoleNames(now);
 
     const session = await this.sessionService.createSession({
-      userId: user.id,
+      userId,
       tenantId: user.tenantId,
       roleNames,
     });
@@ -112,7 +134,7 @@ export class AuthenticateUser {
     return {
       sessionId: session.sessionId,
       user: {
-        userId: user.id,
+        userId: userId,
         tenantId: user.tenantId,
         status: user.status,
         roleNames,

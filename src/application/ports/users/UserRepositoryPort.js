@@ -8,14 +8,10 @@
  * @typedef {import("./user.types.js").FindUserByIdRepoInput} FindUserByIdRepoInput
  * @typedef {import("./user.types.js").FindUserByEmailRepoInput} FindUserByEmailRepoInput
  * @typedef {import("./user.types.js").FindUserByInviteTokenHashRepoInput} FindUserByInviteTokenHashRepoInput
- * 
- * 
- * @typedef {import("./user.types.js").FindForgotPasswordUserByEmailRepoInput} FindForgotPasswordUserByEmailRepoInput
  * @typedef {import("./user.types.js").FindUserByResetTokenHashRepoInput} FindUserByResetTokenHashRepoInput
- * @typedef {import("./user.types.js").ForgotPasswordRepoInput} ForgotPasswordRepoInput
- * @typedef {import("./user.types.js").ResetPasswordRepoInput} ResetPasswordRepoInput
+ * 
+ * 
  * @typedef {import("./user.types.js").FindUsersPageRepoInput} FindUsersPageRepoInput
- * @typedef {import("../auth/auth.types.js").FindUserByEmailForAuthRepoInput} FindUserByEmailForAuthRepoInput
  * 
  */
 
@@ -23,8 +19,6 @@
  * Repo Output
  * @typedef {import("./user.types.js").UserRow} UserRow
  * @typedef {import("./user.types.js").UserDetailRow} UserDetailRow
- * @typedef {import("./user.types.js").ForgotPasswordUserRow} ForgotPasswordUserRow
- * @typedef {import("./user.types.js").UserAuthRow} UserAuthRow
  * @typedef {import("./user.types.js").FindUsersPageRepoResult} FindUsersPageRepoResult
  */
 
@@ -34,14 +28,11 @@
  * @property {(input: User) => Promise<User>} save
  * @property {(input: FindUserByIdRepoInput) => Promise<User | null>} findById
  * @property {(input: FindUserByEmailRepoInput) => Promise<User | null>} findByEmail
+ * @property {(input: FindUserByEmailRepoInput) => Promise<User | null>} findByEmailForAuth
  * @property {(input: FindUserByInviteTokenHashRepoInput) => Promise<User | null>} findByInviteTokenHash
+ * @property {(input: FindUserByResetTokenHashRepoInput) => Promise<User | null>} findByResetTokenHash
  * 
  * 
- * @property {(input: FindForgotPasswordUserByEmailRepoInput) => Promise<ForgotPasswordUserRow | null>} findForgotPasswordUserByEmail
- * @property {(input: FindUserByResetTokenHashRepoInput) => Promise<UserDetailRow | null>} findByResetTokenHash
- * @property {(input: FindUserByEmailForAuthRepoInput) => Promise<UserAuthRow | null>} findByEmailForAuth
- * @property {(input: ForgotPasswordRepoInput) => Promise<UserDetailRow>} markForForgotPassword
- * @property {(input: ResetPasswordRepoInput) => Promise<UserDetailRow>} resetPassword
  * @property {(input: FindUsersPageRepoInput) => Promise<FindUsersPageRepoResult>} findPage
  */
 
@@ -65,13 +56,10 @@ export function assertUserRepositoryPort(repo) {
   if (typeof (/** @type {any} */ (repo).save) !== "function") throw new Error(errorMsg("save(...)"));
   if (typeof (/** @type {any} */ (repo).findById) !== "function") throw new Error(errorMsg("findById(...)"));
   if (typeof (/** @type {any} */ (repo).findByEmail) !== "function") throw new Error(errorMsg("findByEmail(...)"));
-  
   if (typeof (/** @type {any} */ (repo).findByEmailForAuth) !== "function") throw new Error(errorMsg("findByEmailForAuth(...)"));
-  if (typeof (/** @type {any} */ (repo).findForgotPasswordUserByEmail) !== "function") throw new Error(errorMsg("findForgotPasswordUserByEmail(...)"));
   if (typeof (/** @type {any} */ (repo).findByInviteTokenHash) !== "function") throw new Error(errorMsg("findByInviteTokenHash(...)"));  
-  if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
-  if (typeof (/** @type {any} */ (repo).markForForgotPassword) !== "function") throw new Error(errorMsg("markForForgotPassword(...)"));
   if (typeof (/** @type {any} */ (repo).findByResetTokenHash) !== "function") throw new Error(errorMsg("findByResetTokenHash(...)"));
-  if (typeof (/** @type {any} */ (repo).resetPassword) !== "function") throw new Error(errorMsg("resetPassword(...)"));
+  if (typeof (/** @type {any} */ (repo).findPage) !== "function") throw new Error(errorMsg("findPage(...)"));
+  
   
 }

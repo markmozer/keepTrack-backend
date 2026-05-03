@@ -6,21 +6,6 @@
  */
 
 // =====================================================
-// Repository models returned by persistance layer.
-// =====================================================
-/**
- * matches userSelectForAuth
- *
- * @typedef {Object} UserRowForAuth
- * @property {string} tenantId
- * @property {string} id
- * @property {string} email
- * @property {string | null} passwordHash
- * @property {UserStatus} status
- * @property {{ validFrom: Date, validTo: Date | null, role: { name: string } }[]} userRoles
- */
-
-// =====================================================
 // DTOs returned by application layer.
 // =====================================================
 
@@ -57,13 +42,6 @@
  * @typedef {Object} AuthenticateUserUCInput
  * @property {null} principal
  * @property {AuthenticateUserUCPayload} payload
- */
-
-/**
- * RepoInput
- * @typedef {Object} FindUserByEmailForAuthRepoInput
- * @property {string} tenantId
- * @property {string} email
  */
 
 export {};
