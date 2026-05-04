@@ -265,6 +265,7 @@ export function buildContainer({ appConfig }) {
   const createUser = new CreateUser({
     tenantRepository,
     userRepository,
+    clockService,
     authorizeAction,
   });
   const assignRoleToUser = new AssignRoleToUser({

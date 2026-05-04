@@ -273,6 +273,8 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
         userRoles: [{ name: "USER_VIEWER", validFrom: now }],
       });
 
+      console.log(targetUser);
+
       expect(targetUser.userRoles.length).toBe(1);
       const userRoleBefore = targetUser.userRoles[0];
 

@@ -5,6 +5,71 @@
 import { User } from "../../../../domain/users/User.js";
 import { UserRole } from "../../../../domain/users/UserRole.js";
 
+
+/**
+ * @param {import("../../../../application/ports/users/user.types.js").UserAggregateRow} row 
+ * @returns {User}
+ */
+export function toUserAggregate(row) {
+  return new User({
+    id: row.id,
+    tenantId: row.tenantId,
+    email: row.email,
+    status: row.status,
+    passwordHash: row.passwordHash,
+    inviteTokenHash: row.inviteTokenHash,
+    inviteTokenExpiresAt: row.inviteTokenExpiresAt,
+    resetTokenHash: row.resetTokenHash,
+    resetTokenExpiresAt: row.resetTokenExpiresAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    userRoles: row.userRoles?.map(toUserAggregateRole) ?? [],
+  });
+}
+
+/**
+ * @param {import("../../../../application/ports/users/user.types.js").UserAggregateRow} row 
+ * @returns {User | null}
+ */
+export function toUserAggregateOrNull(row) {
+  if (!row) return null;
+
+  return new User({
+    id: row.id,
+    tenantId: row.tenantId,
+    email: row.email,
+    status: row.status,
+    passwordHash: row.passwordHash,
+    inviteTokenHash: row.inviteTokenHash,
+    inviteTokenExpiresAt: row.inviteTokenExpiresAt,
+    resetTokenHash: row.resetTokenHash,
+    resetTokenExpiresAt: row.resetTokenExpiresAt,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    userRoles: row.userRoles?.map(toUserAggregateRole) ?? [],
+  });
+}
+
+/**
+ * 
+ * @param {import("../../../../application/ports/users/user.types.js").UserAggregateRolesRow} row 
+ * @returns {UserRole}
+ */
+export function toUserAggregateRole(row) {
+  return new UserRole({
+    id: row.id,
+    tenantId: row.tenantId,
+    userId: row.userId,
+    roleId: row.roleId,
+    roleName: row.role?.name,
+    validFrom: row.validFrom,
+    validTo: row.validTo,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  });
+}
+
+
 /**
  * 
  * @param {import("../../../../application/ports/users/user.types.js").publicUserRow} row 
@@ -78,7 +143,7 @@ export function toUserRoleDomain(row) {
   return new UserRole({
     id: row.id,
     tenantId: row.tenantId,
-    userId: row.id,
+    userId: row.userId,
     roleId: row.roleId,
     roleName: row.role?.name,
     validFrom: row.validFrom,

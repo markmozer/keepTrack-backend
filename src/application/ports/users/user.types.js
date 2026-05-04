@@ -23,38 +23,30 @@
  * @typedef {Partial<Record<UserRoleActionName, import("../shared/action.types.js").ActionDecisionDto>>} UserRoleAvailableActionsDto
  */
 
+
 // ============================================================
-// Infrastructure layer     select              userRowSelect
-// Infrastructure layer     return model        userRow
-// Application layer        return model        userDto
+// Infrastructure layer     select          userAggregateRowSelect
+// Infrastructure layer     return model    userAggregateRow
 // ============================================================
 
 /**
- * @typedef {Object} UserRow
+ * @typedef {object} UserAggregateRow
  * @property {string} id
  * @property {string} tenantId
  * @property {string} email
  * @property {UserStatus} status
- * @property {{ role: { name: string } }[]} userRoles
+ * @property {string} passwordHash
+ * @property {string | null} inviteTokenHash
+ * @property {Date | null} inviteTokenExpiresAt
+ * @property {string | null} resetTokenHash
+ * @property {Date | null} resetTokenExpiresAt
+ * @property {Array<UserAggregateRolesRow>} userRoles
+ * @property {Date} createdAt
+ * @property {Date} updatedAt
  */
 
 /**
- * @typedef {Object} UserDto
- * @property {string} tenantId
- * @property {string} id
- * @property {string} email
- * @property {UserStatus} status
- * @property {string[]} roleNames
- */
-
-// ============================================================
-// Infrastructure layer     select              publicUserRowSelect
-// Infrastructure layer     return model        PublicUserRow
-// Application layer        return model        PublicUserDto
-// ============================================================
-
-/**
- * @typedef {object} UserRoleRow
+ * @typedef {object} UserAggregateRolesRow
  * @property {string} id
  * @property {string} tenantId
  * @property {string} userId
@@ -66,34 +58,34 @@
  * @property {{ name: string }} role
  */
 
+// ============================================================
+// Infrastructure layer     select              userListItemRowSelect
+// Infrastructure layer     return model        userListItemRow
+// Application layer        return model        userDto
+// ============================================================
+
 /**
- * @typedef {object} publicUserRow
+ * @typedef {Object} UserListItemRow
  * @property {string} id
  * @property {string} tenantId
  * @property {string} email
  * @property {UserStatus} status
- * @property {Array<UserRoleRow>} userRoles
- * @property {Date|null} inviteTokenExpiresAt
- * @property {Date|null} resetTokenExpiresAt
+ * @property {{ role: { name: string } }[]} userRoles
  * @property {Date} createdAt
  * @property {Date} updatedAt
  */
 
 /**
- * @typedef {object} privateUserRowForAuth
- * @property {string} id
+ * @typedef {Object} UserListItemDto
  * @property {string} tenantId
+ * @property {string} id
  * @property {string} email
  * @property {UserStatus} status
- * @property {string} passwordHash
- * @property {string | null} inviteTokenHash
- * @property {Date | null} inviteTokenExpiresAt
- * @property {string | null} resetTokenHash
- * @property {Date | null} resetTokenExpiresAt
- * @property {Array<UserRoleRow>} userRoles
- * @property {Date} createdAt
- * @property {Date} updatedAt
+ * @property {string[]} roleNames
+ * @property {string} createdAt
+ * @property {string} updatedAt
  */
+
 
 /**
  * @typedef {object} UserRoleDto
@@ -209,12 +201,12 @@
 
 /**
  * @typedef {Object} FindUsersPageRepoResult
- * @property {UserRow[]} items
+ * @property {UserListItemRow[]} items
  * @property {number} totalItems
  */
 
 /**
- * @typedef {import("../../shared/pagination/pagination.types.js").PagedResult<UserDto>} GetUsersUCOutput
+ * @typedef {import("../../shared/pagination/pagination.types.js").PagedResult<UserListItemDto>} GetUsersUCOutput
  */
 
 // --- InviteUser ---
@@ -294,6 +286,13 @@
  * @property {GetUserByIdUCPayload} payload
  */
 
+
+
+
+// =====================================================
+// repo only types
+// =====================================================
+
 /**
  * Input used for findById
  * 
@@ -304,37 +303,11 @@
  */
 
 
-// =====================================================
-// repo only types
-// =====================================================
-
-/**
- * Input for ensureUser
- * 
- * @typedef {Object} EnsureUserRepoInput
- * @property {string} tenantId
- * @property {string} email
- * @property {string} name
- * @property {Date} [createdAt]
- * @property {Date} [updatedAt]
- */
-
-
-
 /**
  * Input used for findByEmail
  * 
  * RepoInput
  * @typedef {Object} FindUserByEmailRepoInput
- * @property {string} tenantId
- * @property {string} email
- */
-
-/**
- * Input used for forgot-password candidate lookup
- *
- * RepoInput
- * @typedef {Object} FindForgotPasswordUserByEmailRepoInput
  * @property {string} tenantId
  * @property {string} email
  */

@@ -8,7 +8,7 @@ import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { seedRole } from "./seedRole.js";
 import { seedUserRole } from "./seedUserRole.js";
 import { userFactory } from "../factories/userFactory.js";
-import { publicUserRowSelect } from "../../../infrastructure/persistence/prisma/repositories/UserRepositoryPrisma.js";
+import { userAggregateRowSelect } from "../../../infrastructure/persistence/prisma/repositories/UserRepositoryPrisma.js";
 
 /**
  * Seed een user in een tenant, zorg dat gevraagde rollen bestaan en wijs ze toe.
@@ -109,6 +109,6 @@ export async function seedUser({
 
   return prisma.user.findUnique({
     where: { id: user.id },
-    select: publicUserRowSelect,
+    select: userAggregateRowSelect,
   });
 }

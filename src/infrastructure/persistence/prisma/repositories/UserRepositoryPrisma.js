@@ -6,6 +6,8 @@ import {
   toPrivateUserDomainForAuthOrNull,
   toPublicUserDomain,
   toPublicUserDomainOrNull,
+  toUserAggregate,
+  toUserAggregateOrNull,
 } from "../mappers/UserPrismaMapper.js";
 
 /**
@@ -13,7 +15,7 @@ import {
  * @typedef {import("../../../../domain/users/User.js").User} User
  */
 
-export const userRoleRowSelect = {
+export const userAggregateRolesRowSelect = {
   userRoles: {
     select: {
       id: true,
@@ -32,27 +34,22 @@ export const userRoleRowSelect = {
   },
 };
 
-export const publicUserRowSelect = {
+export const userAggregateRowSelect = {
   id: true,
   tenantId: true,
   email: true,
   status: true,
+  passwordHash: true,
+  inviteTokenHash: true,
   inviteTokenExpiresAt: true,
+  resetTokenHash: true,
   resetTokenExpiresAt: true,
   createdAt: true,
   updatedAt: true,
-  ...userRoleRowSelect,
+  ...userAggregateRolesRowSelect,
 };
 
-export const privateUserRowSelectForAuth = {
-  ...publicUserRowSelect,
-  passwordHash: true,
-  inviteTokenHash: true,
-  resetTokenHash: true,
-  ...userRoleRowSelect,
-};
-
-export const userRowSelect = {
+export const userListItemRowSelect = {
   id: true,
   tenantId: true,
   email: true,
@@ -66,8 +63,9 @@ export const userRowSelect = {
       },
     },
   },
+  createdAt: true,
+  updatedAt: true,
 };
-
 
 /**
  * @implements {UserRepositoryPort}
@@ -92,9 +90,9 @@ export class UserRepositoryPrisma {
         createdAt: user.createdAt ? user.createdAt : undefined,
         updatedAt: user.updatedAt ? user.updatedAt : undefined,
       },
-      select: publicUserRowSelect,
+      select: userAggregateRowSelect,
     });
-    return toPublicUserDomain(row);
+    return toUserAggregate(row);
   }
 
   /**
@@ -104,10 +102,10 @@ export class UserRepositoryPrisma {
   async findById({ tenantId, userId }) {
     const row = await this.prisma.user.findFirst({
       where: { id: userId, tenantId },
-      select: publicUserRowSelect,
+      select: userAggregateRowSelect,
     });
 
-    return toPublicUserDomainOrNull(row);
+    return toUserAggregateOrNull(row);
   }
 
   /**
@@ -117,10 +115,10 @@ export class UserRepositoryPrisma {
   async findByEmail({ tenantId, email }) {
     const row = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
-      select: publicUserRowSelect,
+      select: userAggregateRowSelect,
     });
 
-    return toPublicUserDomainOrNull(row);
+    return toUserAggregateOrNull(row);
   }
 
   /**
@@ -130,10 +128,10 @@ export class UserRepositoryPrisma {
   async findByEmailForAuth({ tenantId, email }) {
     const row = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
-      select: privateUserRowSelectForAuth,
+      select: userAggregateRowSelect,
     });
 
-    return toPrivateUserDomainForAuthOrNull(row);
+    return toUserAggregateOrNull(row);
   }
 
   /**
@@ -152,10 +150,10 @@ export class UserRepositoryPrisma {
         resetTokenExpiresAt: user.resetTokenExpiresAt,
         status: user.status,
       },
-      select: publicUserRowSelect,
+      select: userAggregateRowSelect,
     });
 
-    return toPublicUserDomain(row);
+    return toUserAggregate(row);
   }
 
   /**
@@ -165,10 +163,10 @@ export class UserRepositoryPrisma {
   async findByInviteTokenHash({ tenantId, inviteTokenHash }) {
     const row = await this.prisma.user.findFirst({
       where: { tenantId, inviteTokenHash },
-      select: privateUserRowSelectForAuth,
+      select: userAggregateRowSelect,
     });
 
-    return toPrivateUserDomainForAuthOrNull(row);
+    return toUserAggregateOrNull(row);
   }
 
   /**
@@ -178,14 +176,11 @@ export class UserRepositoryPrisma {
   async findByResetTokenHash({ tenantId, resetTokenHash }) {
     const row = await this.prisma.user.findFirst({
       where: { tenantId, resetTokenHash },
-      select: privateUserRowSelectForAuth,
+      select: userAggregateRowSelect,
     });
 
-    return toPrivateUserDomainForAuthOrNull(row);
+    return toUserAggregateOrNull(row);
   }
-
-  // ========================== TO BE CHANGED ==================
-
 
   /**
    * @param {import("../../../../application/ports/users/user.types.js").FindUsersPageRepoInput} input
@@ -232,7 +227,7 @@ export class UserRepositoryPrisma {
         skip,
         take,
         orderBy,
-        select: userRowSelect,
+        select: userListItemRowSelect,
       }),
       this.prisma.user.count({ where }),
     ]);

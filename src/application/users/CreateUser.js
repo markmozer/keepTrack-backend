@@ -3,6 +3,7 @@
  */
 import { assertTenantRepositoryPort } from "../ports/tenants/TenantRepositoryPort.js";
 import { assertUserRepositoryPort } from "../ports/users/UserRepositoryPort.js";
+import { assertClockServicePort } from "../ports/clock/ClockServicePort.js";
 
 import { v } from "../../domain/shared/validation/validators.js";
 import { validatePrincipal } from "../auth/validatePrincipal.js";
@@ -25,13 +26,21 @@ export class CreateUser {
    * @param {object} deps
    * @param {import("../ports/tenants/TenantRepositoryPort.js").TenantRepositoryPort} deps.tenantRepository
    * @param {import("../ports/users/UserRepositoryPort.js").UserRepositoryPort} deps.userRepository
+   * @param {import("../ports/clock/ClockServicePort.js").ClockServicePort} deps.clockService
    * @param {import("../authz/AuthorizeAction.js").AuthorizeAction} deps.authorizeAction
    */
-  constructor({ tenantRepository, userRepository, authorizeAction }) {
+  constructor({
+    tenantRepository,
+    userRepository,
+    clockService,
+    authorizeAction,
+  }) {
     assertTenantRepositoryPort(tenantRepository);
     assertUserRepositoryPort(userRepository);
+    assertClockServicePort(clockService);
     this.tenantRepository = tenantRepository;
     this.userRepository = userRepository;
+    this.clockService = clockService;
     this.authorizeAction = authorizeAction;
   }
 
@@ -51,7 +60,6 @@ export class CreateUser {
       context: { useCase: "CreateUser" },
     });
 
-
     const payload = validateCreateUserPayload(obj.payload);
 
     const tenantId = principal.tenantId;
@@ -61,7 +69,7 @@ export class CreateUser {
       throw new ResourceNotFoundError("tenant", {
         tenantId: tenantId,
       });
-    };
+    }
 
     const existingUser = await this.userRepository.findByEmail({
       tenantId,
@@ -72,7 +80,9 @@ export class CreateUser {
       throw new ConflictError(`User '${payload.email}' already exists.`);
     }
 
-    const user = User.createNew({tenantId, email: payload.email, now: new Date()});
+    const now = this.clockService.now();
+
+    const user = User.createNew({ tenantId, email: payload.email, now });
 
     const persistedUser = await this.userRepository.create(user);
 
