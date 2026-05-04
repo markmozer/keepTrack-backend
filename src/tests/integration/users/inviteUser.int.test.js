@@ -13,7 +13,7 @@ import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthent
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
+import { expectPublicUserDto } from "../../helpers/assertions/expectPublicUserDto.js";
 import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
 import { seedUser } from "../../helpers/seed/seedUser.js";
 
@@ -125,7 +125,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         status: 200,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
@@ -262,7 +262,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         status: 200,
       });
 
-      expectUserDetailDto(first_payload, {
+      expectPublicUserDto(first_payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
@@ -290,7 +290,7 @@ describe("InviteUser (integration) POST /api/users/:userId/invite", () => {
         status: 200,
       });
 
-      expectUserDetailDto(second_payload, {
+      expectPublicUserDto(second_payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,

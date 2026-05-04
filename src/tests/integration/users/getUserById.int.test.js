@@ -13,7 +13,7 @@ import { createApiClient } from "../../helpers/http/apiClient.js";
 import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthenticatedPrincipal.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
+import { expectPublicUserDto } from "../../helpers/assertions/expectPublicUserDto.js";
 
 describe("GetUserById (integration) POST /api/users/:userId", () => {
   const strongPassword = "Strong123!123";
@@ -102,7 +102,7 @@ describe("GetUserById (integration) POST /api/users/:userId", () => {
 
       const payload = expectAppSuccessWithPayload(response, { status: 200 });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,

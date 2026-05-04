@@ -5,8 +5,8 @@
 /**
  * @typedef {import("../../../application/ports/tenants/tenant.types.js").TenantDto} TenantDto
  * @typedef {import("../../../application/ports/roles/role.types.js").RoleAdminDto} RoleAdminDto
- * @typedef {import("../../../application/ports/users/user.types.js").UserAdminDto} UserAdminDto
- * @typedef {import("../../../application/ports/userRoles/userRole.types.js").UserRoleDto} UserRoleDto
+ * @typedef {import("../../../application/ports/users/user.types.js").PublicUserDto} PublicUserDto
+ * @typedef {import("../../../application/ports/users/user.types.js").UserRoleDto} UserRoleDto
  */
 
 
@@ -22,11 +22,11 @@
  * @property {string} roleAction
  * @property {RoleAdminDto[]} provisionedRoles
  * @property {string} userAction
- * @property {UserAdminDto} provisionedUser
+ * @property {PublicUserDto} provisionedUser
  * @property {string} userRoleAction
  * @property {UserRoleDto} provisionedUserRole
  * @property {string} inviteUserAction
- * @property {UserAdminDto} invitedUser
+ * @property {PublicUserDto} invitedUser
  * @property {string} tokenPlaintext
  */
 

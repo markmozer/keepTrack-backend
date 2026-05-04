@@ -68,44 +68,6 @@ export const userRowSelect = {
   },
 };
 
-export const userDetailRowSelect = {
-  id: true,
-  tenantId: true,
-  email: true,
-  status: true,
-  inviteTokenExpiresAt: true,
-  resetTokenExpiresAt: true,
-  createdAt: true,
-  updatedAt: true,
-  userRoles: {
-    select: {
-      id: true,
-      roleId: true,
-      validFrom: true,
-      validTo: true,
-      createdAt: true,
-      updatedAt: true,
-      role: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: [{ validFrom: "asc" }, { createdAt: "asc" }],
-  },
-};
-
-export const forgotPasswordUserRowSelect = {
-  id: true,
-  tenantId: true,
-  email: true,
-  status: true,
-  resetTokenHash: true,
-  resetTokenExpiresAt: true,
-  createdAt: true,
-  updatedAt: true,
-  userRoles: userDetailRowSelect.userRoles,
-};
 
 /**
  * @implements {UserRepositoryPort}
@@ -155,7 +117,7 @@ export class UserRepositoryPrisma {
   async findByEmail({ tenantId, email }) {
     const row = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
-      select: userDetailRowSelect,
+      select: publicUserRowSelect,
     });
 
     return toPublicUserDomainOrNull(row);

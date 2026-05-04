@@ -4,22 +4,12 @@
 
 
 /**
- * @typedef {import("./userRole.types.js").UserRoleRow} UserRoleRow
- * @typedef {import("./userRole.types.js").UserRoleAdminRow} UserRoleAdminRow
- * @typedef {import("./userRole.types.js").AssignRoleToUserRepoInput} AssignRoleToUserRepoInput
- * @typedef {import("./userRole.types.js").FindUserRoleByUserAndRoleRepoInput} FindUserRoleByUserAndRoleRepoInput
- * @typedef {import("./userRole.types.js").FindUserRolesByUserRepoInput} FindUserRolesByUserRepoInput
- * @typedef {import("./userRole.types.js").FindValidUserRolesByUserRepoInput} FindValidUserRolesByUserRepoInput
  * @typedef {import("../../../domain/users/UserRole.js").UserRole} UserRole
  */
 
 /**
  * @typedef {Object} UserRoleRepositoryPort
  * @property {(input: UserRole) => Promise<UserRole>} create
- * 
- * @property {(input: FindUserRoleByUserAndRoleRepoInput) => Promise<UserRoleAdminRow | null>} findByUserAndRole
- * @property {(input: FindUserRolesByUserRepoInput) => Promise<UserRoleRow[] | null>} findByUser
- * @property {(input: FindValidUserRolesByUserRepoInput) => Promise<UserRoleRow[] | null>} findValidByUser
  */
 
 /**
@@ -30,13 +20,10 @@ export function assertUserRoleRepositoryPort(repo) {
   if (
     !repo ||
     typeof repo !== "object" ||
-    typeof /** @type {any} */ (repo).findByUserAndRole !== "function" ||
-    typeof /** @type {any} */ (repo).create !== "function" ||
-    typeof /** @type {any} */ (repo).findByUser !== "function" ||
-    typeof /** @type {any} */ (repo).findValidByUser !== "function"
+    typeof /** @type {any} */ (repo).create !== "function"
   ) {
     throw new Error(
-      "UserRoleRepositoryPort not implemented: expected { findByUserAndRole(), create(), findByUser(), findValidByUser() }"
+      "UserRoleRepositoryPort not implemented: expected { create() }"
     );
   }
 }

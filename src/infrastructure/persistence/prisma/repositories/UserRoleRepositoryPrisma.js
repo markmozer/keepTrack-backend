@@ -6,9 +6,6 @@ import { toUserRoleDomain } from "../mappers/UserPrismaMapper.js"
 
 /**
  * @typedef {import("../../../../application/ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
- * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleRow} UserRoleRow
- * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").UserRoleAdminRow} UserRoleAdminRow
- * @typedef {import("../../../../application/ports/userRoles/userRole.types.js").AssignRoleToUserRepoInput} AssignRoleToUserRepoInput
  * @typedef {import("../../../../domain/users/UserRole.js").UserRole} UserRole
  */
 
@@ -43,51 +40,7 @@ export class UserRoleRepositoryPrisma {
     this.prisma = prisma;
   }
 
-  /**
-   * @param {{tenantId: string, userId: string, roleId: string}} params
-   * @returns {Promise<UserRoleAdminRow | null>}
-   */
-  async findByUserAndRole({ tenantId, userId, roleId }) {
-    const row = await this.prisma.userRole.findUnique({
-      where: {
-        tenantId_userId_roleId: { tenantId, userId, roleId },
-      },
-      select: userRoleAdminRowSelect,
-    });
-
-    return row ? row : null;
-  }
-
-  /**
-   * @param {{ tenantId: string, userId: string, atDate: Date }} params
-   * @returns {Promise<UserRoleRow[] | null>}
-   */
-  async findValidByUser({ tenantId, userId, atDate }) {
-    return this.prisma.userRole.findMany({
-      where: {
-        tenantId,
-        userId,
-        validFrom: { lte: atDate },
-        OR: [{ validTo: null }, { validTo: { gte: atDate } }],
-      },
-      select: userRoleRowSelect,
-    });
-  }
-
-  /**
-   * @param {{ tenantId: string, userId: string }} params
-   * @returns {Promise<UserRoleRow[] | null>}
-   */
-  async findByUser({ tenantId, userId }) {
-    return this.prisma.userRole.findMany({
-      where: {
-        tenantId,
-        userId,
-      },
-      select: userRoleRowSelect,
-    });
-  }
-
+  
   /**
    * @param {UserRole} userRole
    * @returns {Promise<UserRole>}

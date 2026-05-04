@@ -50,7 +50,7 @@ export class AssignRoleToUser {
   }
 
   /**
-   * @param {import("../ports/userRoles/userRole.types.js").AssignRoleToUserUCInput} input
+   * @param {import("../ports/users/user.types.js").AssignRoleToUserUCInput} input
    * @returns {Promise<import("../ports/users/user.types.js").AssignRoleToUserDto>}
    */
   async execute(input) {

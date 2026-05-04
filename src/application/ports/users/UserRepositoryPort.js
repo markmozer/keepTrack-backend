@@ -18,7 +18,6 @@
  /**
  * Repo Output
  * @typedef {import("./user.types.js").UserRow} UserRow
- * @typedef {import("./user.types.js").UserDetailRow} UserDetailRow
  * @typedef {import("./user.types.js").FindUsersPageRepoResult} FindUsersPageRepoResult
  */
 

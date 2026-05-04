@@ -35,7 +35,7 @@ export class ResetPassword {
 
   /**
    * @param {import("../ports/users/user.types.js").ResetPasswordUCInput} input
-   * @returns {Promise<import("../ports/users/user.types.js").UserDetailDto>}
+   * @returns {Promise<import("../ports/users/user.types.js").PublicUserDto>}
    */
   async execute(input) {
     const obj = v.object(input, "ResetPassword input");

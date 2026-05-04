@@ -48,61 +48,6 @@
  */
 
 // ============================================================
-// Infrastructure layer     select              userDetailRowSelect
-// Infrastructure layer     return model        userDetailRow
-// Application layer        return model        userDetailDto
-// ============================================================
-
-/**
- * @typedef {object} UserRoleDetailRow
- * @property {string} id
- * @property {string} roleId
- * @property {Date} validFrom
- * @property {Date|null} validTo
- * @property {Date} createdAt
- * @property {Date} updatedAt
- * @property {{ name: string }} role
- */
-
-/**
- * @typedef {object} UserDetailRow
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {UserStatus} status
- * @property {Array<UserRoleDetailRow>} userRoles
- * @property {Date|null} inviteTokenExpiresAt
- * @property {Date|null} resetTokenExpiresAt
- * @property {Date} createdAt
- * @property {Date} updatedAt
- */
-
-/**
- * @typedef {object} UserRoleDetailDto
- * @property {string} id
- * @property {string} roleId
- * @property {string} validFrom
- * @property {string|null} validTo
- * @property {string} createdAt
- * @property {string} updatedAt
- * @property {string|null} roleName
- */
-
-/**
- * @typedef {object} UserDetailDto
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {string} status
- * @property {Array<UserRoleDetailDto>} userRoles
- * @property {string|null} inviteTokenExpiresAt
- * @property {string|null} resetTokenExpiresAt
- * @property {string} createdAt
- * @property {string} updatedAt
- */
-
-
-// ============================================================
 // Infrastructure layer     select              publicUserRowSelect
 // Infrastructure layer     return model        PublicUserRow
 // Application layer        return model        PublicUserDto
@@ -205,6 +150,22 @@
  * @property {CreateUserUCPayload} payload
  */
 
+// --- AssignRoleToUser ---
+/**
+ * UCPayload
+ * @typedef {Object} AssignRoleToUserUCPayload
+ * @property {unknown} targetUserId
+ * @property {unknown} roleId
+ * @property {unknown} validFrom
+ * @property {unknown} validTo
+ */ 
+ 
+/**
+ * UCInput
+ * @typedef {Object} AssignRoleToUserUCInput
+ * @property {unknown} principal
+ * @property {AssignRoleToUserUCPayload} payload
+ */
 
 // --- GetUsers ---
 
@@ -394,13 +355,6 @@
  * @typedef {Object} FindUserByResetTokenHashRepoInput
  * @property {string} tenantId
  * @property {string} resetTokenHash
- */
-
-/**
- * Input used for findFindByRoleId
- * @typedef {Object} FindUsersByRoleIdRepoInput
- * @property {string} tenantId
- * @property {string} roleId
  */
 
 export {};

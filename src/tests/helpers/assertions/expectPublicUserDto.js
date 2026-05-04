@@ -1,5 +1,5 @@
 /**
- * File: src/tests/helpers/assertions/expectUserDetailDto.js
+ * File: src/tests/helpers/assertions/expectPublicUserDto.js
  */
 
 
@@ -16,6 +16,8 @@ import { expectValidDate } from "./expectValidDate.js";
  *   userRoles?: 
  *    {
  *      id?: string,
+ *      tenantId?: string,
+ *      userId?: string,
  *      roleId?: string,
  *      validFrom?: Date, 
  *      validTo?: Date | null, 
@@ -29,7 +31,7 @@ import { expectValidDate } from "./expectValidDate.js";
  *   updatedAt?: string | Date,
  * }} [expected]
  */
-export function expectUserDetailDto(actual, expected = {}) {
+export function expectPublicUserDto(actual, expected = {}) {
   expect(actual).toMatchObject({
     id: expected.id ?? expect.any(String),
     tenantId: expected.tenantId ?? expect.any(String),

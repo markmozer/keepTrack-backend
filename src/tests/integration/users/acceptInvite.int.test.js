@@ -12,7 +12,7 @@ import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
+import { expectPublicUserDto } from "../../helpers/assertions/expectPublicUserDto.js";
 
 describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite", () => {
   const endpoint = "/api/t/:tenantSlug/auth/accept-invite";
@@ -125,7 +125,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
         status: 200,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
@@ -324,7 +324,7 @@ describe("AcceptInvite (integration) POST /api/t/:tenantSlug/auth/accept-invite"
         status: 200,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,

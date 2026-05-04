@@ -15,7 +15,7 @@ import { setupAuthenticatedPrincipal } from "../../helpers/fixtures/setupAuthent
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
+import { expectPublicUserDto } from "../../helpers/assertions/expectPublicUserDto.js";
 import { expectValidDate } from "../../helpers/assertions/expectValidDate.js";
 
 describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignments", () => {
@@ -170,7 +170,7 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
         status: 201,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: payload.id,
         email: payload.email,
@@ -273,6 +273,9 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
         userRoles: [{ name: "USER_VIEWER", validFrom: now }],
       });
 
+      expect(targetUser.userRoles.length).toBe(1);
+      const userRoleBefore = targetUser.userRoles[0];
+
       const response = await api.post(tenantEndpoint(primaryTenant.slug)).send({
         targetUserId: targetUser.id,
         roleId: targetRole.id,
@@ -284,7 +287,7 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
         status: 200,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: payload.id,
         email: payload.email,
@@ -294,14 +297,14 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
       });
 
       expect(payload.userRoles.length).toBe(1);
-      const userRole = payload.userRoles[0];
-      expect(userRole.id).toBe(targetUser.userRoles[0].id);
-      expect(userRole.roleId).toBe(targetRole.id);
-      expect(userRole.validFrom).toBe(now.toISOString());
-      expect(userRole.validTo).toBeNull();
-      expectValidDate(userRole.createdAt);
-      expectValidDate(userRole.updatedAt);
-      expect(userRole.roleName).toBe("USER_VIEWER");
+      const userRoleAfter = payload.userRoles[0];
+      expect(userRoleAfter.id).toBe(userRoleBefore.id);
+      expect(userRoleAfter.roleId).toBe(userRoleBefore.roleId);
+      expect(userRoleAfter.validFrom).toBe(now.toISOString());
+      expect(userRoleAfter.validTo).toBeNull();
+      expectValidDate(userRoleAfter.createdAt);
+      expectValidDate(userRoleAfter.updatedAt);
+      expect(userRoleAfter.roleName).toBe("USER_VIEWER");
 
       await expectPersistedUserRole({
         tenantId: primaryTenant.id,
@@ -380,30 +383,38 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
 
       const targetRole = await seedTargetRole();
 
-      const responseWithoutTargetUserId = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        roleId: targetRole.id,
-      });
+      const responseWithoutTargetUserId = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          roleId: targetRole.id,
+        });
 
       expectAppError(responseWithoutTargetUserId, 422, "VALIDATION_ERROR");
 
-      const responseWithTargetUserIdNull = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: null,
-        roleId: targetRole.id,
-      });
+      const responseWithTargetUserIdNull = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: null,
+          roleId: targetRole.id,
+        });
 
       expectAppError(responseWithTargetUserIdNull, 422, "VALIDATION_ERROR");
 
-      const responseWithTargetUserIdEmpty = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: "",
-        roleId: targetRole.id,
-      });
+      const responseWithTargetUserIdEmpty = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: "",
+          roleId: targetRole.id,
+        });
 
       expectAppError(responseWithTargetUserIdEmpty, 422, "VALIDATION_ERROR");
 
-      const responseWithTargetUserIdInvalid = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: "not-a-uuid",
-        roleId: targetRole.id,
-      });
+      const responseWithTargetUserIdInvalid = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: "not-a-uuid",
+          roleId: targetRole.id,
+        });
 
       expectAppError(responseWithTargetUserIdInvalid, 422, "VALIDATION_ERROR");
     });
@@ -472,21 +483,25 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
       const targetUser = await seedTestUser();
       const targetRole = await seedTargetRole();
 
-      const responseOne = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom: "yesterday",
-        validTo: null,
-      });
+      const responseOne = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: targetUser.id,
+          roleId: targetRole.id,
+          validFrom: "yesterday",
+          validTo: null,
+        });
 
       expectAppError(responseOne, 422, "VALIDATION_ERROR");
 
-      const responseTwo = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom: 123,
-        validTo: null,
-      });
+      const responseTwo = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: targetUser.id,
+          roleId: targetRole.id,
+          validFrom: 123,
+          validTo: null,
+        });
 
       expectAppError(responseTwo, 422, "VALIDATION_ERROR");
     });
@@ -500,21 +515,25 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
       const targetRole = await seedTargetRole();
       const now = container.services.clockService.now();
 
-      const responseOne = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom: now,
-        validTo: "tomorrow",
-      });
+      const responseOne = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: targetUser.id,
+          roleId: targetRole.id,
+          validFrom: now,
+          validTo: "tomorrow",
+        });
 
       expectAppError(responseOne, 422, "VALIDATION_ERROR");
 
-      const responseTwo = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom: now,
-        validTo: 123,
-      });
+      const responseTwo = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: targetUser.id,
+          roleId: targetRole.id,
+          validFrom: now,
+          validTo: 123,
+        });
 
       expectAppError(responseTwo, 422, "VALIDATION_ERROR");
     });
@@ -530,21 +549,25 @@ describe("AssignRoleToUser (integration) POST /api/t/:tenantSlug/role-assignment
       const validFrom = container.services.clockService.now();
       const validTo = container.services.clockService.addDays(validFrom, -1);
 
-      const responseOne = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom,
-        validTo,
-      });
+      const responseOne = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: targetUser.id,
+          roleId: targetRole.id,
+          validFrom,
+          validTo,
+        });
 
       expectAppError(responseOne, 422, "VALIDATION_ERROR");
 
-      const responseTwo = await api.post(tenantEndpoint(primaryTenant.slug)).send({
-        targetUserId: targetUser.id,
-        roleId: targetRole.id,
-        validFrom,
-        validTo: validFrom,
-      });
+      const responseTwo = await api
+        .post(tenantEndpoint(primaryTenant.slug))
+        .send({
+          targetUserId: targetUser.id,
+          roleId: targetRole.id,
+          validFrom,
+          validTo: validFrom,
+        });
 
       expectAppError(responseTwo, 422, "VALIDATION_ERROR");
     });

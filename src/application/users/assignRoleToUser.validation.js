@@ -7,7 +7,7 @@ import { ValidationError } from "../../domain/shared/errors/ValidationError.js";
 import { v } from "../../domain/shared/validation/validators.js";
 
 /**
- * @param {import("../ports/userRoles/userRole.types.js").AssignRoleToUserUCPayload} input
+ * @param {import("../ports/users/user.types.js").AssignRoleToUserUCPayload} input
  */
 export function validateAssignRoleToUserPayload(input) {
   v.object(input, "input", {

@@ -12,7 +12,7 @@ import { UserStatus } from "../../../domain/users/UserStatus.js";
 import { createApiClient } from "../../helpers/http/apiClient.js";
 import { expectAppSuccessWithPayload } from "../../helpers/assertions/expectAppSuccess.js";
 import { expectAppError } from "../../helpers/assertions/expectAppError.js";
-import { expectUserDetailDto } from "../../helpers/assertions/expectUserDetailDto.js";
+import { expectPublicUserDto } from "../../helpers/assertions/expectPublicUserDto.js";
 
 describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-password", () => {
   const endpoint = "/api/t/:tenantSlug/auth/reset-password";
@@ -139,7 +139,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
         status: 200,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
@@ -340,7 +340,7 @@ describe("ResetPassword (integration) POST /api/t/:tenantSlug/auth/reset-passwor
         status: 200,
       });
 
-      expectUserDetailDto(payload, {
+      expectPublicUserDto(payload, {
         tenantId: primaryTenant.id,
         id: user.id,
         email: user.email,
