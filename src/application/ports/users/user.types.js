@@ -58,23 +58,6 @@
  * @property {{ name: string }} role
  */
 
-// ============================================================
-// Infrastructure layer     select              userListItemRowSelect
-// Infrastructure layer     return model        userListItemRow
-// Application layer        return model        userDto
-// ============================================================
-
-/**
- * @typedef {Object} UserListItemRow
- * @property {string} id
- * @property {string} tenantId
- * @property {string} email
- * @property {UserStatus} status
- * @property {{ role: { name: string } }[]} userRoles
- * @property {Date} createdAt
- * @property {Date} updatedAt
- */
-
 /**
  * @typedef {Object} UserListItemDto
  * @property {string} tenantId
@@ -201,7 +184,7 @@
 
 /**
  * @typedef {Object} FindUsersPageRepoResult
- * @property {UserListItemRow[]} items
+ * @property {import("../../../domain/users/User.js").User[]} items
  * @property {number} totalItems
  */
 

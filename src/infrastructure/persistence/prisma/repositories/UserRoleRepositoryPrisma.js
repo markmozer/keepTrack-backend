@@ -2,7 +2,7 @@
  * File: src/infrastructure/persistence/prisma/repositories/UserRoleRepositoryPrisma.js
  */
 
-import { toUserRoleDomain } from "../mappers/UserPrismaMapper.js"
+import { toUserAggregateRole } from "../mappers/UserPrismaMapper.js"
 
 /**
  * @typedef {import("../../../../application/ports/userRoles/UserRoleRepositoryPort.js").UserRoleRepositoryPort} UserRoleRepositoryPort
@@ -59,6 +59,6 @@ export class UserRoleRepositoryPrisma {
       select: userRoleAdminRowSelect,
     });
 
-    return toUserRoleDomain(row);
+    return toUserAggregateRole(row);
   }
 }

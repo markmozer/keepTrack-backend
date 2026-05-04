@@ -3,16 +3,24 @@
  */
 
 /**
- * @param {import("../ports/users/user.types.js").UserRow} row
- * @returns {import("../ports/users/user.types.js").UserDto}
+ * @param {import("../../domain/users/User.js").User} user
+ * @returns {import("../ports/users/user.types.js").UserListItemDto}
  */
-export function toUserDto(row) {
+export function toUserDto(user) {
+  if (!user.id) {
+    throw new Error("Cannot map user without id to UserListItemDto.");
+  }
+
   return {
-    id: row.id,
-    tenantId: row.tenantId,
-    email: row.email,
-    status: row.status,
-    roleNames: row.userRoles.map((ur) => ur.role.name),
+    id: user.id,
+    tenantId: user.tenantId,
+    email: user.email,
+    status: user.status,
+    roleNames: user.userRoles
+      .map((userRole) => userRole.roleName)
+      .filter((roleName) => typeof roleName === "string"),
+    createdAt: user.createdAt.toISOString(),
+    updatedAt: user.updatedAt.toISOString(),  
   };
 }
 

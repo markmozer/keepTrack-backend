@@ -3,9 +3,6 @@
  */
 
 import {
-  toPrivateUserDomainForAuthOrNull,
-  toPublicUserDomain,
-  toPublicUserDomainOrNull,
   toUserAggregate,
   toUserAggregateOrNull,
 } from "../mappers/UserPrismaMapper.js";
@@ -47,24 +44,6 @@ export const userAggregateRowSelect = {
   createdAt: true,
   updatedAt: true,
   ...userAggregateRolesRowSelect,
-};
-
-export const userListItemRowSelect = {
-  id: true,
-  tenantId: true,
-  email: true,
-  status: true,
-  userRoles: {
-    select: {
-      role: {
-        select: {
-          name: true,
-        },
-      },
-    },
-  },
-  createdAt: true,
-  updatedAt: true,
 };
 
 /**
@@ -227,13 +206,13 @@ export class UserRepositoryPrisma {
         skip,
         take,
         orderBy,
-        select: userListItemRowSelect,
+        select: userAggregateRowSelect,
       }),
       this.prisma.user.count({ where }),
     ]);
 
     return {
-      items,
+      items: items.map(toUserAggregate),
       totalItems,
     };
   }

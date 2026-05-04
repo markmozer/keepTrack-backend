@@ -15,9 +15,8 @@
  * 
  */
 
- /**
+/**
  * Repo Output
- * @typedef {import("./user.types.js").UserListItemRow} UserListItemRow
  * @typedef {import("./user.types.js").FindUsersPageRepoResult} FindUsersPageRepoResult
  */
 
