@@ -78,11 +78,11 @@ export class AssignRoleToUser {
 
     const existingUser = await this.userRepository.findById({
       tenantId,
-      userId: payload.targetUserId,
+      userId: payload.userId,
     });
 
     if (!existingUser) {
-      throw new ResourceNotFoundError("user", { userId: payload.targetUserId });
+      throw new ResourceNotFoundError("user", { userId: payload.userId });
     }
 
     const existingRole = await this.roleRepository.findById({

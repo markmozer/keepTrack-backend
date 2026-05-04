@@ -24,6 +24,12 @@ export function createUsersRouter({ userController }) {
     requireAuth,
     userController.inviteUser,
   );
+  router.post(
+    "/:userId/role-assignments",
+    requireTenantMiddleware,
+    requireAuth,
+    userController.assignRoleToUser,
+  );
   router.get(
     "/",
     requireTenantMiddleware,

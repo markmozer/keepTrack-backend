@@ -11,9 +11,6 @@ import { createRolesRouter } from "../interface/http/routers/roles.router.js";
 import { createUserController } from "../interface/http/controllers/user.controller.js";
 import { createUsersRouter } from "../interface/http/routers/users.router.js";
 
-import { createUserRoleController } from "../interface/http/controllers/userRole.controller.js";
-import { createUserRolesRouter } from "../interface/http/routers/userRoles.router.js";
-
 import { createAuthController } from "../interface/http/controllers/auth.controller.js";
 import { createAuthRouter } from "../interface/http/routers/auth.router.js";
 
@@ -38,13 +35,10 @@ export function registerRoutes(app, container) {
 
   const userController = createUserController({
     createUserUseCase: container.useCases.createUser,
+    assignRoleToUserUseCase: container.useCases.assignRoleToUser,
     inviteUserUseCase: container.useCases.inviteUser,
     getUsersUseCase: container.useCases.getUsers,
     getUserByIdUseCase: container.useCases.getUserById,
-  });
-
-  const userRoleController = createUserRoleController({
-    assignRoleToUserUseCase: container.useCases.assignRoleToUser,
   });
 
   const authController = createAuthController({
@@ -66,10 +60,6 @@ export function registerRoutes(app, container) {
 
   tenantApiRouter.use("/auth", createAuthRouter({ authController }));
   tenantApiRouter.use("/users", createUsersRouter({ userController }));
-  tenantApiRouter.use(
-    "/role-assignments",
-    createUserRolesRouter({ userRoleController }),
-  );
   tenantApiRouter.use("/roles", createRolesRouter({ roleController }));
 
   app.use("/api/system", createSystemRouter({ systemController }));

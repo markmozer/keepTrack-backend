@@ -129,7 +129,7 @@
 /**
  * UCPayload
  * @typedef {Object} AssignRoleToUserUCPayload
- * @property {unknown} targetUserId
+ * @property {unknown} userId
  * @property {unknown} roleId
  * @property {unknown} validFrom
  * @property {unknown} validTo

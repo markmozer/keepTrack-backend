@@ -11,11 +11,11 @@ import { v } from "../../domain/shared/validation/validators.js";
  */
 export function validateAssignRoleToUserPayload(input) {
   v.object(input, "input", {
-    allowedKeys: ["targetUserId", "roleId", "validFrom", "validTo"],
-    requiredKeys: ["targetUserId", "roleId"],
+    allowedKeys: ["userId", "roleId", "validFrom", "validTo"],
+    requiredKeys: ["userId", "roleId"],
   });
 
-  const targetUserId = v.uuid(input?.targetUserId, "targetUserId");
+  const userId = v.uuid(input?.userId, "userId");
   const roleId = v.uuid(input?.roleId, "roleId");
   const resolvedValidFrom = v.date(input?.validFrom, "validFrom", {
     nullable: true,
@@ -36,5 +36,5 @@ export function validateAssignRoleToUserPayload(input) {
     });
   }
 
-  return { targetUserId, roleId, validFrom, validTo };
+  return { userId, roleId, validFrom, validTo };
 }
