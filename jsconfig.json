@@ -2,8 +2,8 @@
   "compilerOptions": {
     "checkJs": true,
     "types": ["node"],
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "target": "ES2022",
     "strict": true
   },

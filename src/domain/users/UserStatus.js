@@ -80,3 +80,29 @@ export function isStatusForResetPassword(status) {
     status === UserStatus.ACTIVE
   );
 }
+
+/**
+ * Business rule:
+ * A user can only be deactivated if status is Not INACTIVE.
+ *
+ * @param {UserStatusValue} status
+ * @returns {boolean}
+ */
+export function isStatusForDeactivateUser(status) {
+  return (
+    status !== UserStatus.INACTIVE
+  );
+}
+
+/**
+ * Business rule:
+ * A user can only be deleted if status is INACTIVE.
+ *
+ * @param {UserStatusValue} status
+ * @returns {boolean}
+ */
+export function isStatusForDeleteUser(status) {
+  return (
+    status === UserStatus.INACTIVE
+  );
+}

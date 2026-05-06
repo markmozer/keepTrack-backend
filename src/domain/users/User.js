@@ -9,6 +9,8 @@ import {
   isStatusForAuthenticateUser,
   isStatusForForgotPassword,
   isStatusForResetPassword,
+  isStatusForDeactivateUser,
+  isStatusForDeleteUser,
 } from "./UserStatus.js";
 
 import { UserRole } from "./UserRole.js";
@@ -73,7 +75,11 @@ import { ValidationError } from "../shared/errors/index.js";
  */
 
 /**
+ * @typedef {import("./UserActionNames.js").UserActionName} UserActionName
+ * @typedef {import("./UserActionNames.js").UserRoleActionName} UserRoleActionName
  * @typedef {import("../shared/decision/decision.js").DomainDecision} DomainDecision
+ * @typedef {Partial<Record<UserActionName, import("../shared/decision/decision.js").DomainDecision>>} UserPossibleActions
+ * @typedef {Partial<Record<UserRoleActionName, import("../shared/decision/decision.js").DomainDecision>>} UserRolePossibleActions
  */
 
 /**
@@ -198,10 +204,20 @@ export class User {
   }
 
   /**
+   * @returns {DomainDecision}
+   */
+  canCreateRoleAssignment() {
+    return allow();
+  }
+
+  /**
    * @param {{roleId: string}} params
    * @returns {DomainDecision}
    */
   canAssignRole({ roleId }) {
+    if (!this.canCreateRoleAssignment().allowed) {
+      return deny("CREATE_ROLE_ASSIGNMENT_NOT_ALLOWED");
+    }
     const alreadyHasRole = this.userRoles.some(
       (userRole) => userRole.roleId === roleId,
     );
@@ -264,7 +280,9 @@ export class User {
    */
   canBeInvited(now) {
     if (!isStatusForInviteUser(this.status)) {
-      return deny("USER_STATUS_NOT_INVITABLE", { status: this.status });
+      return deny("USER_STATUS_NOT_VALID_FOR_INVITE_USER", {
+        status: this.status,
+      });
     }
 
     if (!this.hasCurrentOrFutureRole(now)) {
@@ -301,7 +319,7 @@ export class User {
    */
   canActivateFromInvite(now) {
     if (!isStatusForAcceptInvite(this.status)) {
-      return deny("USER_STATUS_NOT_FOR_ACTIVATE_FROM_INVITE");
+      return deny("USER_STATUS_NOT_VALID_FOR_ACTIVATE_FROM_INVITE");
     }
 
     if (!this.inviteTokenHash) {
@@ -349,7 +367,9 @@ export class User {
    */
   canAuthenticate() {
     if (!isStatusForAuthenticateUser(this.status)) {
-      return deny("USER_STATUS_INVALID_FOR_LOGIN", { status: this.status });
+      return deny("USER_STATUS_NOT_VALID_FOR_AUTHENTICATE_USER", {
+        status: this.status,
+      });
     }
 
     if (!this.passwordHash) {
@@ -379,7 +399,7 @@ export class User {
    */
   canRequestPasswordReset(now) {
     if (!isStatusForForgotPassword(this.status)) {
-      return deny("USER_STATUS_NOT_VALID_FOR_FORGOT_PASSWORD", {
+      return deny("USER_STATUS_NOT_VALID_FOR_REQUEST_PASSWORD_RESET", {
         status: this.status,
       });
     }
@@ -468,5 +488,114 @@ export class User {
 
     ((this.passwordHash = passwordHash), (this.resetTokenHash = null));
     this.resetTokenExpiresAt = null;
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canBeDeactivated(now) {
+    if (!isStatusForDeactivateUser(this.status)) {
+      return deny("USER_STATUS_NOT_VALID_FOR_DEACTIVATE_USER", {
+        status: this.status,
+      });
+    }
+
+    return allow();
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canBeDeleted(now) {
+    if (!isStatusForDeleteUser(this.status)) {
+      return deny("USER_STATUS_NOT_VALID_FOR_DELETE_USER", {
+        status: this.status,
+      });
+    }
+
+    return allow();
+  }
+
+  /**
+   *
+   * @param {Date} now
+   * @returns {UserPossibleActions}
+   */
+  getPossibleActions(now) {
+    return {
+      inviteUser: this.canBeInvited(now),
+      deactivateUser: this.canBeDeactivated(now),
+      deleteUser: this.canBeDeleted(now),
+      createRoleAssignment: this.canCreateRoleAssignment(),
+    };
+  }
+
+  /**
+   * @param {UserRole} targetUserRole
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canDeleteRoleAssignment(targetUserRole, now) {
+    if (
+      this.status !== UserStatus.ACTIVE &&
+      this.status !== UserStatus.INVITED
+    ) {
+      return allow();
+    }
+
+    const remainingRoles = this.userRoles.filter(
+      (userRole) => userRole.id !== targetUserRole.id,
+    );
+
+    const keepsCurrentOrFutureRole = remainingRoles.some((userRole) =>
+      userRole.isCurrentOrFuture(now),
+    );
+
+    if (!keepsCurrentOrFutureRole) {
+      return deny(`${this.status}_USER_MUST_KEEP_ONE_CURRENT_OR_FUTURE_ROLE`, {
+        userId: this.id,
+        userRoleId: targetUserRole.id,
+      });
+    }
+
+    return allow();
+  }
+
+  /**
+   * @param {UserRole} targetUserRole
+   * @param {Date} now
+   * @returns {DomainDecision}
+   */
+  canUpdateRoleAssignment(targetUserRole, now) {
+    return allow();
+  }
+
+  /**
+   * @param {UserRole} userRole
+   * @param {Date} now
+   * @returns {UserRolePossibleActions}
+   */
+  getUserRolePossibleActions(userRole, now) {
+    return {
+      updateRoleAssignment: this.canUpdateRoleAssignment(userRole, now),
+      deleteRoleAssignment: this.canDeleteRoleAssignment(userRole, now),
+    };
+  }
+
+  /**
+   * @param {Date} now
+   * @returns {Record<string, UserRolePossibleActions>}
+   */
+  getUserRolePossibleActionsById(now) {
+    return Object.fromEntries(
+      this.userRoles
+        .filter((userRole) => userRole.id)
+        .map((userRole) => [
+          userRole.id,
+          this.getUserRolePossibleActions(userRole, now),
+        ]),
+    );
   }
 }

@@ -8,7 +8,7 @@
  */
 
 /**
- * @typedef {"inviteUser" | "deactivateUser" | "deleteUser" | "createRoleAssignment"} UserActionName
+ * @typedef {import("../../../domain/users/UserActionNames.js").UserActionName} UserActionName
  */
 
 /**

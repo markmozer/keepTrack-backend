@@ -310,6 +310,7 @@ export function buildContainer({ appConfig }) {
   const getUserById = new GetUserById({
     tenantRepository,
     userRepository,
+    clockService,
     authorizeAction,
   });
   const getAppHealth = new GetAppHealth();
